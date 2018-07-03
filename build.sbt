@@ -19,7 +19,7 @@ val bintrayReleaseProcess = Seq(
 val common = Seq(
   bintrayRepository := "maven",
   bintrayOrganization := Some("ovotech"),
-  releaseCommitMessage := s"Setting version of ${name.value} to ${version.value}",
+  releaseCommitMessage := s"Setting version of ${name.value} to ${version.value} [ci skip]",
   releaseProcess := bintrayReleaseProcess,
   scalacOptions ++= Seq(
     "-unchecked",
