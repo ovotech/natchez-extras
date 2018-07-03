@@ -1,22 +1,24 @@
 import sbtrelease.ReleaseStateTransformations._
 
 name := "effect-util"
-organization := "com.ovoenergy"
-organizationName := "Ovo Energy"
-organizationHomepage := Some(url("http://www.ovoenergy.com"))
 scalaVersion := "2.12.6"
 
 resolvers += Resolver.sonatypeRepo("releases")
 
-val bintrayReleaseProcess = Seq(
+val bintrayReleaseProcess: Seq[ReleaseStep] = Seq(
+  releaseStepTask(test),
   inquireVersions,
   setReleaseVersion,
+  releaseStepTask(publish),
   commitReleaseVersion,
   setNextVersion,
   commitNextVersion
 )
 
 val common = Seq(
+  organization := "com.ovoenergy",
+  organizationName := "Ovo Energy",
+  organizationHomepage := Some(url("http://www.ovoenergy.com")),
   bintrayRepository := "maven",
   bintrayOrganization := Some("ovotech"),
   releaseCommitMessage := s"Setting version of ${name.value} to ${version.value} [ci skip]",
