@@ -23,7 +23,7 @@ val common = Seq(
 )
 
 lazy val root = (project in file("."))
-  .settings(common :+ (name := "effect-utilities"))
+  .settings(common :+ (name := "effect-utils"))
   .aggregate(logging)
 
 val logging = project
