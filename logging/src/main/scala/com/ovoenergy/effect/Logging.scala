@@ -2,9 +2,8 @@ package com.ovoenergy.effect
 
 import cats.data.StateT
 import cats.effect.Sync
-import cats.syntax.applicative._
 import cats.syntax.flatMap._
-import cats.{Applicative, FlatMap, MonadError}
+import cats.{Applicative, FlatMap}
 import com.typesafe.scalalogging.LazyLogging
 import org.slf4j.MDC
 
@@ -15,7 +14,7 @@ import scala.language.higherKinds
   * within some effect type F
   */
 trait Logging[F[_]] {
-  def log(what: Logging.Log): F[Unit]
+  def log(message: Logging.Log): F[Unit]
 }
 
 /**
@@ -29,7 +28,7 @@ object Logging {
   type Tags = Map[String, String]
 
   sealed trait Log {
-    def tags: Map[String, String]
+    def tags: Tags
   }
 
   case class Debug(of: String, tags: Tags = Map.empty) extends Log
@@ -45,20 +44,17 @@ object Logging {
     */
   //noinspection ConvertExpressionToSAM
   def syncLogging[F[_]: Sync]: Logging[F] = new Logging[F] with LazyLogging {
-    def log(what: Log): F[Unit] = Sync[F].delay {
-      what.tags.foreach {
+    def log(message: Log): F[Unit] = Sync[F].delay {
+      message.tags.foreach {
         case (k, v) =>
           MDC.put(k, v)
       }
-      what match {
+      message match {
         case Debug(content, _) => logger.debug(content)
         case Info(content, _)  => logger.info(content)
         case Error(content, _) => logger.error(content)
       }
-      what.tags.foreach {
-        case (k, _) =>
-          MDC.remove(k)
-      }
+      message.tags.keys.foreach(MDC.remove)
     }
   }
 
