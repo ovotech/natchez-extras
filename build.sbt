@@ -1,7 +1,5 @@
 import sbtrelease.ReleaseStateTransformations._
 
-name := "effect-util"
-scalaVersion := "2.12.6"
 
 resolvers += Resolver.sonatypeRepo("releases")
 
@@ -16,6 +14,7 @@ val bintrayReleaseProcess: Seq[ReleaseStep] = Seq(
 )
 
 val common = Seq(
+  scalaVersion := "2.12.6",
   organization := "com.ovoenergy",
   organizationName := "Ovo Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -38,6 +37,9 @@ val common = Seq(
     "org.scalatest" %% "scalatest" % "3.0.5" % "test"
   )
 )
+
+lazy val root = (project in file("."))
+  .settings(common :+ (name := "effect-util"))
 
 val logging = project
   .settings(common)
