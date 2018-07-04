@@ -1,27 +1,11 @@
-import sbtrelease.ReleaseStateTransformations._
-
-
-resolvers += Resolver.sonatypeRepo("releases")
-
-val bintrayReleaseProcess: Seq[ReleaseStep] = Seq(
-  releaseStepTask(test),
-  inquireVersions,
-  setReleaseVersion,
-  releaseStepTask(publish),
-  commitReleaseVersion,
-  setNextVersion,
-  commitNextVersion
-)
-
 val common = Seq(
   scalaVersion := "2.12.6",
-  organization := "com.ovoenergy",
+  organization := "com.ovoenergy.effect",
   organizationName := "Ovo Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
   bintrayRepository := "maven",
   bintrayOrganization := Some("ovotech"),
-  releaseCommitMessage := s"Setting version of ${name.value} to ${version.value} [ci skip]",
-  releaseProcess := bintrayReleaseProcess,
+  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   scalacOptions ++= Seq(
     "-unchecked",
     "-deprecation",
@@ -39,7 +23,8 @@ val common = Seq(
 )
 
 lazy val root = (project in file("."))
-  .settings(common :+ (name := "effect-util"))
+  .settings(common :+ (name := "effect-utilities"))
+  .aggregate(logging)
 
 val logging = project
   .settings(common)
