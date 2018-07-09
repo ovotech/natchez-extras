@@ -55,6 +55,8 @@ jobs:
           command: sbt test
       - *cache_save
 
+workflows:
+  version: 2
   master-build:
     jobs:
       - release:
