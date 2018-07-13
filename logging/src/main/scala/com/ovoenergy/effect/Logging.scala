@@ -1,10 +1,9 @@
 package com.ovoenergy.effect
 
-import cats.data.StateT
+import cats.FlatMap
 import cats.effect.Sync
-import cats.syntax.flatMap._
-import cats.{Applicative, FlatMap}
 import com.typesafe.scalalogging.LazyLogging
+import cats.syntax.flatMap._
 import org.slf4j.MDC
 
 import scala.language.higherKinds
@@ -57,12 +56,6 @@ object Logging {
       message.tags.keys.foreach(MDC.remove)
     }
   }
-
-  /**
-    * Lift logging for an F with logging into logging for a StateT[F, S, A]
-    */
-  implicit def stateTLogging[F[_]: Logging: Applicative, S]: Logging[StateT[F, S, ?]] =
-    (what: Log) => StateT.liftF(Logging[F].log(what))
 
   /**
     * Syntax for attaching logging to an effect -

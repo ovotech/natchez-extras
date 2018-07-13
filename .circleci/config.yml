@@ -11,14 +11,6 @@ docker_sbt: &docker_sbt
   environment:
     JVM_OPTS: -Xmx3200m
 
-determine_subproject: &determine_subproject
-  run:
-    command: |
-      version=`git describe --always | grep -Po '[0-9\.-]+'`
-      project=`git describe --always | grep -Po '^\S+(?=/)'`
-      echo "export VERSION=${version}" >> $BASH_ENV
-      echo "export PROJECT=${project}" >> $BASH_ENV
-
 cache_save: &cache_save
   save_cache:
     paths:
@@ -33,16 +25,14 @@ cache_restore: &cache_restore
       - v1-{{ checksum "build.sbt" }}
       - v1-
 jobs:
-
   release:
     <<: *docker_sbt
     steps:
       - checkout
       - *cache_restore
-      - *determine_subproject
       - run:
           name: Release
-          command: sbt ';project '${PROJECT}' ;set version := "'${VERSION}'"; test; publish'
+          command: sbt ';set version in ThisBuild := "'`git describe`'"; test; publish'
       - *cache_save
 
   test:
@@ -51,7 +41,7 @@ jobs:
       - checkout
       - *cache_restore
       - run:
-          name: Test all subprojects
+          name: Test
           command: sbt test
       - *cache_save
 
@@ -60,8 +50,7 @@ workflows:
   master-build:
     jobs:
       - release:
-          filters: {tags: {only: /\S+\/([0-9\.-]+)/}}
-
+          filters: {tags: {only: /([0-9\.]+)/}}
   pr-build:
     jobs:
       - test:
