@@ -50,7 +50,7 @@ workflows:
   master-build:
     jobs:
       - release:
-          filters: {tags: {only: /([0-9\.]+)/}}
+          filters: {tags: {only: "/([0-9\\.]+)/"}}
   pr-build:
     jobs:
       - test:
