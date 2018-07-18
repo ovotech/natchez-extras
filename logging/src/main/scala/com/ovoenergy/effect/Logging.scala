@@ -1,10 +1,10 @@
 package com.ovoenergy.effect
 
+import cats.{Applicative, FlatMap}
 import cats.data.StateT
 import cats.effect.Sync
-import cats.syntax.flatMap._
-import cats.{Applicative, FlatMap}
 import com.typesafe.scalalogging.LazyLogging
+import cats.syntax.flatMap._
 import org.slf4j.MDC
 
 import scala.language.higherKinds
