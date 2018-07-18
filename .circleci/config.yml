@@ -33,9 +33,9 @@ jobs:
       - run:
           name: Release
           command: |
-          set -e
-          tags=`git describe --tags`
-          sbt ';set version in ThisBuild := "'${tags}'"; test; publish'
+            set -e
+            tags=`git describe --tags`
+            sbt ';set version in ThisBuild := "'${tags}'"; test; publish'
       - *cache_save
 
   test:
