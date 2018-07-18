@@ -32,7 +32,10 @@ jobs:
       - *cache_restore
       - run:
           name: Release
-          command: sbt ';set version in ThisBuild := "'`git describe`'"; test; publish'
+          command: |
+          set -e
+          tags=`git describe --tags`
+          sbt ';set version in ThisBuild := "'${tags}'"; test; publish'
       - *cache_save
 
   test:
