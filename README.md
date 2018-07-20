@@ -1,6 +1,6 @@
-# effect-util
+# effect-utils
 
- ![Download](https://api.bintray.com/packages/ovotech/maven/current-time/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/ovotech/maven/logging/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
 
 This repository consists of a number of type classes which add behaviours to a generic `F[_]` type in your cats-effect projects.
 Each type class will be deployed to bintray as an independent jar to minimise transitive dependency issues if you only
