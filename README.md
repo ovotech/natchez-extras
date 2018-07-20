@@ -9,5 +9,5 @@ for details of how to choose a version number.
 
 | Module    | Description                                | Artifact    | Version
 ------------|--------------------------------------------|-------------|--------------------
-CurrentTime | wraps `ZonedDateTime.now` within an effect | "com.ovoenergy.effect" % "current-time" |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/current-time/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
-Logging     | wraps logback calls within an effect       | "com.ovoenergy.effect" % "logging"      |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/logging/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
+CurrentTime | wraps `ZonedDateTime.now` into an `F[_]` | "com.ovoenergy.effect" % "current-time" |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/current-time/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
+Logging     | wraps logback calls into an `F[_]`       | "com.ovoenergy.effect" % "logging"      |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/logging/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
