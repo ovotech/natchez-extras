@@ -4,4 +4,7 @@ This repository consists of a number of type classes which add behaviours to a g
 Each type class will be deployed to bintray as an independent jar to minimise transitive dependency issues if you only
 want to use some of the library.
 
-This README is going to look a bit odd until I actually fill in the components, please bear with me.
+| Module    | Description                                | Download link
+------------|--------------------------------------------|--------------------
+CurrentTime | wraps `ZonedDateTime.now` within an effect |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/current-time/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
+Logging     | wraps logback calls within an effect       |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/logging/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)
