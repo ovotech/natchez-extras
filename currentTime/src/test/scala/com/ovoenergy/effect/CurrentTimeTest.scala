@@ -9,14 +9,14 @@ import org.scalatest.{Matchers, WordSpec}
 
 class CurrentTimeTest extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
 
-  val Z: ZoneId = ZoneId.of("Z")
+  val z: ZoneId = ZoneId.of("Z")
   implicit val order: Ordering[ZonedDateTime] = _.compareTo(_)
 
   "CurrentTime instance" should {
     "Return the given time in UTC when using the fixed instance" in {
       forAll { long: Long =>
         val time = Instant.ofEpochMilli(long)
-        CurrentTime.fixed[Id](time).now shouldEqual time.atZone(Z)
+        CurrentTime.fixed[Id](time).now shouldEqual time.atZone(z)
       }
     }
   }
@@ -24,7 +24,7 @@ class CurrentTimeTest extends WordSpec with Matchers with GeneratorDrivenPropert
   "CurrentTime sync instance" should {
 
     "Return a time in UTC" in {
-      CurrentTime.syncClock[IO].now.unsafeRunSync.getZone shouldBe Z
+      CurrentTime.syncClock[IO].now.unsafeRunSync.getZone shouldBe z
     }
 
     "Return increasing times" in {
