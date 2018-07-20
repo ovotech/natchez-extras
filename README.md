@@ -4,6 +4,9 @@ This repository consists of a number of type classes which add behaviours to a g
 Each type class will be deployed to bintray as an independent jar to minimise transitive dependency issues if you only
 want to use some of the library.
 
+To create a release, push a tag to master of the format `x.y.z`. See the [semantic versioning guide](https://semver.org/) 
+for details of how to choose a version number.
+
 | Module    | Description                                | Download link
 ------------|--------------------------------------------|--------------------
 CurrentTime | wraps `ZonedDateTime.now` within an effect |  [ ![Download](https://api.bintray.com/packages/ovotech/maven/current-time/images/download.svg) ](https://bintray.com/ovotech/maven/logging/_latestVersion)

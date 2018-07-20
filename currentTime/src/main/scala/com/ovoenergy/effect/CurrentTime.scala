@@ -1,8 +1,10 @@
 package com.ovoenergy.effect
 
-import java.time.{ZonedDateTime, Clock => JavaClock}
+import java.time.{Instant, ZonedDateTime, Clock => JavaClock}
 
+import cats.Applicative
 import cats.effect.Sync
+import cats.syntax.applicative._
 
 /**
   * A referentially transparent clock
@@ -26,5 +28,13 @@ object CurrentTime {
     */
   def syncClock[F[_]: Sync]: CurrentTime[F] = new CurrentTime[F] {
     override def now = Sync[F].delay(ZonedDateTime.now(javaClock))
+  }
+
+  /**
+    * Instance that always returns the same time,
+    * so only needs F to be an applicative - useful for tests
+    */
+  def fixed[F[_] : Applicative](instant: Instant): CurrentTime[F] =  new CurrentTime[F] {
+    override def now: F[ZonedDateTime] = instant.atZone(javaClock.getZone).pure[F]
   }
 }
