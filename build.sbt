@@ -25,7 +25,7 @@ val common = Seq(
 
 lazy val root = (project in file("."))
   .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, currentTime)
+  .aggregate(logging, currentTime, delay)
 
 lazy val currentTime = project
   .settings(common :+ (name := "current-time"))
@@ -39,3 +39,10 @@ lazy val logging = project
     )
   )
 
+lazy val delay = project
+  .settings(common :+ (name := "delay"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-core" % "0.10.5"
+    )
+  )
