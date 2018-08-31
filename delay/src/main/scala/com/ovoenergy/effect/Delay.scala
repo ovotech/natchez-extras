@@ -39,5 +39,5 @@ object Delay {
         } yield delayed
     }
 
-  def apply[F[_]: Delay]: Delay[F] = implicitly[Delay[F]]
+  def apply[F[_]: Delay]: Delay[F] = implicitly
 }

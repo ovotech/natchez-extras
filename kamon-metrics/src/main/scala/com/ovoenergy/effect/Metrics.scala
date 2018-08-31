@@ -19,8 +19,7 @@ object Metrics {
 
   case class Metric(name: String, tags: Map[String, String])
 
-  def apply[F[_]: Metrics]: Metrics[F] =
-    implicitly
+  def apply[F[_]: Metrics]: Metrics[F] = implicitly
 
   /**
    * An instance of metrics for a Sync[F] which wraps the underlying calls
