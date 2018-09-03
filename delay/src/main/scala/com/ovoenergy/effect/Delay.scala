@@ -1,6 +1,5 @@
 package com.ovoenergy.effect
 
-import cats.FlatMap
 import cats.effect.Async
 import cats.syntax.applicative._
 import fs2.{Pipe, Scheduler, Stream}
@@ -21,7 +20,7 @@ trait Delay[F[_]] {
 object Delay {
   type StreamDelay[F[_]] = Stream[F, Scheduler]
 
-  implicit def AsyncDelay[F[_]: Async: FlatMap](
+  implicit def AsyncDelay[F[_]: Async](
     implicit scheduler: Scheduler,
     ec: ExecutionContext
   ): Delay[F] =
