@@ -27,16 +27,10 @@ object Delay {
   ): Delay[F] =
     new Delay[F] {
       override def delay[A](duration: FiniteDuration): Pipe[F, A, A] =
-        stream =>
-          for {
-            element <- stream
-            delayed <- scheduler.delay(Stream.eval(element.pure[F]), duration)
-          } yield delayed
+        _.flatMap(element => scheduler.delay(Stream.eval(element.pure[F]), duration))
 
       override def sleep_[A](duration: FiniteDuration): Stream[F, Nothing] =
-        for {
-          delayed <- scheduler.sleep_(duration)
-        } yield delayed
+        Stream.eval(().pure[F]).through(delay(duration)).drain
     }
 
   def apply[F[_]: Delay]: Delay[F] = implicitly
