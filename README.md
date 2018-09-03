@@ -9,7 +9,9 @@ want to use some of the library.
 To create a release, push a tag to master of the format `x.y.z`. See the [semantic versioning guide](https://semver.org/) 
 for details of how to choose a version number.
 
-| Module    | Description                                | Artifact
-------------|--------------------------------------------|-------------
-CurrentTime | wraps `ZonedDateTime.now` into an `F[_]`   | "com.ovoenergy.effect" % "current-time"
-Logging     | wraps logback calls into an `F[_]`         | "com.ovoenergy.effect" % "logging"
+| Module        | Description                                 | Artifact
+------------ |-------------------------------------------- |-------------
+CurrentTime  | wraps `ZonedDateTime.now` into an `F[_]`    | "com.ovoenergy.effect" % "current-time"
+Logging      | wraps logback calls into an `F[_]`          | "com.ovoenergy.effect" % "logging"
+Delay        | provides delay for fs2 stream over an `F[_]`| "com.ovoenergy.effect" % "delay"
+KamonMetrics | wraps kamon metrics calls into an `F[_]`    | "com.ovoenergy.effect" % "kamon-metrics"

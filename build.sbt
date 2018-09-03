@@ -25,9 +25,10 @@ val common = Seq(
 
 lazy val root = (project in file("."))
   .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, currentTime)
+  .aggregate(logging, currentTime, delay, kamonMetrics)
 
 lazy val currentTime = project
+  .in(file("current-time"))
   .settings(common :+ (name := "current-time"))
 
 lazy val logging = project
@@ -39,3 +40,19 @@ lazy val logging = project
     )
   )
 
+lazy val delay = project
+  .settings(common :+ (name := "delay"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-core" % "0.10.5"
+    )
+  )
+
+lazy val kamonMetrics = project
+  .in(file("kamon-metrics"))
+  .settings(common :+ (name := "kamon-metrics"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.kamon" %% "kamon-core" % "0.6.7"
+    )
+  )
