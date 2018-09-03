@@ -24,11 +24,9 @@ object Metrics {
   /**
    * An instance of metrics for a Sync[F] which wraps the underlying calls
    */
-  //noinspection ConvertExpressionToSAM
-  def syncKamonMetrics[F[_]: Sync: FlatMap]: Metrics[F] = new Metrics[F] {
-    override def counter(metric: Metric): F[Long => F[Unit]] =
+  def syncKamonMetrics[F[_]: Sync: FlatMap]: Metrics[F] =
+    metric =>
       FlatMap[F].map(Sync[F].delay(Kamon.metrics.counter(metric.name, metric.tags)))(
         counter => times => Sync[F].delay(counter.increment(times))
-      )
-  }
+    )
 }
