@@ -31,8 +31,8 @@ object Logging {
     def tags: Tags
   }
 
-  case class Debug(of: String, tags: Tags                 = Map.empty) extends Log
-  case class Info(of: String, tags: Tags                  = Map.empty) extends Log
+  case class Debug(of: String, tags: Tags = Map.empty) extends Log
+  case class Info(of: String, tags: Tags = Map.empty) extends Log
   case class Error(of: Ior[String, Throwable], tags: Tags = Map.empty) extends Log
 
   object Error {
