@@ -37,8 +37,11 @@ object Logging {
 
   object Error {
     def apply(s: String): Error = Error(Ior.Left(s))
+    def apply(s: String, tags: Tags): Error = Error(Ior.Left(s), tags)
     def apply(t: Throwable): Error = Error(Ior.Right(t))
+    def apply(t: Throwable, tags: Tags): Error = Error(Ior.Right(t), tags)
     def apply(s: String, t: Throwable): Error = Error(Ior.Both(s, t))
+    def apply(s: String, t: Throwable, tags: Tags): Error = Error(Ior.Both(s, t), tags)
   }
 
   // syntax to summon an instance
