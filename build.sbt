@@ -13,6 +13,7 @@ val common = Seq(
     "utf8",
     "-feature",
     "-Xfatal-warnings",
+    "-Ypartial-unification",
     "-language:higherKinds"
   ),
   libraryDependencies ++= Seq(
