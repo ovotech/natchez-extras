@@ -3,10 +3,10 @@ package com.ovoenergy.effect
 import java.util.UUID
 
 import cats.data.{Ior, StateT}
-import cats.effect.Sync
+import cats.effect.{IO, Sync}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.{Applicative, FlatMap, Monad, Monoid}
+import cats.{Applicative, FlatMap, Monad, Monoid, ~>}
 import com.ovoenergy.effect.Logging.{Tags, TraceToken}
 import org.slf4j.{LoggerFactory, MDC}
 
@@ -41,10 +41,10 @@ trait Logging[F[_]] {
   def mdc: F[Map[String, String]]
 
   /**
-    * Add a key/value to the MDC
+    * Add key/value pairs to the MDC
     * that will become available in future calls to mdc
     */
-  def putMdc(key: String, value: String): F[Unit]
+  def putMdc(values: (String, String)*): F[Unit]
 
   /**
     * Log something,
@@ -63,6 +63,7 @@ object Logging {
 
   type Tags = Map[String, String]
   type Traced[F[_], A] = StateT[F, TraceContext, A]
+  type TraceIO[A] = Traced[IO, A]
 
   sealed trait Log
   case class Debug(of: String) extends Log
@@ -113,12 +114,19 @@ object Logging {
       def putToken(traceToken: TraceToken): Traced[F, Unit] =
         StateT.modify(_.copy(token = Some(traceToken)))
 
-      def putMdc(key: String, value: String): Traced[F, Unit] =
-        StateT.modify(ctx => ctx.copy(mdc = ctx.mdc.updated(key, value)))
+      def putMdc(values: (String, String)*): Traced[F, Unit] =
+        StateT.modify(ctx => ctx.copy(mdc = ctx.mdc ++ values.toMap))
 
       def log(message: Log, tags: Tags): Traced[F, Unit] =
         mdc.flatMapF(mdc => execLog(message, mdc ++ tags))
    }
+
+  /**
+    * Turn a Traced[F, A] into an F[A]
+    * by running it with an initial empty trace context
+    */
+  def dropTracing[F[_]: Monad]: Traced[F, ?] ~> F =
+    new (Traced[F, ?] ~> F) { def apply[A](t: Traced[F, A]): F[A] = t.runEmptyA }
 
   /**
     * Create an instance of logging with no tracing that will ignore any tracing calls
@@ -133,7 +141,7 @@ object Logging {
       def token: F[TraceToken] = newToken
       def putToken(traceToken: TraceToken): F[Unit] = F.unit
       def mdc: F[Map[String, String]] = F.pure(Map.empty)
-      def putMdc(key: String, value: String): F[Unit] = F.unit
+      def putMdc(values: (String, String)*): F[Unit] = F.unit
       def log(message: Log, tags: Tags): F[Unit] = execLog(message)
     }
 
