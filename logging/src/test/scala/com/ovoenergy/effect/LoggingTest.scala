@@ -28,7 +28,7 @@ class LoggingTest extends WordSpec with Matchers with Inspectors {
   "Tracing" should {
 
     "Store MDC info" in {
-      run(log.putMdc("foo" -> "bar") >> log.mdc).value shouldBe Map("foo" -> "bar")
+      run(log.putMdc("foo" -> "bar") >> log.mdc).value.get("foo") shouldBe Some("bar")
     }
 
     "Create a trace token if one is not set then use the same one thereafter" in {
@@ -46,13 +46,13 @@ class LoggingTest extends WordSpec with Matchers with Inspectors {
     "Include MDC info as a parameter to the log function" in {
       val log: Logging[TracedMdc] = tracedInstance(token.pure[MdcWriter], (_, m) => WriterT.tell(m.toList))
       val result = (log.putMdc("foo" -> "bar") >> log.log(Info("blah"))).runEmptyA.written.unsafeRunSync
-      result shouldBe List("foo" -> "bar")
+      result shouldBe List("foo" -> "bar", "traceToken" -> token.value)
     }
 
     "Overwrite any clashing MDC / logging tags" in {
       val log: Logging[TracedMdc] = tracedInstance(token.pure[MdcWriter], (_, m) => WriterT.tell(m.toList))
       val result = log.putMdc("foo" -> "bar") >> log.log(Info("blah"), Map("foo" -> "baz"))
-      result.runEmptyA.written.unsafeRunSync shouldBe List("foo" -> "baz")
+      result.runEmptyA.written.unsafeRunSync shouldBe List("foo" -> "baz", "traceToken" -> token.value)
     }
   }
 
