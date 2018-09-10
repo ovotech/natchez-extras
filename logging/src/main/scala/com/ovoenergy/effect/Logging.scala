@@ -109,7 +109,7 @@ object Logging {
         }
 
       def mdc: Traced[F, Tags] =
-        token.inspect(_.mdc)
+        token.transform { case (ctx, token) => (ctx, ctx.mdc.updated("traceToken", token.value)) }
 
       def putToken(traceToken: TraceToken): Traced[F, Unit] =
         StateT.modify(_.copy(token = Some(traceToken)))
