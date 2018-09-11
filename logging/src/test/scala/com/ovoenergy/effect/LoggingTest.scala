@@ -8,6 +8,8 @@ import cats.syntax.flatMap._
 import com.ovoenergy.effect.Logging.{Debug, Error, Info, Log, _}
 import org.scalatest.{Inspectors, Matchers, WordSpec}
 import cats.syntax.applicative._
+import cats.instances.option._
+import Logging._
 
 class LoggingTest extends WordSpec with Matchers with Inspectors {
 
@@ -28,14 +30,14 @@ class LoggingTest extends WordSpec with Matchers with Inspectors {
   "Tracing" should {
 
     "Store MDC info" in {
-      run(log.putMdc("foo" -> "bar") >> log.mdc).value.get("foo") shouldBe Some("bar")
+      run(putMdc("foo" -> "bar") >> mdc).value.get("foo") shouldBe Some("bar")
     }
 
     "Create a trace token if one is not set then use the same one thereafter" in {
         val result = run(
           for {
-            token1 <- log.token
-            token2 <- log.token
+            token1 <- Logging.token
+            token2 <- Logging.token
           } yield List(token1, token2)
         ).value
 
@@ -44,14 +46,14 @@ class LoggingTest extends WordSpec with Matchers with Inspectors {
     }
 
     "Include MDC info as a parameter to the log function" in {
-      val log: Logging[TracedMdc] = tracedInstance(token.pure[MdcWriter], (_, m) => WriterT.tell(m.toList))
-      val result = (log.putMdc("foo" -> "bar") >> log.log(Info("blah"))).runEmptyA.written.unsafeRunSync
+      implicit val log: Logging[TracedMdc] = tracedInstance(token.pure[MdcWriter], (_, m) => WriterT.tell(m.toList))
+      val result = (putMdc[TracedMdc]("foo" -> "bar") >> log.log(Info("blah"))).runEmptyA.written.unsafeRunSync
       result shouldBe List("foo" -> "bar", "traceToken" -> token.value)
     }
 
     "Overwrite any clashing MDC / logging tags" in {
-      val log: Logging[TracedMdc] = tracedInstance(token.pure[MdcWriter], (_, m) => WriterT.tell(m.toList))
-      val result = log.putMdc("foo" -> "bar") >> log.log(Info("blah"), Map("foo" -> "baz"))
+      implicit val log: Logging[TracedMdc] = tracedInstance(token.pure[MdcWriter], (_, m) => WriterT.tell(m.toList))
+      val result = putMdc[TracedMdc]("foo" -> "bar") >> log.log(Info("blah"), Map("foo" -> "baz"))
       result.runEmptyA.written.unsafeRunSync shouldBe List("foo" -> "baz", "traceToken" -> token.value)
     }
   }
