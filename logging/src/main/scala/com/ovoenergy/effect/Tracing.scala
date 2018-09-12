@@ -10,6 +10,11 @@ import cats.instances.option._
 import cats.syntax.flatMap._
 import com.ovoenergy.effect.Logging.Tags
 
+/**
+  * This type class abstracts away from a StateT essentially,
+  * providing functionality to get and set MDC info & trace tokens
+  * within a given effect type
+  */
 trait Tracing[F[_]] {
   def reset: F[Unit]
   def put(traceToken: TraceContext[Id]): F[Unit]

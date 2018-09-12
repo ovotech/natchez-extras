@@ -77,16 +77,9 @@ object Logging {
   }
 
   /**
-   * More syntax, but standalone functions this time
+   * More syntax, but a standalone function this time
    * to cut down on the Logging[F].log(Info(...)) boilerplate
    */
-  def info[F[_] : Logging](what: String)(tags: Tags = Map.empty): F[Unit] =
-    Logging[F].log(Info(what), tags)
-
-  def debug[F[_] : Logging](what: String)(tags: Tags = Map.empty): F[Unit] =
-    Logging[F].log(Debug(what), tags)
-
-  def error[F[_] : Logging](what: Throwable)(tags: Tags = Map.empty): F[Unit] =
-    Logging[F].log(Error(Ior.Right(what)), tags)
-
+  def log[F[_] : Logging](what: Log, tags: Tags = Map.empty): F[Unit] =
+    Logging[F].log(what, tags)
 }
