@@ -19,9 +19,15 @@ class MetricsTest extends WordSpec with Matchers {
 
         WriterT.liftF[Id, Map[Metric, List[Long]], Long => LogWriter[Unit]](writer)
       }
+
+      override def histogram(metric: Metric): LogWriter[Long => LogWriter[Unit]] = {
+        val writer: Long => LogWriter[Unit] = value => WriterT.tell(Map(metric -> List(value)))
+
+        WriterT.liftF[Id, Map[Metric, List[Long]], Long => LogWriter[Unit]](writer)
+      }
     }
 
-    "Pass through the right metrics to the type class" in {
+    "Pass through the right counter metrics to the type class" in {
       val metric = Metric("foo", tags = Map("bar" -> "baz"))
       val putValue = Metrics[LogWriter].counter(metric)
 
@@ -34,6 +40,21 @@ class MetricsTest extends WordSpec with Matchers {
 
       result.run._1 shouldEqual Map(
         metric -> List(1, 2, 3)
+      )
+    }
+
+    "Pass through the right histogram metrics to the type class" in {
+      val metric = Metric("his", tags = Map("tog" -> "ram"))
+      val histogram = Metrics[LogWriter].histogram(metric)
+
+      val result = for {
+        recordMe <- histogram
+        _        <- recordMe(1)
+        res      <- recordMe(2)
+      } yield res
+
+      result.run._1 shouldEqual Map(
+        metric -> List(1, 2)
       )
     }
   }

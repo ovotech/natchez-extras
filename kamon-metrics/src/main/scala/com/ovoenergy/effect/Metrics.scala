@@ -13,6 +13,7 @@ import scala.language.higherKinds
  */
 trait Metrics[F[_]] {
   def counter(metric: Metric): F[Long => F[Unit]]
+  def histogram(metric: Metric): F[Long => F[Unit]]
 }
 
 object Metrics {
@@ -24,9 +25,15 @@ object Metrics {
   /**
    * An instance of metrics for a Sync[F] which wraps the underlying calls
    */
-  def syncKamonMetrics[F[_]: Sync: FlatMap]: Metrics[F] =
-    metric =>
+  implicit def SyncMetrics[F[_]: Sync: FlatMap]: Metrics[F] = new Metrics[F] {
+    override def counter(metric: Metric): F[Long => F[Unit]] =
       FlatMap[F].map(Sync[F].delay(Kamon.metrics.counter(metric.name, metric.tags)))(
         counter => times => Sync[F].delay(counter.increment(times))
-    )
+      )
+
+    override def histogram(metric: Metric): F[Long => F[Unit]] =
+      FlatMap[F].map(Sync[F].delay(Kamon.metrics.histogram(metric.name, metric.tags)))(
+        histogram => duration => Sync[F].delay(histogram.record(duration))
+      )
+  }
 }
