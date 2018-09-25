@@ -25,7 +25,7 @@ object Metrics {
   /**
    * An instance of metrics for a Sync[F] which wraps the underlying calls
    */
-  implicit def syncMetrics[F[_]: Sync]: Metrics[F] = new Metrics[F] {
+  def syncKamonMetrics[F[_]: Sync]: Metrics[F] = new Metrics[F] {
     override def counter(metric: Metric): F[Long => F[Unit]] =
       Sync[F].delay(Kamon.metrics.counter(metric.name, metric.tags)).map(
         counter => times => Sync[F].delay(counter.increment(times))
