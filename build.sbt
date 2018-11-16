@@ -18,7 +18,7 @@ val common = Seq(
   ),
   libraryDependencies ++= Seq(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7"),
-    "org.typelevel" %% "cats-effect" % "0.10.1",
+    "org.typelevel" %% "cats-effect" % "1.0.0",
     "org.scalatest" %% "scalatest" % "3.0.5" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
@@ -26,11 +26,7 @@ val common = Seq(
 
 lazy val root = (project in file("."))
   .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, currentTime, delay, kamonMetrics)
-
-lazy val currentTime = project
-  .in(file("current-time"))
-  .settings(common :+ (name := "current-time"))
+  .aggregate(logging, kamonMetrics)
 
 lazy val logging = project
   .settings(common :+ (name := "logging"))
@@ -38,14 +34,6 @@ lazy val logging = project
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
-    )
-  )
-
-lazy val delay = project
-  .settings(common :+ (name := "delay"))
-  .settings(
-    libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % "0.10.5"
     )
   )
 

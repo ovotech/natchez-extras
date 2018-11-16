@@ -11,7 +11,5 @@ for details of how to choose a version number.
 
 | Module        | Description                                 | Artifact
 ------------ |-------------------------------------------- |-------------
-CurrentTime  | wraps `ZonedDateTime.now` into an `F[_]`    | "com.ovoenergy.effect" % "current-time"
 Logging      | wraps logback calls into an `F[_]`          | "com.ovoenergy.effect" % "logging"
-Delay        | provides delay for fs2 stream over an `F[_]`| "com.ovoenergy.effect" % "delay"
 KamonMetrics | wraps kamon metrics calls into an `F[_]`    | "com.ovoenergy.effect" % "kamon-metrics"
