@@ -27,12 +27,12 @@ object Metrics {
    */
   def syncKamonMetrics[F[_]: Sync]: Metrics[F] = new Metrics[F] {
     def counter(metric: Metric): F[Long => F[Unit]] =
-      Sync[F].delay(Kamon.metrics.counter(metric.name, metric.tags)).map(
+      Sync[F].delay(Kamon.counter(metric.name).refine(metric.tags)).map(
         counter => times => Sync[F].delay(counter.increment(times))
       )
 
     def histogram(metric: Metric): F[Long => F[Unit]] =
-      Sync[F].delay(Kamon.metrics.histogram(metric.name, metric.tags)).map(
+      Sync[F].delay(Kamon.histogram(metric.name).refine(metric.tags)).map(
         histogram => duration => Sync[F].delay(histogram.record(duration))
       )
   }

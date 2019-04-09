@@ -42,6 +42,6 @@ lazy val kamonMetrics = project
   .settings(common :+ (name := "kamon-metrics"))
   .settings(
     libraryDependencies ++= Seq(
-      "io.kamon" %% "kamon-core" % "0.6.7"
+      "io.kamon" %% "kamon-core" % "1.1.0"
     )
   )
