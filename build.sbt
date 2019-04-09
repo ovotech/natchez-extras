@@ -17,9 +17,9 @@ val common = Seq(
     "-language:higherKinds"
   ),
   libraryDependencies ++= Seq(
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7"),
+    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
     "org.typelevel" %% "cats-effect" % "1.0.0",
-    "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+    "org.scalatest" %% "scalatest" % "3.0.7" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
 )
