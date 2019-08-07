@@ -27,9 +27,16 @@ class DatadogTest extends WordSpec with Matchers with Checkers {
 
     "Never submit double underscores to datadog" in {
       check(
-        Prop.forAll(metric) { str =>
-          !serialiseCounter(str, 1).matches(".*?__.*?") &&
-          !serialiseHistogram(str, 1).matches(".*?__.*?")
+        Prop.forAll(string) { str =>
+          !filterChars(str).matches(".*?__.*?")
+        }
+      )
+    }
+
+    "Allow through dots" in {
+      check(
+        Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) { case (pref, suf) =>
+          filterChars(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
         }
       )
     }

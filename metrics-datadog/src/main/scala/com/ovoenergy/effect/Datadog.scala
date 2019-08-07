@@ -24,7 +24,7 @@ object Datadog {
    * and not contain any chars other than letters, numbers and underscores
    */
   private[effect] def filterChars(s: String): String =
-    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9]+", "_" )
+    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9\\.]+", "_" )
 
   private def serialiseTags(t: Map[String, String]): String = {
     val tagString = t.toList.map { case (k, v) => s"${filterChars(k)}:${filterChars(v)}"}.mkString(",")
