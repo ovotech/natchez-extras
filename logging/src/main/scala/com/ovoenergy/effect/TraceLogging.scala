@@ -1,8 +1,10 @@
 package com.ovoenergy.effect
+
 import cats.FlatMap
 import cats.syntax.flatMap._
 import com.ovoenergy.effect.Logging.{Log, Tags}
 import com.ovoenergy.effect.Tracing.mdc
+import Logging.Log
 
 /**
   * Syntax for automatically pulling tracing information into logs

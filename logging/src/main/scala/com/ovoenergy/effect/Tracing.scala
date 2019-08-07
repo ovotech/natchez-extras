@@ -1,14 +1,15 @@
 package com.ovoenergy.effect
+
 import java.util.UUID
 
 import cats.data.StateT
 import cats.effect.{IO, Sync}
 import cats.{FlatMap, Functor, Id, Monad, Monoid, MonoidK, ~>}
-import com.ovoenergy.effect.Tracing.TraceContext
+import Tracing.TraceContext
 import cats.syntax.functor._
 import cats.instances.option._
 import cats.syntax.flatMap._
-import com.ovoenergy.effect.Logging.Tags
+import Logging.Tags
 
 /**
   * This type class abstracts away from a StateT essentially,
