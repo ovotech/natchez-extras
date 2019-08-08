@@ -1,5 +1,5 @@
 val common = Seq(
-  scalaVersion := "2.12.7",
+  scalaVersion := "2.12.9",
   organization := "com.ovoenergy.effect",
   organizationName := "Ovo Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -19,7 +19,7 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
     "org.typelevel" %% "cats-core" % "1.4.0",
-    "org.typelevel" %% "cats-effect" % "1.3.1",
+    "org.typelevel" %% "cats-effect" % "1.4.0",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
