@@ -1,5 +1,5 @@
 val common = Seq(
-  scalaVersion := "2.12.6",
+  scalaVersion := "2.12.9",
   organization := "com.ovoenergy.effect",
   organizationName := "Ovo Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -18,15 +18,16 @@ val common = Seq(
   ),
   libraryDependencies ++= Seq(
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
-    "org.typelevel" %% "cats-effect" % "1.2.0",
-    "org.scalatest" %% "scalatest" % "3.0.7" % "test",
+    "org.typelevel" %% "cats-core" % "1.4.0",
+    "org.typelevel" %% "cats-effect" % "1.4.0",
+    "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
 )
 
 lazy val root = (project in file("."))
   .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, kamonMetrics)
+  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics)
 
 lazy val logging = project
   .settings(common :+ (name := "logging"))
@@ -37,11 +38,27 @@ lazy val logging = project
     )
   )
 
+lazy val metricsCommon = project
+  .in(file("metrics-common")).settings(common :+ (name := "metrics-common"))
+
 lazy val kamonMetrics = project
-  .in(file("kamon-metrics"))
+  .in(file("metrics-kamon"))
   .settings(common :+ (name := "kamon-metrics"))
+  .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
       "io.kamon" %% "kamon-core" % "1.1.0"
+    )
+  )
+
+val fs2Version = "1.0.5"
+lazy val datadogMetrics = project
+  .in(file("metrics-datadog"))
+  .settings(common :+ (name := "datadog-metrics"))
+  .dependsOn(metricsCommon)
+  .settings(
+    libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-core" % fs2Version,
+      "co.fs2" %% "fs2-io" % fs2Version,
     )
   )

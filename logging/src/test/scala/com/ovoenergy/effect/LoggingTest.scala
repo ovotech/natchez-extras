@@ -5,7 +5,7 @@ import cats.data.WriterT
 import cats.effect.IO
 import cats.instances.list._
 import cats.syntax.flatMap._
-import com.ovoenergy.effect.Logging._
+import Logging._
 import org.scalatest.{Inspectors, Matchers, WordSpec}
 
 class LoggingTest extends WordSpec with Matchers with Inspectors {

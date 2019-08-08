@@ -5,7 +5,7 @@ import cats.data.Ior
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.ovoenergy.effect.Logging.Tags
+import Logging.Tags
 import org.slf4j.{LoggerFactory, MDC}
 
 import scala.language.higherKinds

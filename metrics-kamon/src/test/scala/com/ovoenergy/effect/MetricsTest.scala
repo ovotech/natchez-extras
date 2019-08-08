@@ -4,7 +4,7 @@ import cats.Id
 import cats.data.WriterT
 import cats.instances.list._
 import cats.instances.map._
-import com.ovoenergy.effect.Metrics.Metric
+import Metrics.Metric
 import org.scalatest.{Matchers, WordSpec}
 
 class MetricsTest extends WordSpec with Matchers {
@@ -13,7 +13,7 @@ class MetricsTest extends WordSpec with Matchers {
 
     type LogWriter[A] = WriterT[Id, Map[Metric, List[Long]], A]
 
-    implicit val testMetrics = new Metrics[LogWriter] {
+    implicit val testMetrics: Metrics[LogWriter] = new Metrics[LogWriter] {
       override def counter(metric: Metric): LogWriter[Long => LogWriter[Unit]] = {
         val writer: Long => LogWriter[Unit] = value => WriterT.tell(Map(metric -> List(value)))
 

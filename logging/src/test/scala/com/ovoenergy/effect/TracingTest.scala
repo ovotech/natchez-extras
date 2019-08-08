@@ -2,7 +2,7 @@ package com.ovoenergy.effect
 
 import cats.effect.IO
 import cats.syntax.flatMap._
-import com.ovoenergy.effect.Tracing.{TraceIO, TraceToken, _}
+import Tracing.{TraceIO, TraceToken, _}
 import org.scalatest.{Inspectors, Matchers, WordSpec}
 
 class TracingTest extends WordSpec with Matchers with Inspectors {
