@@ -23,19 +23,26 @@ object Datadog {
    * Datadog enforces all metrics must start with a letter
    * and not contain any chars other than letters, numbers and underscores
    */
-  private[effect] def filterChars(s: String): String =
+  private[effect] def filterName(s: String): String =
     s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9\\.]+", "_" )
 
+  /**
+   * More lenient filtering for tag values,
+   * we allow alpha numeric characters, slashes, hyphens and numbers
+   */
+  private[effect] def filterValue(s: String): String =
+    s.replaceAll("[^A-Za-z0-9\\./\\-]+", "_" )
+
   private def serialiseTags(t: Map[String, String]): String = {
-    val tagString = t.toList.map { case (k, v) => s"${filterChars(k)}:${filterChars(v)}"}.mkString(",")
+    val tagString = t.toList.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}"}.mkString(",")
     if (tagString.nonEmpty) s"|#$tagString" else ""
   }
 
   private[effect] def serialiseCounter(m: Metric, value: Long): String =
-    s"${filterChars(m.name)}:$value|c${serialiseTags(m.tags)}"
+    s"${filterName(m.name)}:$value|c${serialiseTags(m.tags)}"
 
   private[effect] def serialiseHistogram(m: Metric, value: Long): String =
-    s"${filterChars(m.name)}:$value|h|@1.0${serialiseTags(m.tags)}"
+    s"${filterName(m.name)}:$value|h|@1.0${serialiseTags(m.tags)}"
 
   private[effect] def applyConfig(m: Metric, config: Config): Metric =
     Metric((config.metricPrefix.toList :+ m.name).mkString("."), config.globalTags ++ m.tags)
