@@ -28,7 +28,7 @@ class DatadogTest extends WordSpec with Matchers with Checkers {
     "Never submit double underscores to datadog" in {
       check(
         Prop.forAll(string) { str =>
-          !filterChars(str).matches(".*?__.*?")
+          !filterName(str).matches(".*?__.*?")
         }
       )
     }
@@ -36,9 +36,13 @@ class DatadogTest extends WordSpec with Matchers with Checkers {
     "Allow through dots" in {
       check(
         Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) { case (pref, suf) =>
-          filterChars(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
+          filterName(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
         }
       )
+    }
+
+    "Allow numbers, hyphens and slashes for tag values" in {
+      filterValue("/12412-1231") shouldBe "/12412-1231"
     }
 
     "Generate correct counters and histograms with no tags" in {
@@ -53,7 +57,7 @@ class DatadogTest extends WordSpec with Matchers with Checkers {
     "Generate correct counters & histograms with tags" in {
       check(
         Prop.forAll(stringTags.suchThat(_.nonEmpty)) { tags =>
-          val exp = tags.map { case (k, v) => s"${filterChars(k)}:${filterChars(v)}"}.mkString(",")
+          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}"}.mkString(",")
           serialiseHistogram(Metric("foo", tags), 1) == s"foo:1|h|@1.0|#$exp" &&
           serialiseCounter(Metric("foo", tags), 1) == s"foo:1|c|#$exp"
         }
