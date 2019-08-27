@@ -38,7 +38,7 @@ object SpanIdentifiers {
       randomAbsLong,
       Sync[F].pure(None),
       randomUUID
-      ).mapN(SpanIdentifiers.apply)
+    ).mapN(SpanIdentifiers.apply)
 
   /**
    * Create span identifiers that identify a new child span of the one identified by the provided ids
@@ -52,13 +52,15 @@ object SpanIdentifiers {
    * this will always succeed even if headers are missing because
    * partial data (i.e. just a trace token) is still useful to us
    */
-  def fromKernel[F[_]: Sync](k: Kernel): F[SpanIdentifiers] =
+  def fromKernel[F[_]: Sync](rawKernel: Kernel): F[SpanIdentifiers] = {
+    val kernel = rawKernel.copy(toHeaders = rawKernel.toHeaders.map { case (k, v) => k.toLowerCase -> v })
     (
-      longHeader(k, "X-Trace-Id").getOrElseF(randomAbsLong),
+      longHeader(kernel, "x-trace-id").getOrElseF(randomAbsLong),
       randomAbsLong,
-      longHeader(k, "X-Parent-Id").value,
-      stringHeader(k, "X-Trace-Token").getOrElseF(randomUUID),
-      ).mapN(SpanIdentifiers.apply)
+      longHeader(kernel, "x-parent-id").value,
+      stringHeader(kernel, "x-trace-token").getOrElseF(randomUUID),
+    ).mapN(SpanIdentifiers.apply)
+  }
 
   def toKernel(ids: SpanIdentifiers): Kernel =
       Kernel(

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.data.StateT
 import cats.effect.{IO, Sync}
-import cats.{FlatMap, Functor, Id, Monad, Monoid, MonoidK, ~>}
+import cats.{~>, FlatMap, Functor, Id, Monad, Monoid, MonoidK}
 import Tracing.TraceContext
 import cats.syntax.functor._
 import cats.instances.option._
@@ -12,10 +12,10 @@ import cats.syntax.flatMap._
 import Logging.Tags
 
 /**
-  * This type class abstracts away from a StateT essentially,
-  * providing functionality to get and set MDC info & trace tokens
-  * within a given effect type
-  */
+ * This type class abstracts away from a StateT essentially,
+ * providing functionality to get and set MDC info & trace tokens
+ * within a given effect type
+ */
 trait Tracing[F[_]] {
   def reset: F[Unit]
   def put(traceToken: TraceContext[Id]): F[Unit]
@@ -30,10 +30,10 @@ object Tracing {
   case class TraceToken(value: String) extends AnyVal
   case class TraceContext[G[_]](token: G[TraceToken], mdc: Map[String, String])
 
-  def apply[F[_] : Tracing]: Tracing[F] = implicitly
+  def apply[F[_]: Tracing]: Tracing[F] = implicitly
 
   object TraceContext {
-    implicit def monoid[G[_] : MonoidK]: Monoid[TraceContext[G]] =
+    implicit def monoid[G[_]: MonoidK]: Monoid[TraceContext[G]] =
       new Monoid[TraceContext[G]] {
         def empty =
           TraceContext(MonoidK[G].empty, Map.empty)
@@ -66,29 +66,29 @@ object Tracing {
     }
 
   /**
-    * Turn a Traced[F, A] into an F[A]
-    * by running it with an initial empty trace context
-    */
+   * Turn a Traced[F, A] into an F[A]
+   * by running it with an initial empty trace context
+   */
   def dropTracing[F[_]: Monad]: Traced[F, ?] ~> F =
     new (Traced[F, ?] ~> F) { def apply[A](t: Traced[F, A]): F[A] = t.runEmptyA }
 
   /**
-    * The following functions are syntax sugar for various operations on the trace context
-    * most notably trace, which takes a function requiring tags and provides them..
-    * useful for logging
-    */
-  def token[F[_] : Tracing : Functor]: F[TraceToken] =
+   * The following functions are syntax sugar for various operations on the trace context
+   * most notably trace, which takes a function requiring tags and provides them..
+   * useful for logging
+   */
+  def token[F[_]: Tracing: Functor]: F[TraceToken] =
     Tracing[F].get.map(_.token)
 
-  def putToken[F[_] : Tracing : Monad](token: TraceToken): F[Unit] =
+  def putToken[F[_]: Tracing: Monad](token: TraceToken): F[Unit] =
     Tracing[F].get.flatMap(c => Tracing[F].put(c.copy[Id](token = token)))
 
-  def mdc[F[_] : Tracing: Functor]: F[Tags] =
+  def mdc[F[_]: Tracing: Functor]: F[Tags] =
     Tracing[F].get.map(c => c.mdc.updated("traceToken", c.token.value))
 
   def trace[F[_]: FlatMap](fn: Tags => F[Unit])(implicit t: Tracing[Traced[F, ?]]): Traced[F, Unit] =
     mdc[Traced[F, ?]].flatMapF(fn)
 
-  def putMdc[F[_] : Tracing : Monad](tags: (String, String)*): F[Unit] =
+  def putMdc[F[_]: Tracing: Monad](tags: (String, String)*): F[Unit] =
     Tracing[F].get.flatMap(c => Tracing[F].put(c.copy(mdc = c.mdc ++ tags.toMap)))
 }

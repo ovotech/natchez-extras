@@ -24,17 +24,17 @@ object Datadog {
    * and not contain any chars other than letters, numbers and underscores
    */
   private[effect] def filterName(s: String): String =
-    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9\\.]+", "_" )
+    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9\\.]+", "_")
 
   /**
    * More lenient filtering for tag values,
    * we allow alpha numeric characters, slashes, hyphens and numbers
    */
   private[effect] def filterValue(s: String): String =
-    s.replaceAll("[^A-Za-z0-9\\./\\-]+", "_" )
+    s.replaceAll("[^A-Za-z0-9\\./\\-]+", "_")
 
   private def serialiseTags(t: Map[String, String]): String = {
-    val tagString = t.toList.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}"}.mkString(",")
+    val tagString = t.toList.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}" }.mkString(",")
     if (tagString.nonEmpty) s"|#$tagString" else ""
   }
 

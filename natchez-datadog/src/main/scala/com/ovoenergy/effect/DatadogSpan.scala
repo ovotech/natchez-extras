@@ -11,7 +11,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import com.ovoenergy.effect.DatadogSpan.CompletedSpan
 import fs2.concurrent.Queue
-import io.circe.Encoder
+import io.circe.{Decoder, Encoder}
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import natchez.{Kernel, Span, TraceValue}
@@ -38,15 +38,7 @@ case class DatadogSpan[F[_]: Sync: Clock](
     DatadogSpan.fromParent(name, parent = this).widen
 
   def kernel: F[Kernel] =
-    Monad[F].pure(
-      Kernel(
-        Map(
-          "X-Parent-Id" -> ids.spanId.toString,
-          "X-Trace-Id" -> ids.traceId.toString,
-          "X-Trace-Token" -> ids.traceToken
-        )
-      )
-    )
+  Monad[F].pure(SpanIdentifiers.toKernel(ids))
 }
 
 object DatadogSpan {
@@ -69,11 +61,11 @@ object DatadogSpan {
 
   object CompletedSpan {
     implicit val encode: Encoder[CompletedSpan] = deriveEncoder
+    implicit val decode: Decoder[CompletedSpan] = deriveDecoder
   }
 
   /**
-   * Datadog docs:
-   * "optional Set this [error] value to 1 to indicate if an error occurred"
+   * Datadog docs: "Set this [error] value to 1 to indicate if an error occurred"
    */
   private def isError[A](exitCase: ExitCase[A]): Option[Int] =
     exitCase match {

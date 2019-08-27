@@ -2,10 +2,13 @@ package com.ovoenergy.effect
 
 import cats.Applicative
 import cats.effect._
+import cats.instances.option._
 import cats.syntax.functor._
+import cats.syntax.traverse._
 import com.ovoenergy.effect.DatadogSpan.CompletedSpan
 import fs2.concurrent.Queue
 import io.circe.{Encoder, Printer}
+import fs2._
 import natchez.{EntryPoint, Kernel, Span}
 import org.http4s.Method.PUT
 import org.http4s.circe.CirceInstances.builder
@@ -26,22 +29,31 @@ object Datadog {
     builder.withPrinter(Printer.noSpaces.copy(dropNullValues = true)).build.jsonEncoderOf[F, A]
 
   /**
+    * Submit one list of traces to DataDog
+    * we group them up by trace ID but I don't think this is actually required,
+    * in that you can submit new spans for existing traces across multiple requests
+    */
+  private def submit[F[_]: Sync](client: Client[F], traces: List[CompletedSpan]): F[Unit] = {
+    val grouped = traces.groupBy(_.traceId).values.toList
+    val req = Request[F](uri = agentEndpoint, method = PUT).withEntity(grouped)
+    client.status(req).as(())
+  }
+
+  /**
    * Process to poll the queue and submit items to Datadog periodically,
-   * either every 5 items or every 10 seconds, doing this in here is perhaps a bit cheeky
+   * either every 5 items or every 10 seconds, doing this in here is perhaps a bit cheeky.
+   * We use Stream.bracket to ensure any dequeued events will definitely be submitted
    */
-  def submitter[F[_]: Concurrent: Timer](
+  private def submitter[F[_]: Concurrent: Timer](
     http: Client[F],
     queue: Queue[F, CompletedSpan]
   ): Resource[F, Unit] =
     Resource.make(
       Concurrent[F].start(
-        queue.dequeue
-          .groupWithin(5, 5.seconds)
-          .evalMap { traces =>
-            val grouped = traces.toList.groupBy(_.traceId).values.toList
-            val req = Request[F](uri = agentEndpoint, method = PUT).withEntity(grouped)
-            http.status(req).as(())
-          }.compile.drain
+        Stream.bracket(
+          queue.tryDequeueChunk1(maxSize = 100))(
+          _.traverse(chunk => submit(http, chunk.toList)).as(())
+        ).repeat.debounce(0.5.seconds).compile.drain
       )
     )(_.cancel).as(())
 

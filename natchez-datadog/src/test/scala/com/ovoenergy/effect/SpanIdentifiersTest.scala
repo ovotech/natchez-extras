@@ -30,7 +30,7 @@ class SpanIdentifiersTest extends WordSpec with Matchers with Checkers {
         for {
           ids <- create[IO]
           kernel <- fromKernel[IO](SpanIdentifiers.toKernel(ids))
-        } yield (ids -> kernel)
+        } yield ids -> kernel
       ).unsafeRunSync
 
       kernel.traceId shouldBe original.traceId
@@ -42,5 +42,9 @@ class SpanIdentifiersTest extends WordSpec with Matchers with Checkers {
   "Succeed in converting from a kernel even if info is missing" in {
     fromKernel[IO](Kernel(Map.empty)).attempt.unsafeRunSync should matchPattern { case Right(_) => }
     fromKernel[IO](Kernel(Map("X-Trace-Token" -> "foo"))).unsafeRunSync.traceToken shouldBe "foo"
+  }
+
+  "Ignore header case when extracting info" in {
+    fromKernel[IO](Kernel(Map("x-TRACe-tokeN" -> "foo"))).unsafeRunSync.traceToken shouldBe "foo"
   }
 }

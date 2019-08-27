@@ -9,7 +9,9 @@ want to use some of the library.
 To create a release, push a tag to master of the format `x.y.z`. See the [semantic versioning guide](https://semver.org/) 
 for details of how to choose a version number.
 
-| Module        | Description                                 | Artifact
------------- |-------------------------------------------- |-------------
-Logging      | wraps logback calls into an `F[_]`          | "com.ovoenergy.effect" % "logging"
-KamonMetrics | wraps kamon metrics calls into an `F[_]`    | "com.ovoenergy.effect" % "kamon-metrics"
+| Module        | Description                                                                    | Artifact
+----------------|--------------------------------------------------------------------------------|-----------------------------------------
+Logging*        | wraps logback calls into an `F[_]`                                             | "com.ovoenergy.effect" % "logging"
+Kamon Metrics*  | wraps kamon metrics calls into an `F[_]`                                       | "com.ovoenergy.effect" % "kamon-metrics"
+Datadog Metrics | Submits metrics to Datadog over UDP with FS2                                   | "com.ovoenergy.effect" % "datadog-metrics"
+Natchez Datadog | Integrates [natchez](https://github.com/tpolecat/natchez) with the Datadog APM | "com.ovoenergy.effect" % "natchez-datadog"

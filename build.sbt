@@ -26,10 +26,6 @@ val common = Seq(
   )
 )
 
-lazy val root = (project in file("."))
-  .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics)
-
 lazy val logging = project
   .settings(common :+ (name := "logging"))
   .settings(
@@ -82,3 +78,7 @@ lazy val datadogMetrics = project
       "co.fs2" %% "fs2-io" % fs2Version,
     )
   )
+
+lazy val root = (project in file("."))
+  .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
+  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics, natchezDatadog)
