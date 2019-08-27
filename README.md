@@ -11,7 +11,7 @@ for details of how to choose a version number.
 
 | Module        | Description                                                                    | Artifact
 ----------------|--------------------------------------------------------------------------------|-----------------------------------------
-Logging*        | wraps logback calls into an `F[_]`                                             | "com.ovoenergy.effect" % "logging"
-Kamon Metrics*  | wraps kamon metrics calls into an `F[_]`                                       | "com.ovoenergy.effect" % "kamon-metrics"
+Logging         | wraps logback calls into an `F[_]`                                             | "com.ovoenergy.effect" % "logging"
+Kamon Metrics   | wraps kamon metrics calls into an `F[_]`                                       | "com.ovoenergy.effect" % "kamon-metrics"
 Datadog Metrics | Submits metrics to Datadog over UDP with FS2                                   | "com.ovoenergy.effect" % "datadog-metrics"
 Natchez Datadog | Integrates [natchez](https://github.com/tpolecat/natchez) with the Datadog APM | "com.ovoenergy.effect" % "natchez-datadog"
