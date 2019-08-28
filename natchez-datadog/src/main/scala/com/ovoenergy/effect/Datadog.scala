@@ -14,6 +14,7 @@ import org.http4s.Method.PUT
 import org.http4s.circe.CirceInstances.builder
 import org.http4s.client.Client
 import org.http4s.{EntityEncoder, Request, Uri}
+import cats.syntax.flatMap._
 
 import scala.concurrent.duration._
 
@@ -33,29 +34,29 @@ object Datadog {
     * we group them up by trace ID but I don't think this is actually required,
     * in that you can submit new spans for existing traces across multiple requests
     */
-  private def submit[F[_]: Sync](client: Client[F], traces: List[CompletedSpan]): F[Unit] = {
-    val grouped = traces.groupBy(_.traceId).values.toList
-    val req = Request[F](uri = agentEndpoint, method = PUT).withEntity(grouped)
-    client.status(req).as(())
-  }
+  private def submitOnce[F[_]: Sync](client: Client[F], queue: Queue[F, CompletedSpan]): Stream[F, Unit] =
+    Stream.bracket(queue.tryDequeueChunk1(maxSize = 1000)) { items =>
+      items.traverse { traces =>
+        val grouped = traces.toList.groupBy(_.traceId).values.toList
+        val req = Request[F](uri = agentEndpoint, method = PUT).withEntity(grouped)
+        client.status(req)
+      }.as(())
+    }.as(())
+
 
   /**
    * Process to poll the queue and submit items to Datadog periodically,
    * either every 5 items or every 10 seconds, doing this in here is perhaps a bit cheeky.
    * We use Stream.bracket to ensure any dequeued events will definitely be submitted
+   * and we do one final submit after cancelling the process to drain the queue
    */
   private def submitter[F[_]: Concurrent: Timer](
     http: Client[F],
     queue: Queue[F, CompletedSpan]
   ): Resource[F, Unit] =
     Resource.make(
-      Concurrent[F].start(
-        Stream.bracket(
-          queue.tryDequeueChunk1(maxSize = 100))(
-          _.traverse(chunk => submit(http, chunk.toList)).as(())
-        ).repeat.debounce(0.5.seconds).compile.drain
-      )
-    )(_.cancel).as(())
+      Concurrent[F].start(submitOnce(http, queue).repeat.debounce(0.5.seconds).compile.drain)
+    )(_.cancel >> submitOnce(http, queue).compile.drain).as(())
 
   /**
    * Produce an EntryPoint into a Datadog tracing context,

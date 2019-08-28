@@ -114,12 +114,15 @@ object DatadogSpan {
     name.takeWhile(_ != ':')
 
   def create[F[_]: Sync: Clock](
-    queue: Queue[F, CompletedSpan], name: String, service: String
+    queue: Queue[F, CompletedSpan],
+    name: String,
+    service: String,
+    meta: Map[String, TraceValue] = Map.empty
   )(identifiers: SpanIdentifiers): Resource[F, DatadogSpan[F]] =
     Resource.makeCase(
       for {
         start <- Clock[F].realTime(NANOSECONDS)
-        meta <- Ref.of[F, Map[String, TraceValue]](Map.empty)
+        meta <- Ref.of(meta)
       } yield DatadogSpan(
         name = nameValue(name),
         service = service,
@@ -132,7 +135,11 @@ object DatadogSpan {
     )(complete)
 
   def fromParent[F[_]: Sync: Clock](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =
-    Resource.liftF(SpanIdentifiers.child(parent.ids)).flatMap(create(parent.queue, name, parent.service))
+    for {
+      meta <- Resource.liftF(parent.meta.get)
+      ids <- Resource.liftF(SpanIdentifiers.child(parent.ids))
+      child <- create(parent.queue, name, parent.service, meta)(ids)
+    } yield child
 
   def fromKernel[F[_]: Sync: Clock](
     queue: Queue[F, CompletedSpan],

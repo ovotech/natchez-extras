@@ -58,5 +58,20 @@ class DatadogTest extends WordSpec with Matchers {
       spans.map(_.traceId).distinct.length shouldBe 1
       spans.map(_.spanId).distinct.length shouldBe 2
     }
+
+    "Inherit metadata into subspans but only at the time of creation" in {
+       val res = run(
+         _.root("bar:res").use { root =>
+            root.put("foo" -> "bar") >> root.span("sub").use(_.put("baz" -> "qux"))
+         }
+       ).unsafeRunSync
+
+      val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
+      val rootSpan = spans.find(_.name == "bar").get
+      val subSpan = spans.find(_.name == "sub").get
+
+      subSpan.meta.filterKeys(_ != "traceToken") shouldBe Map("foo" -> "bar", "baz" -> "qux")
+      rootSpan.meta.filterKeys(_ != "traceToken") shouldBe Map("foo" -> "bar")
+    }
   }
 }
