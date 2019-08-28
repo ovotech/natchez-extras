@@ -19,7 +19,7 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
-    "org.typelevel" %% "cats-core" % "1.4.0",
+    "org.typelevel" %% "cats-core" % "1.6.1",
     "org.typelevel" %% "cats-effect" % "1.4.0",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
