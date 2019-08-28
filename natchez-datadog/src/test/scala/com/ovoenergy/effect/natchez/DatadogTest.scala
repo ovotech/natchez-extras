@@ -1,4 +1,4 @@
-package com.ovoenergy.effect
+package com.ovoenergy.effect.natchez
 
 import cats.effect._
 import cats.effect.concurrent.Ref
@@ -6,17 +6,17 @@ import cats.instances.list._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import com.ovoenergy.effect.Datadog.entryPoint
-import com.ovoenergy.effect.DatadogSpan.CompletedSpan
+import com.ovoenergy.effect.natchez.Datadog.entryPoint
+import com.ovoenergy.effect.natchez.DatadogSpan.CompletedSpan
 import natchez.EntryPoint
 import natchez.TraceValue.StringValue
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.client.Client
 import org.http4s.{Request, Response}
 import org.scalatest.{Matchers, WordSpec}
-import scala.concurrent.duration._
 
 import scala.concurrent.ExecutionContext.global
+import scala.concurrent.duration._
 
 /**
   * This tests both the datadog span code itself and the submission of metrics over HTTP

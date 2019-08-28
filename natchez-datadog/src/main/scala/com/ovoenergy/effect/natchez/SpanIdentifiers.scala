@@ -1,12 +1,11 @@
-package com.ovoenergy.effect
+package com.ovoenergy.effect.natchez
 
 import java.util.UUID
 
-import cats.Monad
-import cats.syntax.apply._
-import cats.syntax.functor._
 import cats.data.OptionT
 import cats.effect.Sync
+import cats.syntax.apply._
+import cats.syntax.functor._
 import natchez.Kernel
 
 import scala.util.Try
@@ -63,11 +62,11 @@ object SpanIdentifiers {
   }
 
   def toKernel(ids: SpanIdentifiers): Kernel =
-      Kernel(
-        Map(
-          "X-Parent-Id" -> ids.spanId.toString,
-          "X-Trace-Id" -> ids.traceId.toString,
-          "X-Trace-Token" -> ids.traceToken
-        )
+    Kernel(
+      Map(
+        "X-Parent-Id" -> ids.spanId.toString,
+        "X-Trace-Id" -> ids.traceId.toString,
+        "X-Trace-Token" -> ids.traceToken
       )
+    )
 }

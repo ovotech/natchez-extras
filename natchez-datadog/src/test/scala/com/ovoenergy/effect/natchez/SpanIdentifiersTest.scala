@@ -1,7 +1,7 @@
-package com.ovoenergy.effect
+package com.ovoenergy.effect.natchez
 
 import cats.effect.IO
-import com.ovoenergy.effect.SpanIdentifiers._
+import com.ovoenergy.effect.natchez.SpanIdentifiers._
 import natchez.Kernel
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.scalacheck.Checkers

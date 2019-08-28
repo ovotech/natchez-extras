@@ -1,5 +1,4 @@
-package com.ovoenergy.effect
-
+package com.ovoenergy.effect.natchez
 
 import java.util.concurrent.TimeUnit.NANOSECONDS
 
@@ -9,11 +8,11 @@ import cats.effect.{Clock, ExitCase, Resource, Sync}
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.ovoenergy.effect.DatadogSpan.CompletedSpan
+import com.ovoenergy.effect.natchez.DatadogSpan.CompletedSpan
 import fs2.concurrent.Queue
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
+import io.circe.{Decoder, Encoder}
 import natchez.{Kernel, Span, TraceValue}
 
 /**
@@ -32,13 +31,13 @@ case class DatadogSpan[F[_]: Sync: Clock](
 ) extends Span[F] {
 
   def put(fields: (String, TraceValue)*): F[Unit] =
-    meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v)})
+    meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) })
 
   def span(name: String): Resource[F, Span[F]] =
     DatadogSpan.fromParent(name, parent = this).widen
 
   def kernel: F[Kernel] =
-  Monad[F].pure(SpanIdentifiers.toKernel(ids))
+    Monad[F].pure(SpanIdentifiers.toKernel(ids))
 }
 
 object DatadogSpan {
@@ -70,8 +69,8 @@ object DatadogSpan {
   private def isError[A](exitCase: ExitCase[A]): Option[Int] =
     exitCase match {
       case ExitCase.Completed => None
-      case ExitCase.Error(_) => Some(1)
-      case ExitCase.Canceled => None
+      case ExitCase.Error(_)  => Some(1)
+      case ExitCase.Canceled  => None
     }
 
   /**
@@ -86,20 +85,22 @@ object DatadogSpan {
     (
       datadogSpan.meta.get,
       Clock[F].realTime(NANOSECONDS)
-    ).mapN { case (meta, end) =>
-      CompletedSpan(
-        traceId = datadogSpan.ids.traceId,
-        spanId = datadogSpan.ids.spanId,
-        name = datadogSpan.name,
-        service = datadogSpan.service,
-        resource = datadogSpan.resource,
-        start = datadogSpan.start,
-        duration = end - datadogSpan.start,
-        parentId = datadogSpan.ids.parentId,
-        error = isError(exitCase),
-        meta = meta.mapValues(_.value.toString).updated("traceToken", datadogSpan.ids.traceToken)
-      )
-    }.flatMap(datadogSpan.queue.enqueue1)
+    ).mapN {
+        case (meta, end) =>
+          CompletedSpan(
+            traceId = datadogSpan.ids.traceId,
+            spanId = datadogSpan.ids.spanId,
+            name = datadogSpan.name,
+            service = datadogSpan.service,
+            resource = datadogSpan.resource,
+            start = datadogSpan.start,
+            duration = end - datadogSpan.start,
+            parentId = datadogSpan.ids.parentId,
+            error = isError(exitCase),
+            meta = meta.mapValues(_.value.toString).updated("traceToken", datadogSpan.ids.traceToken)
+          )
+      }
+      .flatMap(datadogSpan.queue.enqueue1)
 
   /**
    * Datadog identifies traces through a combination of name, service and resource.
@@ -122,22 +123,23 @@ object DatadogSpan {
     Resource.makeCase(
       for {
         start <- Clock[F].realTime(NANOSECONDS)
-        meta <- Ref.of(meta)
-      } yield DatadogSpan(
-        name = nameValue(name),
-        service = service,
-        resource = resourceValue(name),
-        identifiers,
-        start = start,
-        queue = queue,
-        meta = meta
-      )
+        meta  <- Ref.of(meta)
+      } yield
+        DatadogSpan(
+          name = nameValue(name),
+          service = service,
+          resource = resourceValue(name),
+          identifiers,
+          start = start,
+          queue = queue,
+          meta = meta
+        )
     )(complete)
 
   def fromParent[F[_]: Sync: Clock](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =
     for {
-      meta <- Resource.liftF(parent.meta.get)
-      ids <- Resource.liftF(SpanIdentifiers.child(parent.ids))
+      meta  <- Resource.liftF(parent.meta.get)
+      ids   <- Resource.liftF(SpanIdentifiers.child(parent.ids))
       child <- create(parent.queue, name, parent.service, meta)(ids)
     } yield child
 
