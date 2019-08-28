@@ -61,7 +61,13 @@ object Datadog {
       .make(
         Semaphore[F](1).flatMap { sem =>
           Concurrent[F]
-            .start(Stream.repeatEval(sem.acquire >> submitOnce(http, queue) >> sem.release).compile.drain)
+            .start(
+              Stream
+                .repeatEval(sem.acquire >> submitOnce(http, queue) >> sem.release)
+                .debounce(0.5.seconds)
+                .compile
+                .drain
+            )
             .map(f => sem -> f)
         }
       ) { case (sem, fiber) => sem.acquire >> submitOnce(http, queue) >> fiber.cancel }
