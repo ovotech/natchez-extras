@@ -17,17 +17,14 @@ val common = Seq(
     "-language:higherKinds"
   ),
   libraryDependencies ++= Seq(
+    compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
-    "org.typelevel" %% "cats-core" % "1.4.0",
+    "org.typelevel" %% "cats-core" % "1.6.1",
     "org.typelevel" %% "cats-effect" % "1.4.0",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   )
 )
-
-lazy val root = (project in file("."))
-  .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics)
 
 lazy val logging = project
   .settings(common :+ (name := "logging"))
@@ -51,6 +48,25 @@ lazy val kamonMetrics = project
     )
   )
 
+val http4sVersion = "0.20.6"
+val circeVersion = "0.9.3"
+
+lazy val natchezDatadog = project
+  .in(file("natchez-datadog"))
+  .settings(common :+ (name := "natchez-datadog"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "natchez-core"         % "0.0.8",
+      "org.http4s"   %% "http4s-dsl"           % http4sVersion,
+      "org.http4s"   %% "http4s-circe"         % http4sVersion,
+      "org.http4s"   %% "http4s-client"        % http4sVersion,
+      "io.circe"     %% "circe-core"           % circeVersion,
+      "io.circe"     %% "circe-generic"        % circeVersion,
+      "io.circe"     %% "circe-generic-extras" % circeVersion,
+      "io.circe"     %% "circe-parser"         % circeVersion
+    )
+  )
+
 val fs2Version = "1.0.5"
 lazy val datadogMetrics = project
   .in(file("metrics-datadog"))
@@ -62,3 +78,7 @@ lazy val datadogMetrics = project
       "co.fs2" %% "fs2-io" % fs2Version,
     )
   )
+
+lazy val root = (project in file("."))
+  .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
+  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics, natchezDatadog)

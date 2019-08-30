@@ -26,8 +26,16 @@ object Metrics {
   def combine[F[_]: Monad](a: Metrics[F], b: Metrics[F]): Metrics[F] =
     new Metrics[F] {
       def counter(m: Metric): F[Long => F[Unit]] =
-        (a.counter(m), b.counter(m)).mapN { case (a, b) => l => a(l) >> b(l) }
+        (a.counter(m), b.counter(m)).mapN {
+          case (a, b) =>
+            l =>
+              a(l) >> b(l)
+        }
       def histogram(m: Metric): F[Long => F[Unit]] =
-        (a.histogram(m), b.histogram(m)).mapN { case (a, b) => l => a(l) >> b(l) }
+        (a.histogram(m), b.histogram(m)).mapN {
+          case (a, b) =>
+            l =>
+              a(l) >> b(l)
+        }
     }
 }

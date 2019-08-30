@@ -40,31 +40,29 @@ object Logging {
     def apply(s: String, t: Throwable): Error = Error(Ior.Both(s, t))
   }
 
-
   // syntax to summon an instance
   def apply[F[_]: Logging]: Logging[F] = implicitly
 
   /**
-    * An instance of logging using SLF4J
-    * requires your F[_] to be a sync
-    */
-  def slf4jLogging[F[_] : Sync]: F[Logging[F]] =
-    Sync[F].delay(LoggerFactory.getLogger("logging")).map { logger =>
-      (log, tags) =>
-        Sync[F].delay {
-          val context = tags.map { case (k, v) => MDC.putCloseable(k, v) }
-          try {
-            log match {
-              case Debug(what)           => logger.debug(what)
-              case Info(what)            => logger.info(what)
-              case Error(Ior.Left(a))    => logger.error(a)
-              case Error(Ior.Right(a))   => logger.error(a.getMessage, a)
-              case Error(Ior.Both(a, t)) => logger.error(a, t)
-            }
-          } finally {
-            context.foreach(_.close)
+   * An instance of logging using SLF4J
+   * requires your F[_] to be a sync
+   */
+  def slf4jLogging[F[_]: Sync]: F[Logging[F]] =
+    Sync[F].delay(LoggerFactory.getLogger("logging")).map { logger => (log, tags) =>
+      Sync[F].delay {
+        val context = tags.map { case (k, v) => MDC.putCloseable(k, v) }
+        try {
+          log match {
+            case Debug(what)           => logger.debug(what)
+            case Info(what)            => logger.info(what)
+            case Error(Ior.Left(a))    => logger.error(a)
+            case Error(Ior.Right(a))   => logger.error(a.getMessage, a)
+            case Error(Ior.Both(a, t)) => logger.error(a, t)
           }
+        } finally {
+          context.foreach(_.close)
         }
+      }
     }
 
   /**
@@ -80,6 +78,6 @@ object Logging {
    * More syntax, but a standalone function this time
    * to cut down on the Logging[F].log(Info(...)) boilerplate
    */
-  def log[F[_] : Logging](what: Log, tags: Tags = Map.empty): F[Unit] =
+  def log[F[_]: Logging](what: Log, tags: Tags = Map.empty): F[Unit] =
     Logging[F].log(what, tags)
 }
