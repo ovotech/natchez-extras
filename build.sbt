@@ -67,6 +67,22 @@ lazy val natchezDatadog = project
     )
   )
 
+lazy val natchezSlf4j = project
+  .in(file("natchez-slf4j"))
+  .settings(common :+ (name := "natchez-slf4j"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "natchez-core" % "0.0.8",
+      "org.slf4j" % "slf4j-api" % "1.7.28",
+      "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
+    )
+  )
+
+lazy val natchezCombine = project
+  .in(file("natchez-combine"))
+  .settings(common :+ (name := "natchez-combine"))
+  .settings(libraryDependencies += "org.tpolecat" %% "natchez-core" % "0.0.8")
+
 val fs2Version = "1.0.5"
 lazy val datadogMetrics = project
   .in(file("metrics-datadog"))
@@ -81,4 +97,4 @@ lazy val datadogMetrics = project
 
 lazy val root = (project in file("."))
   .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics, natchezDatadog)
+  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics, natchezDatadog, natchezCombine, natchezSlf4j)
