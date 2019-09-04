@@ -15,3 +15,5 @@ Logging         | wraps logback calls into an `F[_]`                            
 Kamon Metrics   | wraps kamon metrics calls into an `F[_]`                                       | "com.ovoenergy.effect" % "kamon-metrics"
 Datadog Metrics | Submits metrics to Datadog over UDP with FS2                                   | "com.ovoenergy.effect" % "datadog-metrics"
 Natchez Datadog | Integrates [natchez](https://github.com/tpolecat/natchez) with the Datadog APM | "com.ovoenergy.effect" % "natchez-datadog"
+Natchez SLF4J   | Integrates [natchez](https://github.com/tpolecat/natchez) with SLF4J           | "com.ovoenergy.effect" % "natchez-slf4j"
+Natchez Combine | Provides a function to combine two Natchez `EntryPoint[F]`s together           | "com.ovoenergy.effect" % "natchez-combine"
