@@ -33,7 +33,7 @@ class DatadogTest extends WordSpec with Matchers {
   def run(f: EntryPoint[IO] => IO[Unit]): IO[List[Request[IO]]] =
     Ref.of[IO, List[Request[IO]]](List.empty).flatMap { ref =>
       val client: Client[IO] = Client(r => Resource.liftF(ref.update(_ :+ r).as(Response[IO]())))
-      entryPoint(client, "test").use(f) >> ref.get
+      entryPoint(client, "test", "blah").use(f) >> ref.get
     }
 
 
@@ -53,10 +53,18 @@ class DatadogTest extends WordSpec with Matchers {
     }
 
     "Submit multiple spans across multiple calls when span() is called" in {
-      val res = run(_.root("bar:res").use(_.span("subspan").use(_ => timer.sleep(1.second)))).unsafeRunSync
+      val res = run(_.root("bar").use(_.span("subspan").use(_ => timer.sleep(1.second)))).unsafeRunSync
       val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
       spans.map(_.traceId).distinct.length shouldBe 1
       spans.map(_.spanId).distinct.length shouldBe 2
+    }
+
+    "Allow you to override the service name and resource with colons" in {
+      val res = run(_.root("svc:name:res").use(_ => IO.unit)).unsafeRunSync
+      val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
+      spans.head.resource shouldBe "res"
+      spans.head.service shouldBe "svc"
+      spans.head.name shouldBe "name"
     }
 
     "Inherit metadata into subspans but only at the time of creation" in {
