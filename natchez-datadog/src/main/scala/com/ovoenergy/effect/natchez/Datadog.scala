@@ -7,7 +7,7 @@ import cats.instances.option._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import com.ovoenergy.effect.natchez.DatadogSpan.CompletedSpan
+import com.ovoenergy.effect.natchez.DatadogSpan.{CompletedSpan, SpanNames}
 import fs2.concurrent.Queue
 import io.circe.{Encoder, Printer}
 import fs2._
@@ -80,19 +80,21 @@ object Datadog {
    */
   def entryPoint[F[_]: Concurrent: Timer: Clock](
     client: Client[F],
-    service: String
+    service: String,
+    resource: String
   ): Resource[F, EntryPoint[F]] =
     for {
       queue <- spanQueue
+      names = SpanNames.withFallback(_, SpanNames("unnamed", service, resource))
       _     <- submitter(client, queue)
     } yield {
       new EntryPoint[F] {
         def root(name: String): Resource[F, Span[F]] =
-          Resource.liftF(SpanIdentifiers.create).flatMap(DatadogSpan.create(queue, name, service)).widen
+          Resource.liftF(SpanIdentifiers.create).flatMap(DatadogSpan.create(queue, names(name))).widen
         def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
-          DatadogSpan.fromKernel(queue, name, service, kernel).widen
+          DatadogSpan.fromKernel(queue, names(name), kernel).widen
         def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
-          DatadogSpan.fromKernel(queue, name, service, kernel).widen
+          DatadogSpan.fromKernel(queue, names(name), kernel).widen
       }
     }
 }

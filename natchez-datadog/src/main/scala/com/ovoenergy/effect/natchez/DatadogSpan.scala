@@ -8,7 +8,8 @@ import cats.effect.{Clock, ExitCase, Resource, Sync}
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.ovoenergy.effect.natchez.DatadogSpan.CompletedSpan
+import com.ovoenergy.effect.natchez.DatadogSpan.{CompletedSpan, SpanNames}
+import com.ovoenergy.effect.natchez.DatadogTags.forThrowable
 import fs2.concurrent.Queue
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
@@ -21,9 +22,7 @@ import natchez.{Kernel, Span, TraceValue}
  * while we interact with systems that provide non numeric trace tokens
  */
 case class DatadogSpan[F[_]: Sync: Clock](
-  name: String,
-  service: String,
-  resource: String,
+  names: SpanNames,
   ids: SpanIdentifiers,
   start: Long,
   queue: Queue[F, CompletedSpan],
@@ -41,6 +40,23 @@ case class DatadogSpan[F[_]: Sync: Clock](
 }
 
 object DatadogSpan {
+
+  /**
+   * Natchez only allows you to set the span name
+   * but we need also a resource + service which can differ by span. As such
+   * we allow you to encode this data with an advanced colon based DSL
+   */
+  case class SpanNames(name: String, service: String, resource: String)
+
+  object SpanNames {
+
+    def withFallback(string: String, fallback: SpanNames): SpanNames =
+      string.split(':') match {
+        case Array(service, name, resource) => SpanNames(name, service, resource)
+        case Array(name, resource) => SpanNames(name, fallback.service, resource)
+        case Array(name) => SpanNames(name, fallback.service, fallback.resource)
+      }
+  }
 
   implicit val config: Configuration =
     Configuration.default.withSnakeCaseMemberNames
@@ -74,6 +90,16 @@ object DatadogSpan {
     }
 
   /**
+   * Create some Datadog tags from an exit case,
+   * i.e. if the span failed include exception details
+   */
+  private def exitTags(exitCase: ExitCase[Throwable]): Map[String, String] =
+    exitCase match {
+      case ExitCase.Error(e) => forThrowable(e).mapValues(_.value.toString)
+      case _ => Map.empty
+    }
+
+  /**
    * Given a span, complete it - this involves turning the span into a `CompletedSpan`
    * which 1:1 matches the Datadog JSON structure before submitting it to a queue of spans
    * we'll eventually submit to the local agent in the background
@@ -90,34 +116,23 @@ object DatadogSpan {
           CompletedSpan(
             traceId = datadogSpan.ids.traceId,
             spanId = datadogSpan.ids.spanId,
-            name = datadogSpan.name,
-            service = datadogSpan.service,
-            resource = datadogSpan.resource,
+            name = datadogSpan.names.name,
+            service = datadogSpan.names.service,
+            resource = datadogSpan.names.resource,
             start = datadogSpan.start,
             duration = end - datadogSpan.start,
             parentId = datadogSpan.ids.parentId,
             error = isError(exitCase),
-            meta = meta.mapValues(_.value.toString).updated("traceToken", datadogSpan.ids.traceToken)
+            meta = exitTags(exitCase) ++
+              meta.mapValues(_.value.toString)
+                .updated("traceToken", datadogSpan.ids.traceToken)
           )
       }
       .flatMap(datadogSpan.queue.enqueue1)
 
-  /**
-   * Datadog identifies traces through a combination of name, service and resource.
-   * We set service globally when creating an EntryPoint but we need a bespoke name + resource
-   * for every trace & natchez only supports name - as such we assume the name is actually both things
-   * split with a colon character
-   */
-  private def resourceValue(name: String): String =
-    name.dropWhile(_ != ':').drop(1)
-
-  private def nameValue(name: String): String =
-    name.takeWhile(_ != ':')
-
   def create[F[_]: Sync: Clock](
     queue: Queue[F, CompletedSpan],
-    name: String,
-    service: String,
+    names: SpanNames,
     meta: Map[String, TraceValue] = Map.empty
   )(identifiers: SpanIdentifiers): Resource[F, DatadogSpan[F]] =
     Resource.makeCase(
@@ -126,9 +141,7 @@ object DatadogSpan {
         meta  <- Ref.of(meta)
       } yield
         DatadogSpan(
-          name = nameValue(name),
-          service = service,
-          resource = resourceValue(name),
+          names = names,
           identifiers,
           start = start,
           queue = queue,
@@ -140,14 +153,13 @@ object DatadogSpan {
     for {
       meta  <- Resource.liftF(parent.meta.get)
       ids   <- Resource.liftF(SpanIdentifiers.child(parent.ids))
-      child <- create(parent.queue, name, parent.service, meta)(ids)
+      child <- create(parent.queue, SpanNames.withFallback(name, parent.names), meta)(ids)
     } yield child
 
   def fromKernel[F[_]: Sync: Clock](
     queue: Queue[F, CompletedSpan],
-    name: String,
-    service: String,
+    names: SpanNames,
     kernel: Kernel
   ): Resource[F, DatadogSpan[F]] =
-    Resource.liftF(SpanIdentifiers.fromKernel(kernel)).flatMap(create(queue, name, service))
+    Resource.liftF(SpanIdentifiers.fromKernel(kernel)).flatMap(create(queue, names))
 }
