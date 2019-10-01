@@ -3,7 +3,6 @@ package com.ovoenergy.effect
 import java.net.InetSocketAddress
 
 import cats.effect._
-import cats.instances.option._
 import com.ovoenergy.effect.Metrics.Metric
 import fs2.Chunk.array
 import fs2.io.udp._
