@@ -75,7 +75,7 @@ lazy val natchezDoobie = project
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % "0.0.8",
-      "org.tpolecat" %% "doobie-core"  % "0.7.0",
+      "org.tpolecat" %% "doobie-core"  % "0.8.4",
       "org.tpolecat" %% "doobie-h2"    % "0.8.4",
       "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full,
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
