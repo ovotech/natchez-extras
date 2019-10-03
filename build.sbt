@@ -1,21 +1,11 @@
 val common = Seq(
   scalaVersion := "2.12.9",
   organization := "com.ovoenergy.effect",
-  organizationName := "Ovo Energy",
+  organizationName := "OVO Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
   bintrayRepository := "maven",
   bintrayOrganization := Some("ovotech"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  scalacOptions ++= Seq(
-    "-unchecked",
-    "-deprecation",
-    "-encoding",
-    "utf8",
-    "-feature",
-    "-Xfatal-warnings",
-    "-Ypartial-unification",
-    "-language:higherKinds"
-  ),
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
@@ -78,6 +68,20 @@ lazy val natchezSlf4j = project
       "org.slf4j" % "slf4j-api" % "1.7.28",
       "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
     )
+  )
+
+val silencerVersion = "1.4.4"
+lazy val natchezDoobie = project
+  .in(file("natchez-doobie"))
+  .settings(common :+ (name := "natchez-doobie"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "natchez-core" % "0.0.8",
+      "org.tpolecat" %% "doobie-core"  % "0.8.4",
+      "org.tpolecat" %% "doobie-h2"    % "0.8.4",
+      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full,
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+    ),
   )
 
 lazy val natchezCombine = project
