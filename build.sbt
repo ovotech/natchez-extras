@@ -102,4 +102,13 @@ lazy val datadogMetrics = project
 
 lazy val root = (project in file("."))
   .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
-  .aggregate(logging, metricsCommon, kamonMetrics, datadogMetrics, natchezDatadog, natchezCombine, natchezSlf4j)
+  .aggregate(
+    logging,
+    metricsCommon,
+    kamonMetrics,
+    datadogMetrics,
+    natchezDatadog,
+    natchezCombine,
+    natchezSlf4j,
+    natchezDoobie
+  )
