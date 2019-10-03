@@ -19,10 +19,10 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
-    "org.typelevel" %% "cats-core" % "1.6.1",
-    "org.typelevel" %% "cats-effect" % "1.4.0",
+    "org.typelevel" %% "cats-core" % "2.0.0",
+    "org.typelevel" %% "cats-effect" % "2.0.0",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+    "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
   )
 )
 
@@ -48,15 +48,17 @@ lazy val kamonMetrics = project
     )
   )
 
-val http4sVersion = "0.20.6"
-val circeVersion = "0.9.3"
+val natchezVersion = "0.0.10"
+val http4sVersion = "0.21.0-M5"
+val circeVersion = "0.12.1"
+val fs2Version = "2.0.1"
 
 lazy val natchezDatadog = project
   .in(file("natchez-datadog"))
   .settings(common :+ (name := "natchez-datadog"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core"         % "0.0.8",
+      "org.tpolecat" %% "natchez-core"         % natchezVersion,
       "org.http4s"   %% "http4s-dsl"           % http4sVersion,
       "org.http4s"   %% "http4s-circe"         % http4sVersion,
       "org.http4s"   %% "http4s-client"        % http4sVersion,
@@ -72,7 +74,7 @@ lazy val natchezSlf4j = project
   .settings(common :+ (name := "natchez-slf4j"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % "0.0.8",
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
       "org.slf4j" % "slf4j-api" % "1.7.28",
       "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
     )
@@ -81,9 +83,8 @@ lazy val natchezSlf4j = project
 lazy val natchezCombine = project
   .in(file("natchez-combine"))
   .settings(common :+ (name := "natchez-combine"))
-  .settings(libraryDependencies += "org.tpolecat" %% "natchez-core" % "0.0.8")
+  .settings(libraryDependencies += "org.tpolecat" %% "natchez-core" % natchezVersion)
 
-val fs2Version = "1.0.5"
 lazy val datadogMetrics = project
   .in(file("metrics-datadog"))
   .settings(common :+ (name := "datadog-metrics"))
