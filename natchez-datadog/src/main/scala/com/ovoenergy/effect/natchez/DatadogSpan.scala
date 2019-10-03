@@ -75,8 +75,8 @@ object DatadogSpan {
   )
 
   object CompletedSpan {
-    implicit val encode: Encoder[CompletedSpan] = deriveEncoder
-    implicit val decode: Decoder[CompletedSpan] = deriveDecoder
+    implicit val encode: Encoder[CompletedSpan] = deriveConfiguredEncoder
+    implicit val decode: Decoder[CompletedSpan] = deriveConfiguredDecoder
   }
 
   /**

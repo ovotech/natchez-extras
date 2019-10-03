@@ -16,9 +16,6 @@ object Datadog {
     globalTags: Map[String, String]
   )
 
-  private implicit val group: AsynchronousSocketGroup =
-    AsynchronousSocketGroup.apply
-
   /**
    * Datadog enforces all metrics must start with a letter
    * and not contain any chars other than letters, numbers and underscores
@@ -62,7 +59,7 @@ object Datadog {
     G: Async[G],
     F: ConcurrentEffect[F]
   ): Resource[F, Metrics[G]] =
-    Socket[F]().map { sock =>
+    Blocker[F].flatMap(SocketGroup[F]).flatMap(_.open(config.agentHost)).map { sock =>
       new Metrics[G] {
         def counter(m: Metric): G[Long => G[Unit]] =
           G.pure(v => send[F, G](sock, config.agentHost, serialiseCounter(applyConfig(m, config), v)))
