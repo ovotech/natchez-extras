@@ -1,9 +1,10 @@
 package com.ovoenergy.effect
 
-import cats.Monad
+import cats.{Functor, Monad, ~>}
 import cats.syntax.apply._
 import cats.syntax.flatMap._
 import com.ovoenergy.effect.Metrics.Metric
+import cats.syntax.functor._
 
 /**
  * A type class representing the ability to push metrics
@@ -18,6 +19,17 @@ object Metrics {
 
   case class Metric(name: String, tags: Map[String, String])
   def apply[F[_]: Metrics]: Metrics[F] = implicitly
+
+  /**
+   * Transform the effect type of the given Metrics instance with a natural transformation
+   */
+  def mapK[F[_], G[_]: Functor](metrics: Metrics[F], nt: F ~> G): Metrics[G] =
+    new Metrics[G] {
+      def counter(metric: Metric): G[Long => G[Unit]] =
+        nt(metrics.counter(metric)).map(func => l => nt(func(l)))
+      def histogram(metric: Metric): G[Long => G[Unit]] =
+        nt(metrics.histogram(metric)).map(func => l => nt(func(l)))
+    }
 
   /**
    * Combine instances to publish to two different metric providers sequentially,
