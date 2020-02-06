@@ -1,5 +1,5 @@
 val common = Seq(
-  scalaVersion := "2.12.9",
+  scalaVersion := "2.12.10",
   organization := "com.ovoenergy.effect",
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -9,8 +9,8 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
-    "org.typelevel" %% "cats-core" % "2.0.0",
-    "org.typelevel" %% "cats-effect" % "2.0.0",
+    "org.typelevel" %% "cats-core" % "2.1.0",
+    "org.typelevel" %% "cats-effect" % "2.1.0",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
   )
@@ -39,9 +39,9 @@ lazy val kamonMetrics = project
   )
 
 val natchezVersion = "0.0.10"
-val http4sVersion = "0.21.0-M5"
-val circeVersion = "0.12.1"
-val fs2Version = "2.0.1"
+val http4sVersion = "0.21.0-RC4"
+val circeVersion = "0.12.2"
+val fs2Version = "2.2.2"
 
 lazy val natchezDatadog = project
   .in(file("natchez-datadog"))
@@ -112,3 +112,5 @@ lazy val root = (project in file("."))
     natchezSlf4j,
     natchezDoobie
   )
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
