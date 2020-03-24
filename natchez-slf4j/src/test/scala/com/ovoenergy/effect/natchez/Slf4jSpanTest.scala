@@ -5,12 +5,11 @@ import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
 
 import scala.concurrent.ExecutionContext
+import scala.jdk.CollectionConverters._
 import cats.syntax.flatMap._
 import natchez.Kernel
 
 import scala.util.Try
-import scala.collection.mutable
-import JavaCollections._
 
 class Slf4jSpanTest extends WordSpec with Matchers with BeforeAndAfterEach {
 
@@ -69,38 +68,6 @@ class Slf4jSpanTest extends WordSpec with Matchers with BeforeAndAfterEach {
     "Succeed regardless of the case of the trace token" in {
       val res = Slf4jSpan.fromKernel[IO]("foo", Kernel(Map("x-Trace-TOKEN" -> "boz")))
       res.unsafeRunSync.use(s => IO(s.token)).unsafeRunSync shouldBe "boz"
-    }
-  }
-
-}
-
-/**
-  * This is horrible, but it lets us workaround the fact that we need to compile under
-  * 2.12 and 2.13 and scala.collection.JavaConverters is deprecated in 2.13 and
-  * scala.jdk.ColletionConverters doesn't exist in 2.12...
-  */
-object JavaCollections {
-
-  implicit class JavaList[A](val list: java.util.List[A]) extends AnyVal {
-    def asScala: List[A] = {
-      val b = new mutable.ListBuffer[A]
-      val it = list.iterator()
-      while (it.hasNext()) {
-        b += it.next()
-      }
-      b.toList
-    }
-  }
-
-  implicit class JavaMap[A, B](val map: java.util.Map[A, B]) extends AnyVal {
-    def asScala: Map[A, B] = {
-      val b = new mutable.HashMap[A, B]
-      val it = map.entrySet().iterator()
-      while (it.hasNext()) {
-        val e = it.next()
-        b.put(e.getKey(), e.getValue())
-      }
-      b.toMap
     }
   }
 

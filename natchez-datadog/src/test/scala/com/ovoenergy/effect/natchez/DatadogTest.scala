@@ -78,8 +78,8 @@ class DatadogTest extends WordSpec with Matchers {
       val rootSpan = spans.find(_.name == "bar").get
       val subSpan = spans.find(_.name == "sub").get
 
-      subSpan.meta.filterNot{ case (k, _) => k === "traceToken" } shouldBe Map("foo" -> "bar", "baz" -> "qux")
-      rootSpan.meta.filterNot{ case (k, _) => k === "traceToken" } shouldBe Map("foo" -> "bar")
+      subSpan.meta.view.filterKeys(_ != "traceToken").toMap shouldBe Map("foo" -> "bar", "baz" -> "qux")
+      rootSpan.meta.view.filterKeys(_ != "traceToken").toMap shouldBe Map("foo" -> "bar")
     }
   }
 }

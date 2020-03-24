@@ -1,7 +1,6 @@
 val common = Seq(
   ThisBuild / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
-  scalaVersion := "2.12.10",
-  crossScalaVersions := List(scalaVersion.value, "2.13.1"),
+  scalaVersion := "2.13.1",
   organization := "com.ovoenergy.effect",
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -107,7 +106,6 @@ lazy val root = (project in file("."))
   .settings(
     common ++ Seq(
       name := "effect-utils",
-      crossScalaVersions := Nil,
       publish := nop,
       publishLocal := nop
     ))

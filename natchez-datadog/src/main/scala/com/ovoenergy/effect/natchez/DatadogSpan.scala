@@ -95,7 +95,7 @@ object DatadogSpan {
    */
   private def exitTags(exitCase: ExitCase[Throwable]): Map[String, String] =
     exitCase match {
-      case ExitCase.Error(e) => forThrowable(e).map{ case (k, v) => k -> v.value.toString }
+      case ExitCase.Error(e) => forThrowable(e).view.mapValues(_.value.toString).toMap
       case _ => Map.empty
     }
 
@@ -124,7 +124,7 @@ object DatadogSpan {
             parentId = datadogSpan.ids.parentId,
             error = isError(exitCase),
             meta = exitTags(exitCase) ++
-              meta.map{ case (k, v) => k -> v.value.toString }
+              meta.view.mapValues(_.value.toString).toMap
                 .updated("traceToken", datadogSpan.ids.traceToken)
           )
       }
