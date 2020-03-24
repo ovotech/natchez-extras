@@ -8,3 +8,6 @@ project/plugins/project/
 .history
 .cache
 .lib/
+.bloop/
+.metals/
+metals.sbt

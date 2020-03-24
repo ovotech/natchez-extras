@@ -8,8 +8,6 @@ import cats.syntax.functor._
 import Logging.Tags
 import org.slf4j.{LoggerFactory, MDC}
 
-import scala.language.higherKinds
-
 /**
  * A type class representing the ability to log
  * within some effect type F, with MDC information

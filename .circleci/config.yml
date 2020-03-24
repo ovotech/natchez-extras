@@ -35,7 +35,7 @@ jobs:
           command: |
             set -e
             tags=`git describe --tags`
-            sbt ';set version in ThisBuild := "'${tags}'"; test; publish'
+            sbt ';set version in ThisBuild := "'${tags}'"; +test; +publish'
       - *cache_save
 
   test:
@@ -45,7 +45,7 @@ jobs:
       - *cache_restore
       - run:
           name: Test
-          command: sbt test
+          command: sbt +test
       - *cache_save
 
 workflows:
@@ -62,4 +62,3 @@ workflows:
     jobs:
       - test:
           filters: {branches: {ignore: master}}
-

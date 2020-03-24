@@ -1,5 +1,7 @@
 val common = Seq(
+  ThisBuild / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
   scalaVersion := "2.12.10",
+  crossScalaVersions := List(scalaVersion.value, "2.13.1"),
   organization := "com.ovoenergy.effect",
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -8,7 +10,7 @@ val common = Seq(
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
+    compilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full),
     "org.typelevel" %% "cats-core" % "2.1.0",
     "org.typelevel" %% "cats-effect" % "2.1.0",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
@@ -21,12 +23,13 @@ lazy val logging = project
   .settings(
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
     )
   )
 
 lazy val metricsCommon = project
   .in(file("metrics-common")).settings(common :+ (name := "metrics-common"))
+
 
 lazy val kamonMetrics = project
   .in(file("metrics-kamon"))
@@ -34,11 +37,11 @@ lazy val kamonMetrics = project
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
-      "io.kamon" %% "kamon-core" % "1.1.0"
+      "io.kamon" %% "kamon-core" % "2.0.5"
     )
   )
 
-val natchezVersion = "0.0.10"
+val natchezVersion = "0.0.11"
 val http4sVersion = "0.21.0-RC4"
 val circeVersion = "0.12.2"
 val fs2Version = "2.2.2"
@@ -76,7 +79,7 @@ lazy val natchezDoobie = project
   .settings(common :+ (name := "natchez-doobie"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % "0.0.8",
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
       "org.tpolecat" %% "doobie-core"  % "0.8.4",
       "org.tpolecat" %% "doobie-h2"    % "0.8.4",
       "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full,
@@ -101,7 +104,13 @@ lazy val datadogMetrics = project
   )
 
 lazy val root = (project in file("."))
-  .settings(common ++ Seq(name := "effect-utils", publish := nop, publishLocal := nop))
+  .settings(
+    common ++ Seq(
+      name := "effect-utils",
+      crossScalaVersions := Nil,
+      publish := nop,
+      publishLocal := nop
+    ))
   .aggregate(
     logging,
     metricsCommon,
