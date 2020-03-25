@@ -18,14 +18,14 @@ object Kamon {
       Sync[F]
         .delay(K.counter(metric.name).withTags(TagSet.from(metric.tags)))
         .map(
-          counter => times => Sync[F].delay{ counter.increment(times); () }
+          counter => times => Sync[F].delay(counter.increment(times)).as(())
         )
 
     def histogram(metric: Metric): F[Long => F[Unit]] =
       Sync[F]
         .delay(K.histogram(metric.name).withTags(TagSet.from(metric.tags)))
         .map(
-          histogram => duration => Sync[F].delay{ histogram.record(duration); () }
+          histogram => duration => Sync[F].delay(histogram.record(duration)).as(())
         )
   }
 }
