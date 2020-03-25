@@ -4,13 +4,12 @@ import cats.effect.{Concurrent, ContextShift, IO}
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
+import scala.jdk.CollectionConverters._
 import cats.syntax.flatMap._
 import natchez.Kernel
 
 import scala.util.Try
-
 
 class Slf4jSpanTest extends WordSpec with Matchers with BeforeAndAfterEach {
 
@@ -71,4 +70,5 @@ class Slf4jSpanTest extends WordSpec with Matchers with BeforeAndAfterEach {
       res.unsafeRunSync.use(s => IO(s.token)).unsafeRunSync shouldBe "boz"
     }
   }
+
 }
