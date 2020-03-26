@@ -17,28 +17,8 @@ val common = Seq(
   )
 )
 
-lazy val logging = project
-  .settings(common :+ (name := "logging"))
-  .settings(
-    libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
-    )
-  )
-
 lazy val metricsCommon = project
   .in(file("metrics-common")).settings(common :+ (name := "metrics-common"))
-
-
-lazy val kamonMetrics = project
-  .in(file("metrics-kamon"))
-  .settings(common :+ (name := "kamon-metrics"))
-  .dependsOn(metricsCommon)
-  .settings(
-    libraryDependencies ++= Seq(
-      "io.kamon" %% "kamon-core" % "2.0.5"
-    )
-  )
 
 val natchezVersion = "0.0.11"
 val http4sVersion = "0.21.0-RC4"
@@ -110,9 +90,7 @@ lazy val root = (project in file("."))
       publishLocal := nop
     ))
   .aggregate(
-    logging,
     metricsCommon,
-    kamonMetrics,
     datadogMetrics,
     natchezDatadog,
     natchezCombine,

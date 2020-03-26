@@ -6,7 +6,7 @@ This repository consists of a number of type classes which add behaviours to a g
 Each type class will be deployed to bintray as an independent jar to minimise transitive dependency issues if you only
 want to use some of the library.
 
-To create a release, push a tag to master of the format `x.y.z`. See the [semantic versioning guide](https://semver.org/) 
+To create a release, push a tag to master of the format `x.y.z`. See the [semantic versioning guide](https://semver.org/)
 for details of how to choose a version number.
 
 ## Current modules
@@ -18,10 +18,3 @@ Natchez Datadog | Integrates [natchez](https://github.com/tpolecat/natchez) with
 Natchez Doobie  | Integrates [natchez](https://github.com/tpolecat/natchez) with Doobie          | "com.ovoenergy.effect" % "natchez-doobie"
 Natchez SLF4J   | Integrates [natchez](https://github.com/tpolecat/natchez) with SLF4J           | "com.ovoenergy.effect" % "natchez-slf4j"
 Natchez Combine | Provides a function to combine two Natchez `EntryPoint[F]`s together           | "com.ovoenergy.effect" % "natchez-combine"
-
-## Older modules
-
-| Module        | Description                                                                    | Artifact
-----------------|--------------------------------------------------------------------------------|-----------------------------------------
-Logging         | wraps logback calls into an `F[_]`                                             | "com.ovoenergy.effect" % "logging"
-Kamon Metrics   | wraps kamon metrics calls into an `F[_]`                                       | "com.ovoenergy.effect" % "kamon-metrics"
