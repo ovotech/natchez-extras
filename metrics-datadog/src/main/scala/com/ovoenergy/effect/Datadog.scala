@@ -60,10 +60,10 @@ object Datadog {
   ): Resource[F, Metrics[G]] =
     Blocker[F].flatMap(SocketGroup[F]).flatMap(_.open()).map { sock =>
       new Metrics[G] {
-        def counter(m: Metric): G[Long => G[Unit]] =
-          G.pure(v => send[F, G](sock, config.agentHost, serialiseCounter(applyConfig(m, config), v)))
-        def histogram(m: Metric): G[Long => G[Unit]] =
-          G.pure(v => send[F, G](sock, config.agentHost, serialiseHistogram(applyConfig(m, config), v)))
+        def counter(m: Metric)(value: Long): G[Unit] =
+          send[F, G](sock, config.agentHost, serialiseCounter(applyConfig(m, config), value))
+        def histogram(m: Metric)(value: Long): G[Unit] =
+          send[F, G](sock, config.agentHost, serialiseHistogram(applyConfig(m, config), value))
       }
     }
 }
