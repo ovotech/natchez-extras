@@ -3,10 +3,11 @@ package com.ovoenergy.effect.natchez
 import cats.effect.IO
 import com.ovoenergy.effect.natchez.SpanIdentifiers._
 import natchez.Kernel
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
 
-class SpanIdentifiersTest extends WordSpec with Matchers with Checkers {
+class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
 
   "Span identifiers" should {
 

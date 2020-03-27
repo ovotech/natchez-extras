@@ -10,10 +10,11 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full),
-    "org.typelevel" %% "cats-core" % "2.1.0",
-    "org.typelevel" %% "cats-effect" % "2.1.0",
-    "org.scalatest" %% "scalatest" % "3.0.8" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
+    "org.typelevel" %% "cats-core" % "2.1.1",
+    "org.typelevel" %% "cats-effect" % "2.1.2",
+    "org.scalatest" %% "scalatest" % "3.1.1" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
+    "org.scalatestplus" %% "scalacheck-1-14" % "3.1.1.1" % Test
   )
 )
 
@@ -21,9 +22,9 @@ lazy val metricsCommon = project
   .in(file("metrics-common")).settings(common :+ (name := "metrics-common"))
 
 val natchezVersion = "0.0.11"
-val http4sVersion = "0.21.0-RC4"
-val circeVersion = "0.12.2"
-val fs2Version = "2.2.2"
+val http4sVersion = "0.21.2"
+val circeVersion = "0.13.0"
+val fs2Version = "2.3.0"
 
 lazy val natchezDatadog = project
   .in(file("natchez-datadog"))
@@ -47,20 +48,21 @@ lazy val natchezSlf4j = project
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.slf4j" % "slf4j-api" % "1.7.28",
+      "org.slf4j" % "slf4j-api" % "1.7.30",
       "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
     )
   )
 
-val silencerVersion = "1.4.4"
+val silencerVersion = "1.6.0"
+val doobieVersion = "0.8.8"
 lazy val natchezDoobie = project
   .in(file("natchez-doobie"))
   .settings(common :+ (name := "natchez-doobie"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.tpolecat" %% "doobie-core"  % "0.8.4",
-      "org.tpolecat" %% "doobie-h2"    % "0.8.4",
+      "org.tpolecat" %% "doobie-core"  % doobieVersion,
+      "org.tpolecat" %% "doobie-h2"    % doobieVersion,
       "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full,
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
     ),

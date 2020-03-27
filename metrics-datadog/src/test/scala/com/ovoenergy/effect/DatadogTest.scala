@@ -6,10 +6,11 @@ import com.ovoenergy.effect.Datadog._
 import com.ovoenergy.effect.Metrics.Metric
 import org.scalacheck.Gen.mapOf
 import org.scalacheck.{Arbitrary, Gen, Prop}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
 
-class DatadogTest extends WordSpec with Matchers with Checkers {
+class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
   val string: Gen[String] =
     Arbitrary.arbString.arbitrary

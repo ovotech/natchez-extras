@@ -13,7 +13,8 @@ import natchez.TraceValue.StringValue
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.client.Client
 import org.http4s.{Request, Response}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
@@ -22,7 +23,7 @@ import scala.concurrent.duration._
   * This tests both the datadog span code itself and the submission of metrics over HTTP
   * Could be expanded but even just these tests exposed concurrency issues with my original code.
   */
-class DatadogTest extends WordSpec with Matchers {
+class DatadogTest extends AnyWordSpec with Matchers {
 
   implicit val timer: Timer[IO] =
     IO.timer(global)

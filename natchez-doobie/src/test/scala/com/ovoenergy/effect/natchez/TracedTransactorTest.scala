@@ -8,12 +8,13 @@ import doobie.h2.H2Transactor.newH2Transactor
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import natchez.{Kernel, Span, TraceValue}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import cats.syntax.flatMap._
 
 import scala.concurrent.ExecutionContext.global
 
-class TracedTransactorTest extends WordSpec with Matchers {
+class TracedTransactorTest extends AnyWordSpec with Matchers {
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
 
   case class SpanData(
