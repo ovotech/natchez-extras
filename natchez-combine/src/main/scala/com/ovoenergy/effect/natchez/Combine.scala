@@ -18,7 +18,7 @@ object Combine {
       def span(name: String): Resource[F, Span[F]] =
         (s1.span(name), s2.span(name)).mapN[Span[F]](combineSpan[F])
       def put(fields: (String, TraceValue)*): F[Unit] =
-        (s1.put(fields:_*), s2.put(fields:_*)).tupled.as(())
+        (s1.put(fields: _*), s2.put(fields: _*)).tupled.as(())
     }
 
   def combine[F[_]: Sync](e1: EntryPoint[F], e2: EntryPoint[F]): EntryPoint[F] =

@@ -38,7 +38,7 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
   val db: Resource[IO, Transactor[Traced[IO, *]]] =
     for {
       block <- Blocker[IO]
-      xa <- newH2Transactor[IO]("jdbc:h2:mem:test","foo", "bar", global, block)
+      xa    <- newH2Transactor[IO]("jdbc:h2:mem:test", "foo", "bar", global, block)
     } yield TracedTransactor("test", block, xa)
 
   "TracedTransactor" should {

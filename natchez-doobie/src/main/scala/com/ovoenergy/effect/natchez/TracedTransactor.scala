@@ -20,50 +20,54 @@ object TracedTransactor {
     blocking: Blocker,
     transactor: Transactor[F]
   ): Transactor[Traced[F, *]] =
-    transactor.mapK(Kleisli.liftK[F, Span[F]]).copy(
-      interpret0 = (
-        new KleisliInterpreter[Traced[F, *]] {
+    transactor
+      .mapK(Kleisli.liftK[F, Span[F]])
+      .copy(
+        interpret0 = (
+          new KleisliInterpreter[Traced[F, *]] {
 
-          val blocker: Blocker = blocking
-          val trace: Trace.KleisliTrace[F] = Trace[Traced[F, *]]
-          val contextShiftM: ContextShift[Traced[F, *]] = ContextShift.deriveKleisli[F, Span[F]]
-          implicit val asyncM: Async[Traced[F, *]] = Async.catsKleisliAsync[F, Span[F]]
+            val blocker: Blocker = blocking
+            val trace: Trace.KleisliTrace[F] = Trace[Traced[F, *]]
+            val contextShiftM: ContextShift[Traced[F, *]] = ContextShift.deriveKleisli[F, Span[F]]
+            implicit val asyncM: Async[Traced[F, *]] = Async.catsKleisliAsync[F, Span[F]]
 
-          override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
-            new PreparedStatementInterpreter {
+            override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
+              new PreparedStatementInterpreter {
 
-              type TracedOp[A] = Kleisli[Traced[F, *], PreparedStatement, A]
+                type TracedOp[A] = Kleisli[Traced[F, *], PreparedStatement, A]
 
-              def runTraced[A](f: TracedOp[A]): TracedOp[A] =
-                Kleisli {
-                  case TracedStatement(p, sql) =>
-                    trace.span(s"$service-db:db.execute:${formatQuery(sql)}")(f(p))
-                  case a =>
-                    f(a)
-                }
+                def runTraced[A](f: TracedOp[A]): TracedOp[A] =
+                  Kleisli {
+                    case TracedStatement(p, sql) =>
+                      trace.span(s"$service-db:db.execute:${formatQuery(sql)}")(f(p))
+                    case a =>
+                      f(a)
+                  }
 
-              override val executeBatch: TracedOp[Array[Int]] =
-                runTraced(super.executeBatch)
+                override val executeBatch: TracedOp[Array[Int]] =
+                  runTraced(super.executeBatch)
 
-              override val executeLargeBatch: TracedOp[Array[Long]] =
-                runTraced(super.executeLargeBatch)
+                override val executeLargeBatch: TracedOp[Array[Long]] =
+                  runTraced(super.executeLargeBatch)
 
-              override val execute: TracedOp[Boolean] =
-                runTraced(super.execute)
+                override val execute: TracedOp[Boolean] =
+                  runTraced(super.execute)
 
-              override val executeUpdate: TracedOp[Int] =
-                runTraced(super.executeUpdate)
+                override val executeUpdate: TracedOp[Int] =
+                  runTraced(super.executeUpdate)
 
-              override val executeQuery: TracedOp[ResultSet] =
-                runTraced(super.executeQuery)
-            }
+                override val executeQuery: TracedOp[ResultSet] =
+                  runTraced(super.executeQuery)
+              }
 
-          override lazy val ConnectionInterpreter: ConnectionInterpreter =
-            new ConnectionInterpreter {
-              override def prepareStatement(a: String): Kleisli[Traced[F, *], Connection, PreparedStatement] =
-                super.prepareStatement(a).map(TracedStatement(_, a): PreparedStatement)
-            }
-        }
-      ).ConnectionInterpreter
-    )
+            override lazy val ConnectionInterpreter: ConnectionInterpreter =
+              new ConnectionInterpreter {
+                override def prepareStatement(
+                  a: String
+                ): Kleisli[Traced[F, *], Connection, PreparedStatement] =
+                  super.prepareStatement(a).map(TracedStatement(_, a): PreparedStatement)
+              }
+          }
+        ).ConnectionInterpreter
+      )
 }

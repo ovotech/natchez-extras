@@ -16,7 +16,7 @@ class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
       val (parent, child) = (
         for {
           parent <- SpanIdentifiers.create[IO]
-          child <- SpanIdentifiers.child[IO](parent)
+          child  <- SpanIdentifiers.child[IO](parent)
         } yield parent -> child
       ).unsafeRunSync
 
@@ -29,7 +29,7 @@ class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
     "Convert to and from a kernel losslessly" in {
       val (original, kernel) = (
         for {
-          ids <- create[IO]
+          ids    <- create[IO]
           kernel <- fromKernel[IO](SpanIdentifiers.toKernel(ids))
         } yield ids -> kernel
       ).unsafeRunSync

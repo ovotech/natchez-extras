@@ -1,6 +1,6 @@
 package com.ovoenergy.effect
 
-import cats.{Functor, Monad, ~>}
+import cats.{~>, Functor, Monad}
 import cats.syntax.apply._
 import com.ovoenergy.effect.Metrics.Metric
 
