@@ -86,7 +86,7 @@ object Datadog {
     for {
       queue <- spanQueue
       names = SpanNames.withFallback(_, SpanNames("unnamed", service, resource))
-      _     <- submitter(client, queue)
+      _ <- submitter(client, queue)
     } yield {
       new EntryPoint[F] {
         def root(name: String): Resource[F, Span[F]] =

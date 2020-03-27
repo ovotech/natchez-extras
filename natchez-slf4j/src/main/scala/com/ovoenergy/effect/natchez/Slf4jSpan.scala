@@ -39,10 +39,16 @@ object Slf4jSpan {
     }
 
   def fromKernel[F[_]: Sync](name: String, k: Kernel): F[Resource[F, Slf4jSpan[F]]] =
-    Sync[F].fromEither(
-      k.toHeaders.find(_._1.toLowerCase == "x-trace-token").map(_._2)
-        .toRight(new Exception("Missing X-Trace-Token header"))
-    ).map { token => create(name, Some(token), Map.empty)}
+    Sync[F]
+      .fromEither(
+        k.toHeaders
+          .find(_._1.toLowerCase == "x-trace-token")
+          .map(_._2)
+          .toRight(new Exception("Missing X-Trace-Token header"))
+      )
+      .map { token =>
+        create(name, Some(token), Map.empty)
+      }
 
   def create[F[_]: Sync](
     name: String,
@@ -52,9 +58,9 @@ object Slf4jSpan {
     Resource.makeCase(
       for {
         logger <- Sync[F].delay(LoggerFactory.getLogger("natchez"))
-        token <- OptionT.fromOption[F](token).getOrElseF(Sync[F].delay(randomUUID.toString))
-        _ <- log(logger, mdc.updated("traceToken", StringValue(token)))(_.info(s"$name started"))
-        mdc <- Ref.of(mdc)
+        token  <- OptionT.fromOption[F](token).getOrElseF(Sync[F].delay(randomUUID.toString))
+        _      <- log(logger, mdc.updated("traceToken", StringValue(token)))(_.info(s"$name started"))
+        mdc    <- Ref.of(mdc)
       } yield Slf4jSpan(mdc, logger, token, name)
     )(complete)
 
@@ -62,10 +68,9 @@ object Slf4jSpan {
     span.mdc.get.map(_.updated("traceToken", StringValue(span.token))).flatMap { mdc =>
       exitCase match {
         case ExitCase.Completed => log(span.logger, mdc)(_.info(s"${span.name} success"))
-        case ExitCase.Error(e) => log(span.logger, mdc)(_.error(s"${span.name} error", e))
-        case ExitCase.Canceled => log(span.logger, mdc)(_.info(s"${span.name} cancelled"))
+        case ExitCase.Error(e)  => log(span.logger, mdc)(_.error(s"${span.name} error", e))
+        case ExitCase.Canceled  => log(span.logger, mdc)(_.info(s"${span.name} cancelled"))
       }
     }
   }
 }
-

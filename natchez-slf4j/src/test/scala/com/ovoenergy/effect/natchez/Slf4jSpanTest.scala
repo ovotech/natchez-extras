@@ -1,7 +1,9 @@
 package com.ovoenergy.effect.natchez
 
 import cats.effect.{Concurrent, ContextShift, IO}
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
 
 import scala.concurrent.ExecutionContext
@@ -11,7 +13,7 @@ import natchez.Kernel
 
 import scala.util.Try
 
-class Slf4jSpanTest extends WordSpec with Matchers with BeforeAndAfterEach {
+class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {
 
   implicit val cs: ContextShift[IO] =
     IO.contextShift(ExecutionContext.global)

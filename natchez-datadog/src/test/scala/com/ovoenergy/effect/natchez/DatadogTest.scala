@@ -13,16 +13,17 @@ import natchez.TraceValue.StringValue
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.client.Client
 import org.http4s.{Request, Response}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 
 /**
-  * This tests both the datadog span code itself and the submission of metrics over HTTP
-  * Could be expanded but even just these tests exposed concurrency issues with my original code.
-  */
-class DatadogTest extends WordSpec with Matchers {
+ * This tests both the datadog span code itself and the submission of metrics over HTTP
+ * Could be expanded but even just these tests exposed concurrency issues with my original code.
+ */
+class DatadogTest extends AnyWordSpec with Matchers {
 
   implicit val timer: Timer[IO] =
     IO.timer(global)
@@ -35,7 +36,6 @@ class DatadogTest extends WordSpec with Matchers {
       val client: Client[IO] = Client(r => Resource.liftF(ref.update(_ :+ r).as(Response[IO]())))
       entryPoint(client, "test", "blah").use(f) >> ref.get
     }
-
 
   "Datadog span" should {
 
@@ -68,11 +68,11 @@ class DatadogTest extends WordSpec with Matchers {
     }
 
     "Inherit metadata into subspans but only at the time of creation" in {
-       val res = run(
-         _.root("bar:res").use { root =>
-            root.put("foo" -> "bar") >> root.span("sub").use(_.put("baz" -> "qux"))
-         }
-       ).unsafeRunSync
+      val res = run(
+        _.root("bar:res").use { root =>
+          root.put("foo" -> "bar") >> root.span("sub").use(_.put("baz" -> "qux"))
+        }
+      ).unsafeRunSync
 
       val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
       val rootSpan = spans.find(_.name == "bar").get

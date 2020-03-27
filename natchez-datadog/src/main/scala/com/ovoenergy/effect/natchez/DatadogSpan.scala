@@ -53,8 +53,8 @@ object DatadogSpan {
     def withFallback(string: String, fallback: SpanNames): SpanNames =
       string.split(':') match {
         case Array(service, name, resource) => SpanNames(name, service, resource)
-        case Array(name, resource) => SpanNames(name, fallback.service, resource)
-        case Array(name) => SpanNames(name, fallback.service, fallback.resource)
+        case Array(name, resource)          => SpanNames(name, fallback.service, resource)
+        case Array(name)                    => SpanNames(name, fallback.service, fallback.resource)
       }
   }
 
@@ -96,7 +96,7 @@ object DatadogSpan {
   private def exitTags(exitCase: ExitCase[Throwable]): Map[String, String] =
     exitCase match {
       case ExitCase.Error(e) => forThrowable(e).view.mapValues(_.value.toString).toMap
-      case _ => Map.empty
+      case _                 => Map.empty
     }
 
   /**
@@ -124,8 +124,10 @@ object DatadogSpan {
             parentId = datadogSpan.ids.parentId,
             error = isError(exitCase),
             meta = exitTags(exitCase) ++
-              meta.view.mapValues(_.value.toString).toMap
-                .updated("traceToken", datadogSpan.ids.traceToken)
+            meta.view
+              .mapValues(_.value.toString)
+              .toMap
+              .updated("traceToken", datadogSpan.ids.traceToken)
           )
       }
       .flatMap(datadogSpan.queue.enqueue1)

@@ -14,8 +14,11 @@ object Slf4j {
       def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
         Resource.liftF(Slf4jSpan.fromKernel(name, kernel).widen).flatMap(identity).widen
       def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
-        Resource.liftF(MonadError[F, Throwable]
-          .recover(Slf4jSpan.fromKernel(name, kernel)) { case _ => Slf4jSpan.create(name) })
+        Resource
+          .liftF(
+            MonadError[F, Throwable]
+              .recover(Slf4jSpan.fromKernel(name, kernel)) { case _ => Slf4jSpan.create(name) }
+          )
           .flatMap(identity)
           .widen
     }

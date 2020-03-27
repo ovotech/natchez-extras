@@ -6,10 +6,11 @@ import com.ovoenergy.effect.Datadog._
 import com.ovoenergy.effect.Metrics.Metric
 import org.scalacheck.Gen.mapOf
 import org.scalacheck.{Arbitrary, Gen, Prop}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
 
-class DatadogTest extends WordSpec with Matchers with Checkers {
+class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
   val string: Gen[String] =
     Arbitrary.arbString.arbitrary
@@ -35,8 +36,9 @@ class DatadogTest extends WordSpec with Matchers with Checkers {
 
     "Allow through dots" in {
       check(
-        Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) { case (pref, suf) =>
-          filterName(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
+        Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
+          case (pref, suf) =>
+            filterName(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
         }
       )
     }
@@ -57,7 +59,7 @@ class DatadogTest extends WordSpec with Matchers with Checkers {
     "Generate correct counters & histograms with tags" in {
       check(
         Prop.forAll(stringTags.suchThat(_.nonEmpty)) { tags =>
-          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}"}.mkString(",")
+          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}" }.mkString(",")
           serialiseHistogram(Metric("foo", tags), 1) == s"foo:1|h|@1.0|#$exp" &&
           serialiseCounter(Metric("foo", tags), 1) == s"foo:1|c|#$exp"
         }

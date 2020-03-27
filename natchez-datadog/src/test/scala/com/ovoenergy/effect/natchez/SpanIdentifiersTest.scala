@@ -3,10 +3,11 @@ package com.ovoenergy.effect.natchez
 import cats.effect.IO
 import com.ovoenergy.effect.natchez.SpanIdentifiers._
 import natchez.Kernel
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
 
-class SpanIdentifiersTest extends WordSpec with Matchers with Checkers {
+class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
 
   "Span identifiers" should {
 
@@ -15,7 +16,7 @@ class SpanIdentifiersTest extends WordSpec with Matchers with Checkers {
       val (parent, child) = (
         for {
           parent <- SpanIdentifiers.create[IO]
-          child <- SpanIdentifiers.child[IO](parent)
+          child  <- SpanIdentifiers.child[IO](parent)
         } yield parent -> child
       ).unsafeRunSync
 
@@ -28,7 +29,7 @@ class SpanIdentifiersTest extends WordSpec with Matchers with Checkers {
     "Convert to and from a kernel losslessly" in {
       val (original, kernel) = (
         for {
-          ids <- create[IO]
+          ids    <- create[IO]
           kernel <- fromKernel[IO](SpanIdentifiers.toKernel(ids))
         } yield ids -> kernel
       ).unsafeRunSync
