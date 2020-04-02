@@ -1,18 +1,17 @@
 package com.ovoenergy.effect.natchez.http4s.server
 
-import cats.{Applicative, Apply}
 import cats.data.Kleisli
 import cats.effect.Sync
-import cats.kernel.Semigroup
-import natchez.TraceValue
 import cats.instances.map._
-import org.http4s.{Headers, Message, Request, Response}
-import cats.syntax.semigroup._
+import cats.kernel.Semigroup
 import cats.syntax.functor._
-import com.ovoenergy.effect.natchez.http4s.server.Configuration.TagReader
+import cats.syntax.semigroup._
+import cats.{Applicative, Apply}
 import com.ovoenergy.effect.natchez.http4s.server.Configuration.TagReader._
+import natchez.TraceValue
 import natchez.TraceValue.StringValue
 import org.http4s.util.{CaseInsensitiveString, StringWriter}
+import org.http4s.{Headers, Message, Request, Response}
 
 /**
  * The tricky part about putting HTTP4s middleware into a library is that
@@ -24,8 +23,8 @@ import org.http4s.util.{CaseInsensitiveString, StringWriter}
  * and write your own extractors if required.
  */
 case class Configuration[F[_]](
-  request: TagReader[Request[F], F],
-  response: TagReader[Either[Throwable, Response[F]], F]
+  request: RequestReader[F],
+  response: ResponseReader[F]
 )
 
 object Configuration {
@@ -37,22 +36,22 @@ object Configuration {
    * A tag reader is essentially a function from an HTTP message to F[Tags]
    * We need the effect because some tags may involve streaming the entity body
    */
-  case class TagReader[-A, F[_]](value: Kleisli[F, A, Tags]) extends AnyVal
+  case class TagReader[F[_], -A](value: Kleisli[F, A, Tags]) extends AnyVal
 
   object TagReader {
 
-    type MessageReader[F[_]] = TagReader[Message[F], F]
-    type RequestReader[F[_]] = TagReader[Request[F], F]
-    type ResponseReader[F[_]] = TagReader[Either[Throwable, Response[F]], F]
+    type MessageReader[F[_]] = TagReader[F, Message[F]]
+    type RequestReader[F[_]] = TagReader[F, Request[F]]
+    type ResponseReader[F[_]] = TagReader[F, Either[Throwable, Response[F]]]
 
     /**
      * Semigroup instance for TagReader
      * so it is easy to read many tags from a request
      */
-    implicit def sg[M, F[_]: Apply]: Semigroup[TagReader[M, F]] = {
-      implicit def applySg[A: Semigroup]: Semigroup[F[A]] = Apply.semigroup[F, A]
+    implicit def sg[F[_]: Apply, A]: Semigroup[TagReader[F, A]] = {
+      implicit def applySg[B: Semigroup]: Semigroup[F[B]] = Apply.semigroup[F, B]
       implicit val takeLast: Semigroup[TraceValue] = (_, b) => b
-      (a, b) => TagReader[M, F](a.value |+| b.value)
+      (a, b) => TagReader[F, A](a.value |+| b.value)
     }
 
     def message[F[_]: Applicative](f: Message[F] => Tags): MessageReader[F] =
