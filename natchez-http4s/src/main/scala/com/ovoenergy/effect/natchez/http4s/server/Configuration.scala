@@ -18,6 +18,10 @@ import org.http4s.util.{CaseInsensitiveString, StringWriter}
  * The tricky part about putting HTTP4s middleware into a library is that
  * each user is likely to want to extract different tags from their requests
  * according to whatever their organisation wide tagging policy is
+ *
+ * As such we define how to create tags from Requests / Responses with a `TagReader`
+ * which has a semigroup instance, allowing you to cherry pick what you want to extract
+ * and write your own extractors if required.
  */
 case class Configuration[F[_]](
   request: TagReader[Request[F], F],
