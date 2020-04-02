@@ -53,6 +53,16 @@ lazy val natchezSlf4j = project
     )
   )
 
+lazy val natchezHttp4s = project
+  .in(file("natchez-http4s"))
+  .settings(common :+ (name := "natchez-http4s"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
+      "org.http4s"   %% "http4s-dsl"   % http4sVersion
+    )
+  )
+
 val silencerVersion = "1.6.0"
 val doobieVersion = "0.8.8"
 lazy val natchezDoobie = project
