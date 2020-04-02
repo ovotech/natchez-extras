@@ -80,6 +80,19 @@ object Configuration {
     }
 
   /**
+   * ResponseReaders can handle exceptions as well as responses
+   * so this lifts a MessageReader into a ResponseReader
+   * that only runs when there aren't exceptions
+   */
+  def ifResponse[F[_]: Applicative](tr: MessageReader[F]): ResponseReader[F] =
+    TagReader {
+      Kleisli {
+        case Right(resp) => tr.value.run(resp)
+        case _ => Applicative[F].pure(Map.empty)
+      }
+    }
+
+  /**
    * Extract headers from the HTTP message, redact sensitive ones
    * and place them into the span with the given tag name separated by newlines
    */
@@ -168,11 +181,12 @@ object Configuration {
     val static = defaults.foldLeft(noop[F]) { case (f, (k, v)) => f |+| const(k, v) }
     Configuration[F](
       request = uri("http.url") |+|
-        headers("http.headers") |+|
+        headers("http.request.headers") |+|
         method("http.method") |+|
         static,
       response = statusCode("http.status_code") |+|
-        ifFailure(entity("entity")) |+|
+        ifResponse(headers("http.response.headers")) |+|
+        ifFailure(entity("http.response.entity")) |+|
         exceptionMessage("error.msg") |+|
         exceptionType("error.type") |+|
         exceptionStack("error.stack")

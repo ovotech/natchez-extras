@@ -1,7 +1,168 @@
 package com.ovoenergy.effect.natchez.http4s.server
 
+import cats.data.{Kleisli, OptionT}
+import cats.effect.concurrent.Ref
+import cats.effect.{IO, Resource, Sync}
+import cats.{Applicative, Monad}
+import fs2._
+import natchez.TraceValue.{NumberValue, StringValue}
+import natchez.{EntryPoint, Kernel, Span, TraceValue}
+import org.http4s.Status._
+import org.http4s._
+import org.http4s.headers._
+import org.http4s.syntax.kleisli._
+import org.http4s.syntax.literals._
+import org.scalatest.Inspectors
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class TraceMiddlewareTest extends AnyWordSpec {
+class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
+  type TraceIO[A] = Kleisli[IO, Span[IO], A]
 
+  val config: Configuration[IO] =
+    Configuration.default[IO]()
+
+  def spanMock[F[_]: Applicative](ref: Ref[F, Map[String, TraceValue]]): Span[F] =
+    new Span[F] {
+      def kernel: F[Kernel] = Applicative[F].pure(Kernel(Map.empty))
+      def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields.toMap)
+      def span(name: String): Resource[F, Span[F]] = Resource.pure(spanMock[F](ref))
+    }
+
+  trait TestEntryPoint[F[_]] extends EntryPoint[F] {
+    def tags: F[Map[String, TraceValue]]
+  }
+
+  def entrypointMock: IO[TestEntryPoint[IO]] =
+    Ref.of[IO, Map[String, TraceValue]](Map.empty).map { ref =>
+      new TestEntryPoint[IO] {
+        def root(name: String): Resource[IO, Span[IO]] =
+          Resource.liftF(Monad[IO].pure(spanMock(ref)))
+        def continue(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
+          Resource.liftF(Monad[IO].pure(spanMock(ref)))
+        def continueOrElseRoot(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
+          Resource.liftF(Monad[IO].pure(spanMock(ref)))
+        def tags: IO[Map[String, TraceValue]] =
+          ref.get
+      }
+    }
+
+  def okService(body: String, headers: Headers = Headers.empty): HttpRoutes[TraceIO] =
+    Kleisli.pure(Response[TraceIO](Ok, headers = headers, body = Stream.emits(body.getBytes)))
+
+  def errorService(body: String): HttpRoutes[TraceIO] =
+    Kleisli.pure(Response(InternalServerError, body = Stream.emits(body.getBytes)))
+
+  "Logging / tracing middleware" should {
+    def s(string: String): StringValue = StringValue(string)
+
+    "Add tracing info & log requests + responses" in {
+      (
+        for {
+          entryPoint <- entrypointMock
+          svc = TraceMiddleware[IO](entryPoint, config, okService("ok").orNotFound)
+          _   <- svc.run(Request(headers = Headers.of(Header("X-Trace-Token", "foobar"))))
+          tags <- entryPoint.tags
+        } yield tags shouldBe Map(
+          "http.url" -> s("/"),
+          "http.method" -> s("GET"),
+          "http.status_code" -> NumberValue(200),
+          "http.request.headers" -> s("X-Trace-Token: foobar\n"),
+          "http.response.headers" -> s(""),
+          "http.url" -> s("/")
+        )
+      ).unsafeRunSync()
+    }
+
+    "Log headers, redacting any sensitive ones" in {
+
+      val responseHeaders = Headers.of(
+        `Set-Cookie`(ResponseCookie("secret", "foo")),
+        Header("X-Polite", "come back soon!")
+      )
+
+      val requestHeaders = Headers.of(
+        Authorization(BasicCredentials("secret")),
+        Cookie(RequestCookie("secret", "secret")),
+        `Content-Type`(MediaType.`text/event-stream`)
+      )
+
+      (
+        for {
+          entryPoint <- entrypointMock
+          svc = TraceMiddleware[IO](entryPoint, config, okService("", responseHeaders).orNotFound)
+          _   <- svc.run(Request(headers = requestHeaders))
+          tags <- entryPoint.tags
+        } yield tags shouldBe Map(
+          "http.url" -> s("/"),
+          "http.method" -> s("GET"),
+          "http.response.headers" -> s(""),
+          "http.status_code" -> NumberValue(200),
+          "http.request.headers" -> s(
+            """|Authorization: <REDACTED>
+               |Cookie: <REDACTED>
+               |Content-Type: text/event-stream
+               |""".stripMargin
+          ),
+          "http.response.headers" -> s(
+            """|Set-Cookie: <REDACTED>
+               |X-Polite: come back soon!
+               |""".stripMargin
+
+          )
+        )
+      ).unsafeRunSync()
+    }
+
+    "Include the response body if the response is an error" in {
+      (
+        for {
+          entryPoint <- entrypointMock
+          svc = TraceMiddleware[IO](entryPoint, config, errorService("oh no").orNotFound)
+          _   <- svc.run(Request())
+          tags <- entryPoint.tags
+        } yield tags shouldBe Map(
+          "http.method" -> s("GET"),
+          "http.status_code" -> NumberValue(500),
+          "http.response.entity" -> s("oh no"),
+          "http.response.headers" -> s(""),
+          "http.request.headers" -> s(""),
+          "http.url" -> s("/")
+        )
+      ).unsafeRunSync()
+    }
+
+
+    "Include exception details if the request fails with an exception" in {
+
+      val exception: IllegalArgumentException =
+        new IllegalArgumentException("bad")
+
+      val exceptionIO: TraceIO[Response[TraceIO]] =
+        Sync[TraceIO].raiseError(exception)
+
+      val exceptionApp: HttpApp[TraceIO] =
+        okService("").flatMapF(_ => OptionT.liftF(exceptionIO)).orNotFound
+
+      (
+        for {
+          entryPoint <- entrypointMock
+          svc = TraceMiddleware[IO](entryPoint, config, exceptionApp)
+          _   <- svc.run(Request()).attempt
+          tags <- entryPoint.tags
+        } yield tags.filter(_._1 != "error.stack") shouldBe Map(
+          "http.method" -> s("GET"),
+          "http.request.headers" -> s(""),
+          "error.type" -> s("IllegalArgumentException"),
+          "error.msg" -> s("bad"),
+          "http.url" -> s("/")
+        )
+      ).unsafeRunSync()
+    }
+
+    "convert URI to a tag-friendly version" in {
+      val uri = uri"https://test.com/test/path/ACC-1234/CUST-456/test"
+      TraceMiddleware.removeNumericPathSegments(uri) shouldBe "/test/path/_/_/test"
+    }
+  }
 }

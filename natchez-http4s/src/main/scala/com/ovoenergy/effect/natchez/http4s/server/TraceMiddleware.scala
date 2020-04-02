@@ -14,7 +14,7 @@ object TraceMiddleware {
    * Given a URI produce its path but with any segments containing only two or more numbers
    * replace with an underscore. This is to stop things like Account IDs showing up in URLs
    */
-  private def removeNumericPathSegments(uri: Uri): String =
+  def removeNumericPathSegments(uri: Uri): String =
     uri.path.replaceAll("(^|/)[^/]*[0-9]{2,}[^/]*", "$1_")
 
   private def runTracing[F[_]](s: Span[F]): Kleisli[F, Span[F], *] ~> F =

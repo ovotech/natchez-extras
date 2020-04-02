@@ -107,7 +107,8 @@ lazy val root = (project in file("."))
     natchezDatadog,
     natchezCombine,
     natchezSlf4j,
-    natchezDoobie
+    natchezDoobie,
+    natchezHttp4s
   )
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
