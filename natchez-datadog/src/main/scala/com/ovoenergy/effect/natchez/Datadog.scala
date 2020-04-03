@@ -64,7 +64,7 @@ object Datadog {
             .start(
               Stream
                 .repeatEval(sem.acquire >> submitOnce(http, queue) >> sem.release)
-                .debounce(0.5.seconds)
+                .metered(0.5.seconds)
                 .compile
                 .drain
             )
