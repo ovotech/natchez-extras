@@ -46,9 +46,8 @@ object DatadogTags {
     "error.stack" -> what
 
   def forThrowable(e: Throwable): Map[String, TraceValue] =
-    List(
-      errorMessage(e.getMessage),
-      errorType(e.getClass.getSimpleName),
-      errorStack(e.getStackTrace.mkString("\n"))
+    (
+      Option(e.getMessage).map(errorMessage).toList ++
+      List(errorType(e.getClass.getSimpleName), errorStack(e.getStackTrace.mkString("\n")))
     ).toMap
 }
