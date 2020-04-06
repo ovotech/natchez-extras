@@ -41,12 +41,11 @@ object TraceMiddleware {
           for {
             reqTags    <- configuration.request.value.run(r)
             _          <- span.put(reqTags.toSeq:_*)
-            tracedResp <- F.attempt(service.run(traceRequest).run(span))
-            response   =  tracedResp.map(_.mapK(runTracing(span)))
+            tracedResp <- service.run(traceRequest).run(span)
+            response   =  tracedResp.mapK(runTracing(span))
             respTags   <- configuration.response.value.run(response)
             _          <- span.put(respTags.toSeq:_*)
-            res        <- F.fromEither(response)
-          } yield res
+          } yield response
         }
     }
 }

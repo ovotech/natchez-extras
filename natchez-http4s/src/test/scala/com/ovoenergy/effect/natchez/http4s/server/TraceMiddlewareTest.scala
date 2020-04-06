@@ -1,8 +1,8 @@
 package com.ovoenergy.effect.natchez.http4s.server
 
-import cats.data.{Kleisli, OptionT}
+import cats.data.Kleisli
 import cats.effect.concurrent.Ref
-import cats.effect.{IO, Resource, Sync}
+import cats.effect.{IO, Resource}
 import cats.{Applicative, Monad}
 import fs2._
 import natchez.TraceValue.{NumberValue, StringValue}
@@ -127,34 +127,6 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           "http.response.entity" -> s("oh no"),
           "http.response.headers" -> s(""),
           "http.request.headers" -> s(""),
-          "http.url" -> s("/")
-        )
-      ).unsafeRunSync()
-    }
-
-
-    "Include exception details if the request fails with an exception" in {
-
-      val exception: IllegalArgumentException =
-        new IllegalArgumentException("bad")
-
-      val exceptionIO: TraceIO[Response[TraceIO]] =
-        Sync[TraceIO].raiseError(exception)
-
-      val exceptionApp: HttpApp[TraceIO] =
-        okService("").flatMapF(_ => OptionT.liftF(exceptionIO)).orNotFound
-
-      (
-        for {
-          entryPoint <- entrypointMock
-          svc = TraceMiddleware[IO](entryPoint, config, exceptionApp)
-          _   <- svc.run(Request()).attempt
-          tags <- entryPoint.tags
-        } yield tags.filter(_._1 != "error.stack") shouldBe Map(
-          "http.method" -> s("GET"),
-          "http.request.headers" -> s(""),
-          "error.type" -> s("IllegalArgumentException"),
-          "error.msg" -> s("bad"),
           "http.url" -> s("/")
         )
       ).unsafeRunSync()

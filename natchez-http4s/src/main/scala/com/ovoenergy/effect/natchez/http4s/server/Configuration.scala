@@ -1,12 +1,14 @@
 package com.ovoenergy.effect.natchez.http4s.server
 
+import cats.Applicative
 import cats.data.Kleisli
 import cats.effect.Sync
+import cats.instances.list._
 import cats.instances.map._
-import cats.kernel.Semigroup
+import cats.kernel.{Monoid, Semigroup}
+import cats.syntax.foldable._
 import cats.syntax.functor._
-import cats.syntax.semigroup._
-import cats.{Applicative, Apply}
+import cats.syntax.monoid._
 import com.ovoenergy.effect.natchez.http4s.server.Configuration.TagReader._
 import natchez.TraceValue
 import natchez.TraceValue.StringValue
@@ -42,16 +44,22 @@ object Configuration {
 
     type MessageReader[F[_]] = TagReader[F, Message[F]]
     type RequestReader[F[_]] = TagReader[F, Request[F]]
-    type ResponseReader[F[_]] = TagReader[F, Either[Throwable, Response[F]]]
+    type ResponseReader[F[_]] = TagReader[F, Response[F]]
 
     /**
-     * Semigroup instance for TagReader
+     * Monoid instance for TagReader
      * so it is easy to read many tags from a request
      */
-    implicit def sg[F[_]: Apply, A]: Semigroup[TagReader[F, A]] = {
-      implicit def applySg[B: Semigroup]: Semigroup[F[B]] = Apply.semigroup[F, B]
+    implicit def monoid[F[_]: Applicative, A]: Monoid[TagReader[F, A]] = {
+      implicit def underlying[B: Monoid]: Monoid[F[B]] = Applicative.monoid[F, B]
       implicit val takeLast: Semigroup[TraceValue] = (_, b) => b
-      (a, b) => TagReader[F, A](a.value |+| b.value)
+
+      new Monoid[TagReader[F, A]] {
+        def empty: TagReader[F, A] =
+          TagReader(Monoid[Kleisli[F, A, Map[String, TraceValue]]].empty)
+        def combine(x: TagReader[F, A], y: TagReader[F, A]): TagReader[F, A] =
+          TagReader(x.value |+| y.value)
+      }
     }
 
     def message[F[_]: Applicative](f: Message[F] => Tags): MessageReader[F] =
@@ -60,11 +68,8 @@ object Configuration {
     def request[F[_]: Applicative](f: Request[F] => Tags): RequestReader[F] =
       TagReader(Kleisli(a => Applicative[F].pure(f(a))))
 
-    def okResponse[F[_]: Applicative](f: Response[F] => Tags): ResponseReader[F] =
-      TagReader(Kleisli(a => Applicative[F].pure(a.fold(_ => Map.empty, f))))
-
-    def errorResponse[F[_]: Applicative](f: Throwable => Tags): ResponseReader[F] =
-      TagReader(Kleisli(a => Applicative[F].pure(a.fold(f, _ => Map.empty))))
+    def response[F[_]: Applicative](f: Response[F] => Tags): ResponseReader[F] =
+      TagReader(Kleisli(a => Applicative[F].pure(f(a))))
   }
 
   private val isSensitive: CaseInsensitiveString => Boolean =
@@ -77,20 +82,7 @@ object Configuration {
   def ifFailure[F[_]: Applicative](tr: MessageReader[F]): ResponseReader[F] =
     TagReader {
       Kleisli {
-        case Right(resp) if !resp.status.isSuccess => tr.value.run(resp)
-        case _ => Applicative[F].pure(Map.empty)
-      }
-    }
-
-  /**
-   * ResponseReaders can handle exceptions as well as responses
-   * so this lifts a MessageReader into a ResponseReader
-   * that only runs when there aren't exceptions
-   */
-  def ifResponse[F[_]: Applicative](tr: MessageReader[F]): ResponseReader[F] =
-    TagReader {
-      Kleisli {
-        case Right(resp) => tr.value.run(resp)
+        case resp if !resp.status.isSuccess => tr.value.run(resp)
         case _ => Applicative[F].pure(Map.empty)
       }
     }
@@ -156,43 +148,22 @@ object Configuration {
    * Extract the status code from the response and place it into the Span
    */
   def statusCode[F[_]: Applicative](name: String): ResponseReader[F] =
-    TagReader.okResponse(r => Map(name -> r.status.code))
-
-  /**
-   * If the HTTP routes return an exception then put its message into the Span
-   */
-  def exceptionMessage[F[_]: Applicative](name: String): ResponseReader[F] =
-    TagReader.errorResponse(e => Map(name -> e.getMessage))
-
-  /**
-   * If the HTTP routes return an exception then put its class name into the Span
-  */
-  def exceptionType[F[_]: Applicative](name: String): ResponseReader[F] =
-    TagReader.errorResponse(e => Map(name -> e.getClass.getSimpleName))
-
-  /**
-   * If the HTTP routes return an exception then put its stack trace into the Span
-   */
-  def exceptionStack[F[_]: Applicative](name: String): ResponseReader[F] =
-    TagReader.errorResponse(e => Map(name -> e.getStackTrace.mkString("\n")))
+    TagReader.response(r => Map(name -> r.status.code))
 
   /**
    * Create a default configuration for tracing HTTP4s calls.
    * This uses Datadog tag names but the idea is you can make your own configs with ease.
    */
   def default[F[_]: Sync](defaults: (String, TraceValue)*): Configuration[F] = {
-    val static = defaults.foldLeft(noop[F]) { case (f, (k, v)) => f |+| const(k, v) }
+    val static = defaults.toList.foldMap { case (k, v) => const[F](k, v) }
     Configuration[F](
-      request = uri("http.url") |+|
+      request = uri[F]("http.url") |+|
         headers("http.request.headers") |+|
         method("http.method") |+|
         static,
-      response = statusCode("http.status_code") |+|
-        ifResponse(headers("http.response.headers")) |+|
-        ifFailure(entity("http.response.entity")) |+|
-        exceptionMessage("error.msg") |+|
-        exceptionType("error.type") |+|
-        exceptionStack("error.stack")
+      response = statusCode[F]("http.status_code") |+|
+        headers("http.response.headers") |+|
+        ifFailure(entity("http.response.entity"))
     )
   }
 }
