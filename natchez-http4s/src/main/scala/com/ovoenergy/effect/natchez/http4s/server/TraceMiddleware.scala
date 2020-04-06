@@ -26,7 +26,8 @@ object TraceMiddleware {
    */
   def apply[F[_]](
     entryPoint: EntryPoint[F],
-    configuration: Configuration[F],
+    configuration: Configuration[F]
+  )(
     service: HttpApp[Kleisli[F, Span[F], *]]
   )(implicit F: Sync[F]): HttpApp[F] =
     Kleisli { r =>

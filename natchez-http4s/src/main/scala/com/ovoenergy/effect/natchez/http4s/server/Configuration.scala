@@ -91,13 +91,15 @@ object Configuration {
    * Extract headers from the HTTP message, redact sensitive ones
    * and place them into the span with the given tag name separated by newlines
    */
-  def headers[F[_]: Applicative](name: String): MessageReader[F] =
+  def headers[F[_]: Applicative](name: String)(
+    redact: CaseInsensitiveString => Boolean
+  ): MessageReader[F] =
     TagReader.message { message =>
       Map(
         name -> StringValue(
           message
             .headers
-            .redactSensitive(isSensitive)
+            .redactSensitive(redact)
             .foldLeft(new StringWriter) { case (sw, h) => h.render(sw).append('\n') }
             .result
         )
@@ -114,8 +116,10 @@ object Configuration {
         message
           .bodyAsText
           .compile
-          .lastOrError
-          .map(body => Map(name -> body))
+          .last
+          .map { body =>
+            body.map(b => name -> StringValue(b)).toMap
+          }
       }
     )
 
@@ -158,11 +162,11 @@ object Configuration {
     val static = defaults.toList.foldMap { case (k, v) => const[F](k, v) }
     Configuration[F](
       request = uri[F]("http.url") |+|
-        headers("http.request.headers") |+|
+        headers("http.request.headers")(isSensitive) |+|
         method("http.method") |+|
         static,
       response = statusCode[F]("http.status_code") |+|
-        headers("http.response.headers") |+|
+        headers("http.response.headers")(isSensitive) |+|
         ifFailure(entity("http.response.entity"))
     )
   }

@@ -53,6 +53,9 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
   def errorService(body: String): HttpRoutes[TraceIO] =
     Kleisli.pure(Response(InternalServerError, body = Stream.emits(body.getBytes)))
 
+  val noContentService: HttpRoutes[TraceIO] =
+    Kleisli.pure(Response(InternalServerError))
+
   "Logging / tracing middleware" should {
     def s(string: String): StringValue = StringValue(string)
 
@@ -60,7 +63,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
       (
         for {
           entryPoint <- entrypointMock
-          svc = TraceMiddleware[IO](entryPoint, config, okService("ok").orNotFound)
+          svc = TraceMiddleware[IO](entryPoint, config)(okService("ok").orNotFound)
           _   <- svc.run(Request(headers = Headers.of(Header("X-Trace-Token", "foobar"))))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
@@ -90,7 +93,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
       (
         for {
           entryPoint <- entrypointMock
-          svc = TraceMiddleware[IO](entryPoint, config, okService("", responseHeaders).orNotFound)
+          svc = TraceMiddleware[IO](entryPoint, config)(okService("", responseHeaders).orNotFound)
           _   <- svc.run(Request(headers = requestHeaders))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
@@ -118,7 +121,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
       (
         for {
           entryPoint <- entrypointMock
-          svc = TraceMiddleware[IO](entryPoint, config, errorService("oh no").orNotFound)
+          svc = TraceMiddleware[IO](entryPoint, config)(errorService("oh no").orNotFound)
           _   <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
@@ -131,6 +134,24 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         )
       ).unsafeRunSync()
     }
+
+    "Not include the response body if there isn't one on the response" in {
+      (
+        for {
+          entryPoint <- entrypointMock
+          svc = TraceMiddleware[IO](entryPoint, config)(noContentService.orNotFound)
+          _   <- svc.run(Request())
+          tags <- entryPoint.tags
+        } yield tags shouldBe Map(
+          "http.method" -> s("GET"),
+          "http.status_code" -> NumberValue(500),
+          "http.response.headers" -> s(""),
+          "http.request.headers" -> s(""),
+          "http.url" -> s("/")
+        )
+        ).unsafeRunSync()
+    }
+
 
     "convert URI to a tag-friendly version" in {
       val uri = uri"https://test.com/test/path/ACC-1234/CUST-456/test"
