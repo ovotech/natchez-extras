@@ -63,6 +63,16 @@ lazy val natchezHttp4s = project
     )
   )
 
+lazy val natchezLog4Cats = project
+  .in(file("natchez-log4cats"))
+  .settings(common :+ (name := "natchez-log4cats"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
+      "io.chrisdavenport"    %% "log4cats-core" % "1.0.1"
+    )
+  )
+
 val silencerVersion = "1.6.0"
 val doobieVersion = "0.8.8"
 lazy val natchezDoobie = project
@@ -108,7 +118,8 @@ lazy val root = (project in file("."))
     natchezCombine,
     natchezSlf4j,
     natchezDoobie,
-    natchezHttp4s
+    natchezHttp4s,
+    natchezLog4Cats
   )
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
