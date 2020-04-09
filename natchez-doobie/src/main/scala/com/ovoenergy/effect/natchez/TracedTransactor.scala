@@ -7,6 +7,7 @@ import cats.effect.{Async, Blocker, Concurrent, ContextShift}
 import doobie.free.KleisliInterpreter
 import doobie.util.transactor._
 import natchez.{Span, Trace}
+import cats.syntax.flatMap._
 
 object TracedTransactor {
 
@@ -39,7 +40,10 @@ object TracedTransactor {
                 def runTraced[A](f: TracedOp[A]): TracedOp[A] =
                   Kleisli {
                     case TracedStatement(p, sql) =>
-                      trace.span(s"$service-db:db.execute:${formatQuery(sql)}")(f(p))
+                      trace.span(s"$service-db:db.execute:${formatQuery(sql)}")(
+                      trace.put("span.type" -> "db") >>
+                      f(p)
+                    )
                     case a =>
                       f(a)
                   }

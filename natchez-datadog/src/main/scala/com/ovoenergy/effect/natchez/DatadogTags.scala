@@ -11,6 +11,8 @@ object DatadogTags {
   sealed trait SpanType
 
   object SpanType {
+    case object Custom extends SpanType
+    case object Cache extends SpanType
     case object Web extends SpanType
     case object Db extends SpanType
   }
@@ -19,7 +21,7 @@ object DatadogTags {
     "env" -> env
 
   def spanType(spanType: SpanType): (String, TraceValue) =
-    "span.type" -> spanType.toString
+    "span.type" -> spanType.toString.toLowerCase
 
   def serviceName(name: String): (String, TraceValue) =
     "service.name" -> name

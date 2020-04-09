@@ -67,6 +67,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           _   <- svc.run(Request(headers = Headers.of(Header("X-Trace-Token", "foobar"))))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
+          "span.type" -> s("web"),
           "http.url" -> s("/"),
           "http.method" -> s("GET"),
           "http.status_code" -> NumberValue(200),
@@ -97,6 +98,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           _   <- svc.run(Request(headers = requestHeaders))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
+          "span.type" -> s("web"),
           "http.url" -> s("/"),
           "http.method" -> s("GET"),
           "http.response.headers" -> s(""),
@@ -125,6 +127,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           _   <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
+          "span.type" -> s("web"),
           "http.method" -> s("GET"),
           "http.status_code" -> NumberValue(500),
           "http.response.entity" -> s("oh no"),
@@ -143,6 +146,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           _   <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
+          "span.type" -> s("web"),
           "http.method" -> s("GET"),
           "http.status_code" -> NumberValue(500),
           "http.response.headers" -> s(""),

@@ -7,12 +7,14 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import com.ovoenergy.effect.natchez.Datadog.entryPoint
-import com.ovoenergy.effect.natchez.DatadogSpan.CompletedSpan
+import com.ovoenergy.effect.natchez.DatadogTags.SpanType.{Cache, Db, Web}
+import com.ovoenergy.effect.natchez.DatadogTags.spanType
 import natchez.EntryPoint
 import natchez.TraceValue.StringValue
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.client.Client
 import org.http4s.{Request, Response}
+import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -42,26 +44,36 @@ class DatadogTest extends AnyWordSpec with Matchers {
     "Submit the right info to Datadog when closed" in {
 
       val res = run(_.root("bar:res").use(_.put("k" -> StringValue("v")))).unsafeRunSync
-      val span = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten.head
+      val span = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync.flatten.head
 
       span.name shouldBe "bar"
       span.service shouldBe "test"
       span.resource shouldBe "res"
+      span.`type` shouldBe None
       span.duration > 0 shouldBe true
       span.meta.get("k") shouldBe Some("v")
+      span.metrics shouldBe Map("__sampling_priority_v1" -> 2.0)
       span.meta.get("traceToken").isDefined shouldBe true
+    }
+
+    "Infer the right span.type from any tags set" in {
+      Inspectors.forAll(List(Web, Cache, Db)) { typ =>
+        val res = run(_.root("bar:res").use(_.put(spanType(typ)))).unsafeRunSync
+        val span = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync.flatten.head
+        span.`type` shouldBe Some(typ)
+      }
     }
 
     "Submit multiple spans across multiple calls when span() is called" in {
       val res = run(_.root("bar").use(_.span("subspan").use(_ => timer.sleep(1.second)))).unsafeRunSync
-      val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
+      val spans = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync.flatten
       spans.map(_.traceId).distinct.length shouldBe 1
       spans.map(_.spanId).distinct.length shouldBe 2
     }
 
     "Allow you to override the service name and resource with colons" in {
       val res = run(_.root("svc:name:res").use(_ => IO.unit)).unsafeRunSync
-      val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
+      val spans = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync.flatten
       spans.head.resource shouldBe "res"
       spans.head.service shouldBe "svc"
       spans.head.name shouldBe "name"
@@ -74,7 +86,7 @@ class DatadogTest extends AnyWordSpec with Matchers {
         }
       ).unsafeRunSync
 
-      val spans = res.flatTraverse(_.as[List[List[CompletedSpan]]]).unsafeRunSync.flatten
+      val spans = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync.flatten
       val rootSpan = spans.find(_.name == "bar").get
       val subSpan = spans.find(_.name == "sub").get
 

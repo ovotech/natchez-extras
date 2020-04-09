@@ -5,15 +5,11 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
 import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.effect.{Clock, ExitCase, Resource, Sync}
-import cats.syntax.apply._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.ovoenergy.effect.natchez.DatadogSpan.{CompletedSpan, SpanNames}
-import com.ovoenergy.effect.natchez.DatadogTags.forThrowable
+import com.ovoenergy.effect.natchez.DatadogSpan.SpanNames
 import fs2.concurrent.Queue
 import io.circe.generic.extras.Configuration
-import io.circe.generic.extras.semiauto._
-import io.circe.{Decoder, Encoder}
 import natchez.{Kernel, Span, TraceValue}
 
 /**
@@ -25,7 +21,7 @@ case class DatadogSpan[F[_]: Sync: Clock](
   names: SpanNames,
   ids: SpanIdentifiers,
   start: Long,
-  queue: Queue[F, CompletedSpan],
+  queue: Queue[F, SubmittableSpan],
   meta: Ref[F, Map[String, TraceValue]],
 ) extends Span[F] {
 
@@ -61,44 +57,6 @@ object DatadogSpan {
   implicit val config: Configuration =
     Configuration.default.withSnakeCaseMemberNames
 
-  case class CompletedSpan(
-    traceId: Long,
-    spanId: Long,
-    name: String,
-    service: String,
-    resource: String,
-    start: Long,
-    duration: Long,
-    parentId: Option[Long],
-    error: Option[Int],
-    meta: Map[String, String],
-  )
-
-  object CompletedSpan {
-    implicit val encode: Encoder[CompletedSpan] = deriveConfiguredEncoder
-    implicit val decode: Decoder[CompletedSpan] = deriveConfiguredDecoder
-  }
-
-  /**
-   * Datadog docs: "Set this [error] value to 1 to indicate if an error occurred"
-   */
-  private def isError[A](exitCase: ExitCase[A]): Option[Int] =
-    exitCase match {
-      case ExitCase.Completed => None
-      case ExitCase.Error(_)  => Some(1)
-      case ExitCase.Canceled  => None
-    }
-
-  /**
-   * Create some Datadog tags from an exit case,
-   * i.e. if the span failed include exception details
-   */
-  private def exitTags(exitCase: ExitCase[Throwable]): Map[String, String] =
-    exitCase match {
-      case ExitCase.Error(e) => forThrowable(e).view.mapValues(_.value.toString).toMap
-      case _                 => Map.empty
-    }
-
   /**
    * Given a span, complete it - this involves turning the span into a `CompletedSpan`
    * which 1:1 matches the Datadog JSON structure before submitting it to a queue of spans
@@ -108,32 +66,12 @@ object DatadogSpan {
     datadogSpan: DatadogSpan[F],
     exitCase: ExitCase[Throwable]
   ): F[Unit] =
-    (
-      datadogSpan.meta.get,
-      Clock[F].realTime(NANOSECONDS)
-    ).mapN {
-        case (meta, end) =>
-          CompletedSpan(
-            traceId = datadogSpan.ids.traceId,
-            spanId = datadogSpan.ids.spanId,
-            name = datadogSpan.names.name,
-            service = datadogSpan.names.service,
-            resource = datadogSpan.names.resource,
-            start = datadogSpan.start,
-            duration = end - datadogSpan.start,
-            parentId = datadogSpan.ids.parentId,
-            error = isError(exitCase),
-            meta = exitTags(exitCase) ++
-            meta.view
-              .mapValues(_.value.toString)
-              .toMap
-              .updated("traceToken", datadogSpan.ids.traceToken)
-          )
-      }
+    SubmittableSpan
+      .fromSpan(datadogSpan, exitCase)
       .flatMap(datadogSpan.queue.enqueue1)
 
   def create[F[_]: Sync: Clock](
-    queue: Queue[F, CompletedSpan],
+    queue: Queue[F, SubmittableSpan],
     names: SpanNames,
     meta: Map[String, TraceValue] = Map.empty
   )(identifiers: SpanIdentifiers): Resource[F, DatadogSpan[F]] =
@@ -159,7 +97,7 @@ object DatadogSpan {
     } yield child
 
   def fromKernel[F[_]: Sync: Clock](
-    queue: Queue[F, CompletedSpan],
+    queue: Queue[F, SubmittableSpan],
     names: SpanNames,
     kernel: Kernel
   ): Resource[F, DatadogSpan[F]] =

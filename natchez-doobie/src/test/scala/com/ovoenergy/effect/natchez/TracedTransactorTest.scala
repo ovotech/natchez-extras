@@ -46,7 +46,7 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
     "Trace queries" in {
       val query = sql"SELECT 1 WHERE true = ${true: Boolean}".query[Int].unique
       val res = db.use(d => run(query.transact(d))).unsafeRunSync()
-      res.last shouldBe SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map.empty)
+      res.last shouldBe SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map("span.type" -> "db"))
     }
 
     "Trace updates" in {
@@ -54,7 +54,7 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
       val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
       val insert = sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
       val res = db.use(d => run((create >> insert).transact(d))).unsafeRunSync()
-      res.last shouldBe SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map.empty)
+      res.last shouldBe SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
     }
   }
 }
