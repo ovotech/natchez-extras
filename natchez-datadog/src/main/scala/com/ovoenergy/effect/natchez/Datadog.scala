@@ -7,7 +7,7 @@ import cats.instances.option._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import com.ovoenergy.effect.natchez.DatadogSpan.{CompletedSpan, SpanNames}
+import com.ovoenergy.effect.natchez.DatadogSpan.SpanNames
 import fs2.concurrent.Queue
 import io.circe.{Encoder, Printer}
 import fs2._
@@ -15,7 +15,7 @@ import natchez.{EntryPoint, Kernel, Span}
 import org.http4s.Method.PUT
 import org.http4s.circe.CirceInstances.builder
 import org.http4s.client.Client
-import org.http4s.{EntityEncoder, Request, Uri}
+import org.http4s.{EntityEncoder, Header, Request, Uri}
 
 import scala.concurrent.duration._
 
@@ -24,8 +24,8 @@ object Datadog {
   val agentEndpoint: Uri =
     Uri.unsafeFromString("http://localhost:8126/v0.3/traces")
 
-  def spanQueue[F[_]: Concurrent]: Resource[F, Queue[F, CompletedSpan]] =
-    Resource.liftF(Queue.circularBuffer[F, CompletedSpan](maxSize = 1000))
+  def spanQueue[F[_]: Concurrent]: Resource[F, Queue[F, SubmittableSpan]] =
+    Resource.liftF(Queue.circularBuffer[F, SubmittableSpan](maxSize = 1000))
 
   private implicit def encoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] =
     builder.withPrinter(Printer.noSpaces.copy(dropNullValues = true)).build.jsonEncoderOf[F, A]
@@ -36,13 +36,15 @@ object Datadog {
    * in that you can submit new spans for existing traces across multiple requests
    * We do this in one `F[_]` operation so it won't be interrupted half way through on shutdown
    */
-  private def submitOnce[F[_]: Sync](client: Client[F], queue: Queue[F, CompletedSpan]): F[Unit] =
+  private def submitOnce[F[_]: Sync](client: Client[F], queue: Queue[F, SubmittableSpan]): F[Unit] =
     queue
       .tryDequeueChunk1(maxSize = 1000)
       .flatMap { items =>
         items.traverse { traces =>
           val grouped = traces.toList.groupBy(_.traceId).values.toList
-          val req = Request[F](uri = agentEndpoint, method = PUT).withEntity(grouped)
+          val req = Request[F](uri = agentEndpoint, method = PUT)
+            .withHeaders(Header("X-DataDog-Trace-Count", traces.size.toString))
+            .withEntity(grouped)
           client.status(req)
         }
       }
@@ -55,7 +57,7 @@ object Datadog {
    */
   private def submitter[F[_]: Concurrent: Timer](
     http: Client[F],
-    queue: Queue[F, CompletedSpan]
+    queue: Queue[F, SubmittableSpan]
   ): Resource[F, Unit] =
     Resource
       .make(

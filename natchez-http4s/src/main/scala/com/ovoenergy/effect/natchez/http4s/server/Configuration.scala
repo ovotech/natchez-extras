@@ -163,6 +163,7 @@ object Configuration {
     Configuration[F](
       request = uri[F]("http.url") |+|
         headers("http.request.headers")(isSensitive) |+|
+        const("span.type", "web") |+|
         method("http.method") |+|
         static,
       response = statusCode[F]("http.status_code") |+|
