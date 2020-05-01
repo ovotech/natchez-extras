@@ -139,7 +139,6 @@ lazy val root = (project in file("."))
     natchezCombine,
     natchezSlf4j,
     natchezDoobie,
-    natchezHttp4s,
     natchezLog4Cats,
     natchezHttp4s,
     natchezFs2,
