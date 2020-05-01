@@ -83,7 +83,7 @@ object Configuration {
     TagReader {
       Kleisli {
         case resp if !resp.status.isSuccess => tr.value.run(resp)
-        case _ => Applicative[F].pure(Map.empty)
+        case _                              => Applicative[F].pure(Map.empty)
       }
     }
 
@@ -97,8 +97,7 @@ object Configuration {
     TagReader.message { message =>
       Map(
         name -> StringValue(
-          message
-            .headers
+          message.headers
             .redactSensitive(redact)
             .foldLeft(new StringWriter) { case (sw, h) => h.render(sw).append('\n') }
             .result
@@ -113,10 +112,7 @@ object Configuration {
   def entity[F[_]: Sync](name: String): MessageReader[F] =
     TagReader(
       Kleisli { message =>
-        message
-          .bodyAsText
-          .compile
-          .last
+        message.bodyAsText.compile.last
           .map { body =>
             body.map(b => name -> StringValue(b)).toMap
           }
@@ -162,13 +158,13 @@ object Configuration {
     val static = defaults.toList.foldMap { case (k, v) => const[F](k, v) }
     Configuration[F](
       request = uri[F]("http.url") |+|
-        headers("http.request.headers")(isSensitive) |+|
-        const("span.type", "web") |+|
-        method("http.method") |+|
-        static,
+      headers("http.request.headers")(isSensitive) |+|
+      const("span.type", "web") |+|
+      method("http.method") |+|
+      static,
       response = statusCode[F]("http.status_code") |+|
-        headers("http.response.headers")(isSensitive) |+|
-        ifFailure(entity("http.response.entity"))
+      headers("http.response.headers")(isSensitive) |+|
+      ifFailure(entity("http.response.entity"))
     )
   }
 }

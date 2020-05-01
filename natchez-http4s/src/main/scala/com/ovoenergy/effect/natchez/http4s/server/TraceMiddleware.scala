@@ -31,7 +31,6 @@ object TraceMiddleware {
     service: HttpApp[Kleisli[F, Span[F], *]]
   )(implicit F: Sync[F]): HttpApp[F] =
     Kleisli { r =>
-
       val spanName = s"http.request:${removeNumericPathSegments(r.uri)}"
       val kernel = Kernel(r.headers.toList.map(h => h.name.toString -> h.value).toMap)
       val traceRequest = r.mapK(Kleisli.liftK[F, Span[F]])
@@ -41,11 +40,11 @@ object TraceMiddleware {
         .use { span =>
           for {
             reqTags    <- configuration.request.value.run(r)
-            _          <- span.put(reqTags.toSeq:_*)
+            _          <- span.put(reqTags.toSeq: _*)
             tracedResp <- service.run(traceRequest).run(span)
-            response   =  tracedResp.mapK(runTracing(span))
-            respTags   <- configuration.response.value.run(response)
-            _          <- span.put(respTags.toSeq:_*)
+            response = tracedResp.mapK(runTracing(span))
+            respTags <- configuration.response.value.run(response)
+            _        <- span.put(respTags.toSeq: _*)
           } yield response
         }
     }
