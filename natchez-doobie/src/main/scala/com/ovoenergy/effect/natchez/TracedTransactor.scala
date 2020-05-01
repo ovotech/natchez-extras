@@ -41,9 +41,9 @@ object TracedTransactor {
                   Kleisli {
                     case TracedStatement(p, sql) =>
                       trace.span(s"$service-db:db.execute:${formatQuery(sql)}")(
-                      trace.put("span.type" -> "db") >>
-                      f(p)
-                    )
+                        trace.put("span.type" -> "db") >>
+                        f(p)
+                      )
                     case a =>
                       f(a)
                   }

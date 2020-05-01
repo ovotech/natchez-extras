@@ -34,13 +34,14 @@ object AllocatedSpan {
    * create an AllocatedSpan that allows us to submit it
    */
   private def createSpan[F[_]](
-    spn: Span[F], submitTask: F[Unit]
+    spn: Span[F],
+    submitTask: F[Unit]
   )(implicit F: Sync[F]): AllocatedSpan[F] =
     new AllocatedSpan[F] {
       def kernel: F[Kernel] =
         spn.kernel
       def put(fields: (String, TraceValue)*): F[Unit] =
-        spn.put(fields:_*)
+        spn.put(fields: _*)
       def span(name: String): Resource[F, Span[F]] =
         spn.span(name)
       def addSubmitTask(task: F[Unit]): AllocatedSpan[F] =
@@ -86,7 +87,7 @@ object AllocatedSpan {
              * either with an error or a unit to indicate success
              */
             for {
-              out <- Queue.bounded[F, Span[F]](maxSize = 1)
+              out  <- Queue.bounded[F, Span[F]](maxSize = 1)
               halt <- Queue.bounded[F, Either[Throwable, Unit]](maxSize = 1)
               task = rootSpan(item).use(out.enqueue1(_) >> halt.dequeue1.flatMap(F.fromEither))
 
@@ -102,10 +103,11 @@ object AllocatedSpan {
                * to come back from the task we've just submitted
                */
               s <- out.dequeue1
-            } yield Traced(
-              value = item,
-              span = createSpan(s, halt.enqueue1(Right(())))
-            )
+            } yield
+              Traced(
+                value = item,
+                span = createSpan(s, halt.enqueue1(Right(())))
+              )
           }
       }
   }

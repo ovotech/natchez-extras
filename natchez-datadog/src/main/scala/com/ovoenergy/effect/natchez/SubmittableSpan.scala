@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
 import cats.Applicative
 import cats.effect.{Clock, ExitCase}
 import cats.syntax.apply._
-import com.ovoenergy.effect.natchez.DatadogTags.{SpanType, forThrowable}
+import com.ovoenergy.effect.natchez.DatadogTags.{forThrowable, SpanType}
 import io.circe.{Decoder, Encoder}
 import io.circe.Encoder.encodeString
 import io.circe.generic.extras.Configuration
@@ -85,8 +85,8 @@ object SubmittableSpan {
   private def inferSpanType(tags: Map[String, TraceValue]): Option[SpanType] =
     tags.collectFirst {
       case ("span.type", StringValue("cache")) => SpanType.Cache
-      case ("span.type", StringValue("web")) => SpanType.Web
-      case ("span.type", StringValue("db")) => SpanType.Db
+      case ("span.type", StringValue("web"))   => SpanType.Web
+      case ("span.type", StringValue("db"))    => SpanType.Db
     }
 
   /**
@@ -99,13 +99,11 @@ object SubmittableSpan {
     traceToken: String
   ): Map[String, String] =
     exitTags(exitCase) ++
-      tags
-        .view
-        .mapValues(_.value.toString)
-        .filterKeys(_ != "span.type")
-        .toMap
-        .updated("traceToken", traceToken)
-
+    tags.view
+      .mapValues(_.value.toString)
+      .filterKeys(_ != "span.type")
+      .toMap
+      .updated("traceToken", traceToken)
 
   /**
    * Given an open DatadogSpan and an exit case to indicate whether the span succeeded
@@ -118,7 +116,7 @@ object SubmittableSpan {
     (
       span.meta.get,
       Clock[F].realTime(NANOSECONDS)
-      ).mapN {
+    ).mapN {
       case (meta, end) =>
         SubmittableSpan(
           traceId = span.ids.traceId,

@@ -4,7 +4,6 @@ import java.util.UUID
 
 import cats.effect.{Clock, ContextShift, ExitCase, IO, Timer}
 import fs2.Stream
-import org.scalactic.anyvals.PosInt
 import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
