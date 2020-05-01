@@ -1,5 +1,6 @@
 val common = Seq(
   ThisBuild / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
+  fork in Test := true,
   scalaVersion := "2.13.1",
   organization := "com.ovoenergy.effect",
   organizationName := "OVO Energy",

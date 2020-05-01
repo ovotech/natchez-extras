@@ -4,11 +4,13 @@ import java.util.UUID
 
 import cats.effect.{Clock, ContextShift, ExitCase, IO, Timer}
 import fs2.Stream
+import org.scalactic.anyvals.PosInt
 import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 class AllocatedSpanTest extends AnyWordSpec with Matchers {
 
@@ -61,12 +63,13 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .covary[IO]
               .through(AllocatedSpan.create(maxOpen = 10)(_ => ep.root("root")))
               .evalTap(_.span.span("foo").use(_ => IO.unit))
+              .metered(1.millisecond)
               .evalTap(_.span.submit)
               .compile
               .drain
 
           for {
-            _ <- stream.attempt
+            _ <- stream
             spans <- ep.spans
           } yield {
             spans.length shouldBe 2
@@ -98,6 +101,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
             spans.length shouldBe 2
             val last = spans.maxBy(_.completed)
             val first = spans.minBy(_.completed)
+
             last.exitCase shouldBe ExitCase.Canceled
             first.exitCase shouldBe ExitCase.Completed
           }
