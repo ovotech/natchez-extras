@@ -3,6 +3,7 @@ package com.ovoenergy.effect
 import java.net.InetSocketAddress
 
 import cats.effect._
+import com.ovoenergy.effect.Events.Event
 import com.ovoenergy.effect.Metrics.Metric
 import fs2.Chunk.array
 import fs2.io.udp._
@@ -29,6 +30,18 @@ object Datadog {
   private[effect] def filterValue(s: String): String =
     s.replaceAll("[^A-Za-z0-9\\./\\-]+", "_")
 
+  /**
+   * I am unsure what characters Datadog can handle
+   * so for now I am conservatively only allowing ASCII
+   * because with multibyte unicode chars I don't know what the length should be
+   */
+  private[effect] def filterEventText(s: String): String =
+    s.flatMap {
+      case c if c == '\n' || c == '\r' => "\\n"
+      case c if c.toInt > 127 => " "
+      case c => c.toString
+    }
+
   private def serialiseTags(t: Map[String, String]): String = {
     val tagString = t.toList.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}" }.mkString(",")
     if (tagString.nonEmpty) s"|#$tagString" else ""
@@ -39,6 +52,12 @@ object Datadog {
 
   private[effect] def serialiseHistogram(m: Metric, value: Long): String =
     s"${filterName(m.name)}:$value|h|@1.0${serialiseTags(m.tags)}"
+
+  private[effect] def serialiseEvent(e: Event): String = {
+    val body = filterEventText(e.body).take(1000)
+    val title = filterEventText(e.title).take(1000)
+    s"_e{${title.length},${body.length}}:$title|$body|t:${e.alertType.value}|p:${e.priority.value}${serialiseTags(e.tags)}"
+  }
 
   private[effect] def applyConfig(m: Metric, config: Config): Metric =
     Metric((config.metricPrefix.toList :+ m.name).mkString("."), config.globalTags ++ m.tags)
@@ -57,13 +76,15 @@ object Datadog {
     implicit
     G: Async[G],
     F: ConcurrentEffect[F]
-  ): Resource[F, Metrics[G]] =
+  ): Resource[F, Metrics[G] with Events[G]] =
     Blocker[F].flatMap(SocketGroup[F]).flatMap(_.open()).map { sock =>
-      new Metrics[G] {
+      new Metrics[G] with Events[G] {
         def counter(m: Metric)(value: Long): G[Unit] =
           send[F, G](sock, config.agentHost, serialiseCounter(applyConfig(m, config), value))
         def histogram(m: Metric)(value: Long): G[Unit] =
           send[F, G](sock, config.agentHost, serialiseHistogram(applyConfig(m, config), value))
+        def event(event: Event): G[Unit] =
+          send[F, G](sock, config.agentHost, serialiseEvent(event.withTags(config.globalTags ++ event.tags)))
       }
     }
 }

@@ -3,6 +3,7 @@ package com.ovoenergy.effect
 import java.net.InetSocketAddress
 
 import com.ovoenergy.effect.Datadog._
+import com.ovoenergy.effect.Events.{AlertType, Event, Priority}
 import com.ovoenergy.effect.Metrics.Metric
 import org.scalacheck.Gen.mapOf
 import org.scalacheck.{Arbitrary, Gen, Prop}
@@ -64,6 +65,11 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
           serialiseCounter(Metric("foo", tags), 1) == s"foo:1|c|#$exp"
         }
       )
+    }
+
+    "Generate correct events" in {
+      val res = serialiseEvent(Event("fooo", "bar", AlertType.Info, Map.empty, Priority.Normal))
+      res shouldBe "_e{4,3}:fooo|bar|t:info|p:normal"
     }
   }
 
