@@ -59,7 +59,6 @@ object Datadog {
    * Datadog receives events as binary byte arrays then converts them into UTF-8 strings
    * https://github.com/DataDog/datadog-agent/blob/21a80ab80de389adb9c74e3e9a7162f83fda3e0c/pkg/dogstatsd/parse_events.go#L62
    * As such we obtain the byte values from the string in UTF-8
-   * We take only the first 2k chars just for a basic sanity check
    */
   private[effect] def filterEventText(s: String): UTF8Bytes =
     s.take(maxStringLength).toCharArray.flatMap {

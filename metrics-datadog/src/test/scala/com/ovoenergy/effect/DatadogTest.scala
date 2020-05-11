@@ -1,7 +1,7 @@
 package com.ovoenergy.effect
 
 import java.net.InetSocketAddress
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 import com.ovoenergy.effect.Datadog._
 import com.ovoenergy.effect.Events.{AlertType, Event, Priority}
@@ -22,7 +22,7 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
     string.map(_.getBytes("UTF-8"))
 
   def makeString(bytes: Array[Byte]) =
-    new String(bytes, Charset.forName("UTF-8"))
+    new String(bytes, StandardCharsets.UTF_8)
 
   val stringTags: Gen[Map[String, String]] =
     mapOf(Gen.zip(string, string))
