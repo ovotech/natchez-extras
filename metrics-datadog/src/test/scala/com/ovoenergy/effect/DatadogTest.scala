@@ -1,6 +1,7 @@
 package com.ovoenergy.effect
 
 import java.net.InetSocketAddress
+import java.nio.charset.Charset
 
 import com.ovoenergy.effect.Datadog._
 import com.ovoenergy.effect.Events.{AlertType, Event, Priority}
@@ -10,11 +11,18 @@ import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
+import org.typelevel.claimant.Claim
 
 class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
   val string: Gen[String] =
     Arbitrary.arbString.arbitrary
+
+  val bytes: Gen[Array[Byte]] =
+    string.map(_.getBytes("UTF-8"))
+
+  def makeString(bytes: Array[Byte]) =
+    new String(bytes, Charset.forName("UTF-8"))
 
   val stringTags: Gen[Map[String, String]] =
     mapOf(Gen.zip(string, string))
@@ -30,7 +38,7 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
     "Never submit double underscores to datadog" in {
       check(
         Prop.forAll(string) { str =>
-          !filterName(str).matches(".*?__.*?")
+          !makeString(filterName(str)).matches(".*?__.*?")
         }
       )
     }
@@ -39,37 +47,37 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
       check(
         Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
           case (pref, suf) =>
-            filterName(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
+            makeString(filterName(s"$pref.$suf")) == s"$pref.$suf".dropWhile(!_.isLetter)
         }
       )
     }
 
     "Allow numbers, hyphens and slashes for tag values" in {
-      filterValue("/12412-1231") shouldBe "/12412-1231"
+      makeString(filterValue("/12412-1231")) shouldBe "/12412-1231"
     }
 
     "Generate correct counters and histograms with no tags" in {
       check(
         Prop.forAll(Arbitrary.arbLong.arbitrary) { l =>
-          serialiseCounter(Metric("foo", Map.empty), l) == s"foo:$l|c" &&
-          serialiseHistogram(Metric("foo", Map.empty), l) == s"foo:$l|h|@1.0"
+          makeString(serialiseCounter(Metric("foo", Map.empty), l)) == s"foo:$l|c" &&
+          makeString(serialiseHistogram(Metric("foo", Map.empty), l)) == s"foo:$l|h|@1.0"
         }
       )
     }
 
     "Generate correct counters & histograms with tags" in {
       check(
-        Prop.forAll(stringTags.suchThat(_.nonEmpty)) { tags =>
-          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}" }.mkString(",")
-          serialiseHistogram(Metric("foo", tags), 1) == s"foo:1|h|@1.0|#$exp" &&
-          serialiseCounter(Metric("foo", tags), 1) == s"foo:1|c|#$exp"
+        Prop.forAllNoShrink(stringTags.suchThat(_.nonEmpty)) { tags =>
+          val exp = tags.map { case (k, v) => s"${makeString(filterName(k))}:${makeString(filterValue(v))}" }.mkString(",")
+          Claim(makeString(serialiseHistogram(Metric("foo", tags), 1)) == s"foo:1|h|@1.0|#$exp") &&
+          Claim(makeString(serialiseCounter(Metric("foo", tags), 1)) == s"foo:1|c|#$exp")
         }
       )
     }
 
     "Generate correct events" in {
       val res = serialiseEvent(Event("fooo", "bar", AlertType.Info, Map.empty, Priority.Normal))
-      res shouldBe "_e{4,3}:fooo|bar|t:info|p:normal"
+      makeString(res) shouldBe "_e{4,3}:fooo|bar|t:info|p:normal"
     }
   }
 

@@ -121,6 +121,7 @@ lazy val datadogMetrics = project
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
+      "org.typelevel" %% "claimant" % "0.1.3" % Test,
       "co.fs2" %% "fs2-core" % fs2Version,
       "co.fs2" %% "fs2-io" % fs2Version,
     )
