@@ -38,7 +38,7 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
     "Never submit double underscores to datadog" in {
       check(
         Prop.forAll(string) { str =>
-          !makeString(filterName(str)).matches(".*?__.*?")
+          !filterName(str).matches(".*?__.*?")
         }
       )
     }
@@ -47,13 +47,13 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
       check(
         Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
           case (pref, suf) =>
-            makeString(filterName(s"$pref.$suf")) == s"$pref.$suf".dropWhile(!_.isLetter)
+            filterName(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
         }
       )
     }
 
     "Allow numbers, hyphens and slashes for tag values" in {
-      makeString(filterValue("/12412-1231")) shouldBe "/12412-1231"
+      filterTagValue("/12412-1231") shouldBe "/12412-1231"
     }
 
     "Generate correct counters and histograms with no tags" in {
@@ -67,10 +67,20 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
     "Generate correct counters & histograms with tags" in {
       check(
-        Prop.forAllNoShrink(stringTags.suchThat(_.nonEmpty)) { tags =>
-          val exp = tags.map { case (k, v) => s"${makeString(filterName(k))}:${makeString(filterValue(v))}" }.mkString(",")
+        Prop.forAllNoShrink(stringTags.suchThat(_.nonEmpty)) { rawTags =>
+          val tags = rawTags.filter { case (k, v) => s"$k$v".length <= 200 }.take(20)
+          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterTagValue(v)}" }.mkString(",")
           Claim(makeString(serialiseHistogram(Metric("foo", tags), 1)) == s"foo:1|h|@1.0|#$exp") &&
           Claim(makeString(serialiseCounter(Metric("foo", tags), 1)) == s"foo:1|c|#$exp")
+        }
+      )
+    }
+
+    "Limit the size of a UDP packet to below the maximum 65535 bytes" in {
+      check(
+        Prop.forAllNoShrink(string, stringTags) { case (name, tags) =>
+          Claim(serialiseHistogram(Metric(name, tags), 1).length < 65535) &&
+          Claim(serialiseCounter(Metric(name, tags), 1).length < 65535)
         }
       )
     }

@@ -1,6 +1,7 @@
 package com.ovoenergy.effect
 
 import java.net.InetSocketAddress
+import java.nio.charset.StandardCharsets.UTF_8
 
 import cats.effect._
 import com.ovoenergy.effect.Events.Event
@@ -14,7 +15,7 @@ object Datadog {
   type UTF8Bytes = Array[Byte]
 
   private implicit class StringOps(s: String) {
-    def utf8Bytes: UTF8Bytes = s.getBytes("UTF-8")
+    def utf8Bytes: UTF8Bytes = s.getBytes(UTF_8)
   }
 
   private implicit class ByteArrayOps(bs: UTF8Bytes) {
@@ -30,30 +31,40 @@ object Datadog {
   )
 
   /**
-   * Apparently the maximum UDP packet size is 65535 bytes (at the absolute maximum)
-   * and we have many different strings in a packet so we only allow each one to be 1Kb
+   * https://docs.datadoghq.com/developers/metrics/#naming-custom-metrics
    */
-  val maxStringLength = 1000
+  val maxMetricNameLength = 200
+
+  /**
+   * https://docs.datadoghq.com/tagging/
+   */
+  val maxTagLength = 200
+
+  /**
+   * Apparently the maximum UDP packet size is 65535 bytes (at the absolute maximum)
+   * and we have many different strings in a packet so we only allow each one to be 2k chars
+   */
+  val maxStringLength = 2000
 
   /**
    * A basic sanity check for the maximum number of tags to send to Datadog
-   * 100 x 2000 (key + value size) = 20Kb so well within a reasonable budget
+   * 20 x 200 (max key + value size) = 4k chars so seems okay
    */
-  val maximumTagCount = 100
+  val maximumTagCount = 20
 
   /**
    * Datadog enforces all metrics must start with a letter
    * and not contain any chars other than letters, numbers and underscores
    */
-  private[effect] def filterName(s: String): UTF8Bytes =
-    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9.]+", "_").take(maxStringLength).utf8Bytes
+  private[effect] def filterName(s: String): String =
+    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9.]+", "_").take(maxMetricNameLength)
 
   /**
    * More lenient filtering for tag values,
    * we allow alpha numeric characters, slashes, hyphens and numbers
    */
-  private[effect] def filterValue(s: String): UTF8Bytes =
-    s.replaceAll("[^A-Za-z0-9./\\-]+", "_").take(maxStringLength).utf8Bytes
+  private[effect] def filterTagValue(s: String): String =
+    s.replaceAll("[^A-Za-z0-9./\\-]+", "_")
 
   /**
    * Datadog receives events as binary byte arrays then converts them into UTF-8 strings
@@ -61,24 +72,22 @@ object Datadog {
    * As such we obtain the byte values from the string in UTF-8
    */
   private[effect] def filterEventText(s: String): UTF8Bytes =
-    s.take(maxStringLength).toCharArray.flatMap {
-      case c if c == '\n' || c == '\r' => "\\n".utf8Bytes
-      case c => s"$c".utf8Bytes
-    }
+    s.take(maxStringLength).replaceAll("[\\r\\n]", "\\n").utf8Bytes
 
   private def serialiseTags(t: Map[String, String]): UTF8Bytes = {
     t.toList
       .take(maximumTagCount)
-      .map { case (k, v) => filterName(k).colon(filterValue(v)) }
-      .reduceOption[UTF8Bytes] { case (a, b) => a.sep(',')(b) }
-      .fold(Array.empty[Byte])(bs => "|#".utf8Bytes ++ bs)
+      .map { case (k, v) => s"${filterName(k)}:${filterTagValue(v)}" }
+      .filter(tag => tag.length <= maxTagLength)
+      .reduceOption(_ + "," + _)
+      .fold(Array.empty[Byte])(ts => s"|#$ts".utf8Bytes)
   }
 
   private[effect] def serialiseCounter(m: Metric, value: Long): UTF8Bytes =
-    filterName(m.name).colon(value.toString.utf8Bytes.pipe("c".utf8Bytes ++ serialiseTags(m.tags)))
+    s"${filterName(m.name)}:$value|c".utf8Bytes ++ serialiseTags(m.tags)
 
   private[effect] def serialiseHistogram(m: Metric, value: Long): UTF8Bytes =
-    filterName(m.name).colon(value.toString.utf8Bytes.pipe("h|@1.0".utf8Bytes ++ serialiseTags(m.tags)))
+    s"${filterName(m.name)}:$value|h|@1.0".utf8Bytes ++ serialiseTags(m.tags)
 
   private[effect] def serialiseEvent(e: Event): UTF8Bytes = {
     val body = filterEventText(e.body)
