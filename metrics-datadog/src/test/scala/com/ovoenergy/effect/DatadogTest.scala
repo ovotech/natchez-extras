@@ -86,8 +86,8 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
     }
 
     "Generate correct events" in {
-      val res = serialiseEvent(Event("fooo", "bar", AlertType.Info, Map.empty, Priority.Normal))
-      makeString(res) shouldBe "_e{4,3}:fooo|bar|t:info|p:normal"
+      val res = serialiseEvent(Event("fooo", "bar\nbaz", AlertType.Info, Map.empty, Priority.Normal))
+      makeString(res) shouldBe "_e{4,8}:fooo|bar\\nbaz|t:info|p:normal"
     }
   }
 

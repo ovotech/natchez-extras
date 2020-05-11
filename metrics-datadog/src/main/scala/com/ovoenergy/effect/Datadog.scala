@@ -72,7 +72,7 @@ object Datadog {
    * As such we obtain the byte values from the string in UTF-8
    */
   private[effect] def filterEventText(s: String): UTF8Bytes =
-    s.take(maxStringLength).replaceAll("[\\r\\n]", "\\n").utf8Bytes
+    s.take(maxStringLength).replaceAll("[\\r\\n]", "\\\\n").utf8Bytes
 
   private def serialiseTags(t: Map[String, String]): UTF8Bytes = {
     t.toList
