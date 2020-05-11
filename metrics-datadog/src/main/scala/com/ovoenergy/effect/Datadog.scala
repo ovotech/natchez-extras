@@ -13,7 +13,7 @@ object Datadog {
   // just for readability
   type UTF8Bytes = Array[Byte]
 
-  private implicit class stringOps(s: String) {
+  private implicit class StringOps(s: String) {
     def utf8Bytes: UTF8Bytes = s.getBytes("UTF-8")
   }
 
@@ -33,7 +33,7 @@ object Datadog {
    * Apparently the maximum UDP packet size is 65535 bytes (at the absolute maximum)
    * and we have many different strings in a packet so we only allow each one to be 1Kb
    */
-  val maxStringLength = 1000;
+  val maxStringLength = 1000
 
   /**
    * A basic sanity check for the maximum number of tags to send to Datadog
@@ -46,7 +46,7 @@ object Datadog {
    * and not contain any chars other than letters, numbers and underscores
    */
   private[effect] def filterName(s: String): UTF8Bytes =
-    s.dropWhile(!_.isLetter).take(maxStringLength).replaceAll("[^A-Za-z0-9.]+", "_").utf8Bytes
+    s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9.]+", "_").take(maxStringLength).utf8Bytes
 
   /**
    * More lenient filtering for tag values,
