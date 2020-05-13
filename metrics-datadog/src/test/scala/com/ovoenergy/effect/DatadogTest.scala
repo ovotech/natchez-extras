@@ -1,19 +1,28 @@
 package com.ovoenergy.effect
 
 import java.net.InetSocketAddress
+import java.nio.charset.StandardCharsets.UTF_8
 
 import com.ovoenergy.effect.Datadog._
+import com.ovoenergy.effect.Events.{AlertType, Event, Priority}
 import com.ovoenergy.effect.Metrics.Metric
 import org.scalacheck.Gen.mapOf
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
+import org.typelevel.claimant.Claim
 
 class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
   val string: Gen[String] =
     Arbitrary.arbString.arbitrary
+
+  val bytes: Gen[Array[Byte]] =
+    string.map(_.getBytes(UTF_8))
+
+  def makeString(bytes: Array[Byte]) =
+    new String(bytes, UTF_8)
 
   val stringTags: Gen[Map[String, String]] =
     mapOf(Gen.zip(string, string))
@@ -44,26 +53,41 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
     }
 
     "Allow numbers, hyphens and slashes for tag values" in {
-      filterValue("/12412-1231") shouldBe "/12412-1231"
+      filterTagValue("/12412-1231") shouldBe "/12412-1231"
     }
 
     "Generate correct counters and histograms with no tags" in {
       check(
         Prop.forAll(Arbitrary.arbLong.arbitrary) { l =>
-          serialiseCounter(Metric("foo", Map.empty), l) == s"foo:$l|c" &&
-          serialiseHistogram(Metric("foo", Map.empty), l) == s"foo:$l|h|@1.0"
+          makeString(serialiseCounter(Metric("foo", Map.empty), l)) == s"foo:$l|c" &&
+          makeString(serialiseHistogram(Metric("foo", Map.empty), l)) == s"foo:$l|h|@1.0"
         }
       )
     }
 
     "Generate correct counters & histograms with tags" in {
       check(
-        Prop.forAll(stringTags.suchThat(_.nonEmpty)) { tags =>
-          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterValue(v)}" }.mkString(",")
-          serialiseHistogram(Metric("foo", tags), 1) == s"foo:1|h|@1.0|#$exp" &&
-          serialiseCounter(Metric("foo", tags), 1) == s"foo:1|c|#$exp"
+        Prop.forAllNoShrink(stringTags.suchThat(_.nonEmpty)) { rawTags =>
+          val tags = rawTags.filter { case (k, v) => s"$k$v".length <= 200 }.take(20)
+          val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterTagValue(v)}" }.mkString(",")
+          Claim(makeString(serialiseHistogram(Metric("foo", tags), 1)) == s"foo:1|h|@1.0|#$exp") &&
+          Claim(makeString(serialiseCounter(Metric("foo", tags), 1)) == s"foo:1|c|#$exp")
         }
       )
+    }
+
+    "Limit the size of a UDP packet to below the maximum 65535 bytes" in {
+      check(
+        Prop.forAllNoShrink(string, stringTags) { case (name, tags) =>
+          Claim(serialiseHistogram(Metric(name, tags), 1).length < 65535) &&
+          Claim(serialiseCounter(Metric(name, tags), 1).length < 65535)
+        }
+      )
+    }
+
+    "Generate correct events" in {
+      val res = serialiseEvent(Event("fooo", "bar\nbaz", AlertType.Info, Map.empty, Priority.Normal))
+      makeString(res) shouldBe "_e{4,8}:fooo|bar\\nbaz|t:info|p:normal"
     }
   }
 
