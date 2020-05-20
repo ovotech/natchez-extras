@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez Datadog"
-section: docs
+section: modules
 position: 3
 ---
 

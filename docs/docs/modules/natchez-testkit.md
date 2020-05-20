@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez Testkit"
-section: docs
+section: modules
 position: 9
 ---
 

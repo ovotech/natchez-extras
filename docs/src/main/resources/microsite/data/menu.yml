@@ -1,19 +1,45 @@
 options:
- - title: Modules
-   url: modules/metrics.html
-#  - title: Natchez Datadog
-#    url: natchez-datadog.html
-#  - title: Natchez Combine
-#    url: natchez-combine.html
-#  - title: Natchez Doobie
-#    url: natchez-doobie.html
-#  - title: Natchez FS2
-#    url: natchez-fs2.html
-#  - title: Natchez HTTP4s
-#    url: natchez-http4s.html
-#  - title: Natchez Log4Cats
-#    url: natchez-log4cats.html
-#  - title: Natchez SLF4J
-#    url: natchez-slf4j.html
-#  - title: Natchez Testkit
-#    url: natchez-testkit.html
+
+- title: Tracing an API
+  url: cookbook/api.html
+  menu_type: cookbook
+
+- title: Tracing a Kafka consumer
+  url: cookbook/kafka.html
+  menu_type: cookbook
+
+- title: Metrics
+  url: modules/metrics.html
+  menu_type: modules
+
+- title: Natchez Datadog
+  url: modules/natchez-datadog.html
+  menu_type: modules
+
+- title: Natchez Combine
+  url: modules/natchez-combine.html
+  menu_type: modules
+
+- title: Natchez Doobie
+  url: modules/natchez-doobie.html
+  menu_type: modules
+
+- title: Natchez FS2
+  url: modules/natchez-fs2.html
+  menu_type: modules
+
+- title: Natchez HTTP4s
+  url: modules/natchez-http4s.html
+  menu_type: modules
+
+- title: Natchez Log4Cats
+  url: modules/natchez-log4cats.html
+  menu_type: modules
+
+- title: Natchez SLF4J
+  url: modules/natchez-slf4j.html
+  menu_type: modules
+
+- title: Natchez Testkit
+  url: modules/natchez-testkit.html
+  menu_type: modules

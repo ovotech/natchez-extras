@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez Combine"
-section: docs
+section: modules
 position: 2
 ---
 

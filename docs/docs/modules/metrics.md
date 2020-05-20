@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Metrics"
-section: docs
+section: modules
 position: 1
 ---
 

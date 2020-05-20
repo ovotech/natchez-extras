@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez SLF4j"
-section: docs
+section: modules
 position: 8
 ---
 
