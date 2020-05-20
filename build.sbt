@@ -1,3 +1,5 @@
+import microsites.MicrositesPlugin.autoImport.micrositeDescription
+
 val common = Seq(
   ThisBuild / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
   fork in Test := true,
@@ -127,6 +129,16 @@ lazy val datadogMetrics = project
       "co.fs2" %% "fs2-core" % fs2Version,
       "co.fs2" %% "fs2-io" % fs2Version,
     )
+  )
+
+lazy val docs = project
+  .in(file("docs"))
+  .enablePlugins(MicrositesPlugin)
+  .settings(
+    micrositeName := "effect-utils",
+    micrositeDescription := "Scala Datadog",
+    micrositeDataDirectory := (resourceDirectory in Compile).value / "microsite" / "data",
+    micrositePushSiteWith := GitHub4s
   )
 
 lazy val root = (project in file("."))
