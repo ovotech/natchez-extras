@@ -1,9 +1,10 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
+scalaVersion in ThisBuild := "2.13.1"
+
 val common = Seq(
   ThisBuild / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
   fork in Test := true,
-  scalaVersion := "2.13.1",
   organization := "com.ovoenergy.effect",
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("http://www.ovoenergy.com")),
@@ -134,10 +135,18 @@ lazy val datadogMetrics = project
 lazy val docs = project
   .in(file("docs"))
   .enablePlugins(MicrositesPlugin)
+  .dependsOn(
+    natchezDatadog,
+    natchezCombine,
+    natchezSlf4j,
+  )
   .settings(
     micrositeName := "effect-utils",
     micrositeDescription := "Scala Datadog",
-    micrositePushSiteWith := GitHub4s
+    micrositePushSiteWith := GitHub4s,
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-blaze-client" % http4sVersion
+    )
   )
 
 lazy val root = (project in file("."))
