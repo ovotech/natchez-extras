@@ -1,5 +1,8 @@
 ---
 layout: docs
-title: "Tracing a Kafka Consumer"
 section: cookbook
+title: Cookbook
+position: 2
 ---
+
+Cookbook!

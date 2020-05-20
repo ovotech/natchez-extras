@@ -1,9 +1,8 @@
 ---
 layout: docs
-title: "Metrics"
 section: modules
+title: Modules
+position: 3
 ---
 
-
-# Datadog Metrics
-
+Modules!
