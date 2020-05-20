@@ -137,7 +137,6 @@ lazy val docs = project
   .settings(
     micrositeName := "effect-utils",
     micrositeDescription := "Scala Datadog",
-    micrositeDataDirectory := (resourceDirectory in Compile).value / "microsite" / "data",
     micrositePushSiteWith := GitHub4s
   )
 

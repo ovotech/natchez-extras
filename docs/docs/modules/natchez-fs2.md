@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez FS2"
-section: docs
+section: modules
 position: 5
 ---
 

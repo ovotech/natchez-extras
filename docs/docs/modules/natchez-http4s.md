@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez HTTP4s"
-section: docs
+section: modules
 position: 6
 ---
 

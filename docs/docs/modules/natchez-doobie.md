@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez Doobie"
-section: docs
+section: modules 
 position: 4
 ---
 

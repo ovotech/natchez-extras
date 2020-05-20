@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Natchez Log4Cats"
-section: docs
+section: modules
 position: 7
 ---
 
