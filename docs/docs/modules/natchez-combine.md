@@ -4,7 +4,6 @@ title: "Natchez Combine"
 section: modules
 ---
 
-
 # Natchez Combine
 
 `natchez-combine` is a module that allows you to combine two Natchez EntryPoints into one, 
@@ -13,13 +12,13 @@ allowing you to send tracing information to more than one destination.
 At OVO we use this module to send traces both to Datadog and also to STDOUT (via `natchez-slf4j`) so when
 running applications locally we can get a sense of what is going on without having to leave the terminal.
 
-## Example usage:
+## Installation
 
-This example combines `natchez-datadog` and `natchez-slf4j` hence the extra dependencies
+In your build.sbt
 
 ```scala
 val http4sVersion = "0.21.4"
-val effectUtilsVersion = "2.4.0"
+val effectUtilsVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
   "org.http4s"           %% "http4s-blaze-client" % http4sVersion,
@@ -28,6 +27,10 @@ libraryDependencies ++= Seq(
   "com.ovoenergy.effect" %% "natchez-slf4j"       % effectUtilsVersion,
 )
 ```
+
+## Example usage:
+
+This example combines `natchez-datadog` and `natchez-slf4j` hence the extra dependencies
 
 ```scala mdoc
 import com.ovoenergy.effect.natchez.Combine
