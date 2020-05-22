@@ -1,13 +1,17 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
 scalaVersion in ThisBuild := "2.13.1"
+
 classLoaderLayeringStrategy in ThisBuild := ClassLoaderLayeringStrategy.ScalaLibrary
+
+organization in ThisBuild := "com.ovoenergy.effect"
+
+organizationName in ThisBuild := "OVO Energy"
+
+organizationHomepage in ThisBuild := Some(url("http://www.ovoenergy.com"))
 
 val common = Seq(
   fork in Test := true,
-  organization := "com.ovoenergy.effect",
-  organizationName := "OVO Energy",
-  organizationHomepage := Some(url("http://www.ovoenergy.com")),
   bintrayRepository := "maven",
   bintrayOrganization := Some("ovotech"),
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -156,6 +160,8 @@ lazy val docs = project
   .settings(
     micrositeName := "effect-utils",
     micrositeDescription := "Scala Datadog",
+    micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
+    micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
     mdocVariables := Map("VERSION" -> version.value),
     micrositePushSiteWith := GitHub4s,
     libraryDependencies ++= Seq(
