@@ -6,7 +6,7 @@ section: modules
 
 # Natchez Combine
 
-`natchez-combine` is a module that allows you to combine two Natchez EntryPoints into one, 
+`natchez-combine` is a module that allows you to combine two Natchez EntryPoints into one,
 allowing you to send tracing information to more than one destination.
 
 At OVO we use this module to send traces both to Datadog and also to STDOUT (via `natchez-slf4j`) so when
@@ -47,14 +47,14 @@ import cats.effect.IOApp
 import scala.concurrent.ExecutionContext.global
 
 object MyTracedApp extends IOApp {
-  
+
   /**
    * Create a Natchez entrypoint that will log when spans begin and end
    * This is useful when running the application locally
    */
   val slf4j: EntryPoint[IO] =
     Slf4j.entryPoint[IO]
-  
+
   /**
    * Create a Natchez entrypoint that will send traces to Datadog
    */
@@ -63,16 +63,15 @@ object MyTracedApp extends IOApp {
       httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
       entryPoint <- Datadog.entryPoint(httpClient, "service", "resource")
     } yield entryPoint
-  
+
   /**
-   * Use natchez-combine to send traces to both SLF4j & Datadog
+   * Use natchez-combine to send traces to both SLF4J & Datadog
    * This is what you'll then use for the rest of the application
    */
   val combined: Resource[IO, EntryPoint[IO]] =
     datadog.map { dd => Combine.combine(dd, slf4j) }
-    
+
   def run(args: List[String]): IO[ExitCode] =
     combined.use { _: EntryPoint[IO] => IO.never } // this is the bit you have to do
 }
 ```
-

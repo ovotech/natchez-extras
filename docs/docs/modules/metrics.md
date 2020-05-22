@@ -55,10 +55,10 @@ object MetricApp extends IOApp {
     )
 
   val exampleCounter: Metric =
-    Metric("my_counter", Map.empty)
+    Metric(name = "my_counter", tags = Map.empty)
 
   val exampleHistogram: Metric =
-    Metric("my_histogram", Map.empty)
+    Metric(name = "my_histogram", tags = Map.empty)
 
   def run(args: List[String]): IO[ExitCode] =
     Datadog[IO, IO](metricConfig).use { metrics: Metrics[IO] with Events[IO] =>
@@ -70,4 +70,3 @@ object MetricApp extends IOApp {
     }
 }
 ```
-
