@@ -47,10 +47,11 @@ object DatadogSpan {
   object SpanNames {
 
     def withFallback(string: String, fallback: SpanNames): SpanNames =
-      string.split(':') match {
-        case Array(service, name, resource) => SpanNames(name, service, resource)
-        case Array(name, resource)          => SpanNames(name, fallback.service, resource)
-        case Array(name)                    => SpanNames(name, fallback.service, fallback.resource)
+      string.split(':').toList match {
+        case Nil                      => fallback
+        case name :: Nil              => SpanNames(name, fallback.service, fallback.resource)
+        case name :: resource :: Nil  => SpanNames(name, fallback.service, resource)
+        case service :: name :: other => SpanNames(name, service, other.mkString(":"))
       }
   }
 
