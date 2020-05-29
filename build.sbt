@@ -157,6 +157,8 @@ lazy val docs = project
     natchezDatadog,
     natchezCombine,
     natchezSlf4j,
+    natchezFs2,
+    natchezHttp4s
   )
   .settings(
     micrositeName := "effect-utils",
@@ -167,6 +169,7 @@ lazy val docs = project
     micrositePushSiteWith := GitHub4s,
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
+      "org.http4s" %% "http4s-blaze-server" % http4sVersion,
       "org.tpolecat" %% "doobie-postgres" % doobieVersion
     )
   )
