@@ -32,6 +32,7 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "metrics-common"))
 
+val log4catsVersion = "1.0.1"
 val natchezVersion = "0.0.11"
 val http4sVersion = "0.21.2"
 val circeVersion = "0.13.0"
@@ -86,7 +87,7 @@ lazy val natchezLog4Cats = project
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "io.chrisdavenport"    %% "log4cats-core" % "1.0.1"
+      "io.chrisdavenport"    %% "log4cats-core" % log4catsVersion
     )
   )
 
@@ -148,6 +149,8 @@ lazy val datadogMetrics = project
     )
   )
 
+val logbackVersion = "1.2.3"
+
 lazy val docs = project
   .in(file("docs"))
   .enablePlugins(MicrositesPlugin)
@@ -158,7 +161,8 @@ lazy val docs = project
     natchezCombine,
     natchezSlf4j,
     natchezFs2,
-    natchezHttp4s
+    natchezHttp4s,
+    natchezLog4Cats
   )
   .settings(
     micrositeName := "effect-utils",
@@ -170,7 +174,8 @@ lazy val docs = project
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,
-      "org.tpolecat" %% "doobie-postgres" % doobieVersion
+      "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+      "io.chrisdavenport" %% "log4cats-slf4j" % log4catsVersion
     )
   )
 

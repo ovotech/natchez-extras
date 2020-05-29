@@ -114,7 +114,6 @@ Given that every HTTP API is likely to have different tracing requirements `natc
 The `Configuration` object passed to `TraceMiddleware` defines how to turn an HTTP requests and responses into Natchez tags. By default
 it is set up to create tags suitable for Datadog but you can use the helper functions in `Configuration` to create your own configs:
 
-
 ```scala mdoc
 import cats.effect.IO
 import com.ovoenergy.effect.natchez.http4s.server.Configuration
