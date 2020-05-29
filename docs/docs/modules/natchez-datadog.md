@@ -51,7 +51,7 @@ object MyTracedApp extends IOApp {
   val datadog: Resource[IO, EntryPoint[IO]] =
     for {
       httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
-      entryPoint <- Datadog.entryPoint(httpClient, "default-service", "default-resource")
+      entryPoint <- Datadog.entryPoint(httpClient, "example-service", "example-resource")
     } yield entryPoint
 
   /**
@@ -87,4 +87,48 @@ for a particular span you can pass the new values into the span name as a colon 
 - `<name>` to keep the service & resource of the parent span
 
 ## Datadog specific tags
+
+A number of helper functions to create tags that Datadog uses to drive its trace UI can be found in `DatadogTags.scala`. 
+An example of how to use them follows:
+
+```scala
+import com.ovoenergy.effect.natchez.DatadogTags._
+import natchez.Trace
+
+object DatadogTagsExample {
+
+  def addTags[F[_]](implicit F: Trace[F]): F[Unit] =
+    F.put(
+
+      /**
+       * This controls how the span is labelled in the Datadog trace UI
+       * Valid values for this are "Web", "Cache", "Db" or "Custom" (the default)
+       */
+      spanType(SpanType.Web),
+
+      /**
+       * These appear in the trace UI alongside spans
+       * 200 status codes appear green for example
+       */
+      httpStatusCode(200),
+      httpMethod("GET"),
+      httpUrl("http://localhost"),
+
+      /**
+       * I'm not actually sure where this appears in the UI
+       * but I am given to believe that it does somewhere
+       */
+      sqlQuery("SELECT foo FROM bar"),
+
+      /**
+       * If your span fails these will be highlighted in red in the UI. 
+       * These tags will automatically be added to failed spans by natchez-datadog.
+       */
+      errorMessage("Something went wrong"),
+      errorStack(new Exception().getStackTrace.mkString("\n"))
+    )
+}
+```
+
+
 
