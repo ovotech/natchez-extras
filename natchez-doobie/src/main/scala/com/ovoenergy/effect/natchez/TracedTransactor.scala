@@ -14,7 +14,7 @@ object TracedTransactor {
   type Traced[F[_], A] = Kleisli[F, Span[F], A]
 
   private def formatQuery(q: String): String =
-    q.replace("\n", "").replaceAll("\\s+", " ")
+    q.replace("\n", " ").replaceAll("\\s+", " ").trim()
 
   def apply[F[_]: Concurrent: ContextShift](
     service: String,
