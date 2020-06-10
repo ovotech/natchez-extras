@@ -53,7 +53,7 @@ class DatadogTest extends AnyWordSpec with Matchers {
       span.duration > 0 shouldBe true
       span.meta.get("k") shouldBe Some("v")
       span.metrics shouldBe Map("__sampling_priority_v1" -> 2.0)
-      span.meta.get("traceToken").isDefined shouldBe true
+      span.meta.contains("traceToken") shouldBe true
     }
 
     "Infer the right span.type from any tags set" in {

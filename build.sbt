@@ -25,6 +25,7 @@ lazy val metricsCommon = project
 val natchezVersion = "0.0.11"
 val http4sVersion = "0.21.2"
 val circeVersion = "0.13.0"
+val slf4jVersion = "1.7.30"
 val fs2Version = "2.3.0"
 
 lazy val natchezDatadog = project
@@ -39,8 +40,9 @@ lazy val natchezDatadog = project
       "io.circe"     %% "circe-core"           % circeVersion,
       "io.circe"     %% "circe-generic"        % circeVersion,
       "io.circe"     %% "circe-generic-extras" % circeVersion,
-      "io.circe"     %% "circe-parser"         % circeVersion
-    )
+      "io.circe"     %% "circe-parser"         % circeVersion,
+      "org.slf4j"    % "slf4j-api"             % slf4jVersion
+)
   )
 
 lazy val natchezSlf4j = project
@@ -49,7 +51,7 @@ lazy val natchezSlf4j = project
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.slf4j" % "slf4j-api" % "1.7.30",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
       "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
     )
   )

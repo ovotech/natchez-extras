@@ -16,15 +16,22 @@ import org.http4s.Method.PUT
 import org.http4s.circe.CirceInstances.builder
 import org.http4s.client.Client
 import org.http4s.{EntityEncoder, Header, Request, Uri}
+import org.slf4j.{Logger, LoggerFactory}
+import cats.syntax.apply._
 
 import scala.concurrent.duration._
 
 object Datadog {
 
-  val agentEndpoint: Uri =
-    Uri.unsafeFromString("http://localhost:8126/v0.3/traces")
+  private def logger[F[_]: Sync]: F[Logger] =
+    Sync[F].delay(LoggerFactory.getLogger(getClass.getName))
 
-  def spanQueue[F[_]: Concurrent]: Resource[F, Queue[F, SubmittableSpan]] =
+  private def agentEndpoint[F[_]: Sync]: F[Uri] =
+    Sync[F]
+      .delay(sys.env.getOrElse("DD_AGENT_HOST", "localhost"))
+      .flatMap(host => Sync[F].fromEither(Uri.fromString(s"http://$host/v0.3/traces")))
+
+  private def spanQueue[F[_]: Concurrent]: Resource[F, Queue[F, SubmittableSpan]] =
     Resource.liftF(Queue.circularBuffer[F, SubmittableSpan](maxSize = 1000))
 
   private implicit def encoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] =
@@ -36,16 +43,30 @@ object Datadog {
    * in that you can submit new spans for existing traces across multiple requests
    * We do this in one `F[_]` operation so it won't be interrupted half way through on shutdown
    */
-  private def submitOnce[F[_]: Sync](client: Client[F], queue: Queue[F, SubmittableSpan]): F[Unit] =
+  private def submitOnce[F[_]: Sync](
+    queue: Queue[F, SubmittableSpan],
+    client: Client[F],
+    logger: Logger,
+    agentHost: Uri
+  ): F[Unit] =
     queue
       .tryDequeueChunk1(maxSize = 1000)
       .flatMap { items =>
         items.traverse { traces =>
-          val grouped = traces.toList.groupBy(_.traceId).values.toList
-          val req = Request[F](uri = agentEndpoint, method = PUT)
-            .withHeaders(Header("X-DataDog-Trace-Count", traces.size.toString))
-            .withEntity(grouped)
-          client.status(req)
+          Sync[F].attempt(
+            client.status(
+              Request[F](uri = agentHost, method = PUT)
+                .withHeaders(Header("X-DataDog-Trace-Count", traces.size.toString))
+                .withEntity(traces.toList.groupBy(_.traceId).values.toList)
+            )
+          ).flatMap {
+            case Left(exception) =>
+              Sync[F].delay(logger.warn("Failed to submit to Datadog", exception))
+            case Right(status) if !status.isSuccess =>
+              Sync[F].delay(logger.warn(s"Got $status from Datadog agent"))
+            case Right(status) =>
+              Sync[F].delay(logger.debug(s"Got $status from Datadog agent"))
+          }
         }
       }
       .as(())
@@ -59,21 +80,24 @@ object Datadog {
     http: Client[F],
     queue: Queue[F, SubmittableSpan]
   ): Resource[F, Unit] =
-    Resource
-      .make(
-        Semaphore[F](1).flatMap { sem =>
-          Concurrent[F]
-            .start(
-              Stream
-                .repeatEval(sem.acquire >> submitOnce(http, queue) >> sem.release)
-                .metered(0.5.seconds)
-                .compile
-                .drain
-            )
-            .map(f => sem -> f)
-        }
-      ) { case (sem, fiber) => sem.acquire >> submitOnce(http, queue) >> fiber.cancel }
-      .as(())
+    Resource.liftF((logger[F], agentEndpoint[F]).tupled).flatMap { case (logger, uri) =>
+      val submit: F[Unit] = submitOnce(queue, http, logger, uri)
+      Resource
+        .make(
+          Semaphore[F](1).flatMap { sem =>
+            Concurrent[F]
+              .start(
+                Stream
+                  .repeatEval(sem.acquire >> submit >> sem.release)
+                  .metered(0.5.seconds)
+                  .compile
+                  .drain
+              )
+              .map(f => sem -> f)
+          }
+        ) { case (sem, fiber) => sem.acquire >> submit >> fiber.cancel }
+        .as(())
+    }
 
   /**
    * Produce an EntryPoint into a Datadog tracing context,
