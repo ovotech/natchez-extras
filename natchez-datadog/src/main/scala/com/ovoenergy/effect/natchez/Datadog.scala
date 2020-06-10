@@ -17,7 +17,7 @@ import org.http4s.circe.CirceInstances.builder
 import org.http4s.client.Client
 import org.http4s.{EntityEncoder, Header, Request, Uri}
 import org.slf4j.{Logger, LoggerFactory}
-import cats.syntax.apply._
+import org.http4s.syntax.literals._
 
 import scala.concurrent.duration._
 
@@ -25,11 +25,6 @@ object Datadog {
 
   private def logger[F[_]: Sync]: F[Logger] =
     Sync[F].delay(LoggerFactory.getLogger(getClass.getName))
-
-  private def agentEndpoint[F[_]: Sync]: F[Uri] =
-    Sync[F]
-      .delay(sys.env.getOrElse("DD_AGENT_HOST", "localhost"))
-      .flatMap(host => Sync[F].fromEither(Uri.fromString(s"http://$host/v0.3/traces")))
 
   private def spanQueue[F[_]: Concurrent]: Resource[F, Queue[F, SubmittableSpan]] =
     Resource.liftF(Queue.circularBuffer[F, SubmittableSpan](maxSize = 1000))
@@ -55,7 +50,7 @@ object Datadog {
         items.traverse { traces =>
           Sync[F].attempt(
             client.status(
-              Request[F](uri = agentHost, method = PUT)
+              Request[F](uri = agentHost.withPath("/v0.3/traces"), method = PUT)
                 .withHeaders(Header("X-DataDog-Trace-Count", traces.size.toString))
                 .withEntity(traces.toList.groupBy(_.traceId).values.toList)
             )
@@ -78,10 +73,11 @@ object Datadog {
    */
   private def submitter[F[_]: Concurrent: Timer](
     http: Client[F],
+    agent: Uri,
     queue: Queue[F, SubmittableSpan]
   ): Resource[F, Unit] =
-    Resource.liftF((logger[F], agentEndpoint[F]).tupled).flatMap { case (logger, uri) =>
-      val submit: F[Unit] = submitOnce(queue, http, logger, uri)
+    Resource.liftF(logger[F]).flatMap { logger =>
+      val submit: F[Unit] = submitOnce(queue, http, logger, agent)
       Resource
         .make(
           Semaphore[F](1).flatMap { sem =>
@@ -107,12 +103,13 @@ object Datadog {
   def entryPoint[F[_]: Concurrent: Timer: Clock](
     client: Client[F],
     service: String,
-    resource: String
+    resource: String,
+    agentHost: Uri = uri"http://localhost:8126"
   ): Resource[F, EntryPoint[F]] =
     for {
       queue <- spanQueue
       names = SpanNames.withFallback(_, SpanNames("unnamed", service, resource))
-      _ <- submitter(client, queue)
+      _ <- submitter(client, agentHost, queue)
     } yield {
       new EntryPoint[F] {
         def root(name: String): Resource[F, Span[F]] =
