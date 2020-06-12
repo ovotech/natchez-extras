@@ -1,19 +1,17 @@
 package com.ovoenergy.effect.natchez
 
 import cats.effect._
-import cats.effect.concurrent.Ref
 import cats.instances.list._
 import cats.syntax.flatMap._
-import cats.syntax.functor._
 import cats.syntax.traverse._
 import com.ovoenergy.effect.natchez.Datadog.entryPoint
 import com.ovoenergy.effect.natchez.DatadogTags.SpanType.{Cache, Db, Web}
 import com.ovoenergy.effect.natchez.DatadogTags.spanType
 import natchez.EntryPoint
 import natchez.TraceValue.StringValue
+import org.http4s.Request
 import org.http4s.circe.CirceEntityDecoder._
-import org.http4s.client.Client
-import org.http4s.{Request, Response}
+import org.http4s.syntax.literals._
 import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -34,12 +32,39 @@ class DatadogTest extends AnyWordSpec with Matchers {
     IO.contextShift(global)
 
   def run(f: EntryPoint[IO] => IO[Unit]): IO[List[Request[IO]]] =
-    Ref.of[IO, List[Request[IO]]](List.empty).flatMap { ref =>
-      val client: Client[IO] = Client(r => Resource.liftF(ref.update(_ :+ r).as(Response[IO]())))
-      entryPoint(client, "test", "blah").use(f) >> ref.get
-    }
+    TestClient[IO].flatMap(c => entryPoint(c.client, "test", "blah").use(f) >> c.requests)
 
   "Datadog span" should {
+
+    "Obtain the agent host from the parameter" in {
+      (
+        for {
+          client <- TestClient[IO]
+          ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
+          _      <- ep.use(_.root("foo").use(_ => IO.unit))
+          requests <- client.requests
+        } yield requests.map(_.uri) shouldBe List(
+          uri"http://example.com/v0.3/traces"
+        )
+      ).unsafeRunSync()
+    }
+
+    "Continue to send HTTP calls even if one of them fails" in {
+
+      val test: EntryPoint[IO] => IO[Unit] =
+        ep => ep.root("first").use(_ => IO.unit) >>
+              IO.sleep(1.second) >>
+              ep.root("second").use(_ => IO.unit)
+      (
+        for {
+          client <- TestClient[IO]
+          _      <- client.respondWith(IO.raiseError(new Exception))
+          ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
+          _      <- ep.use(test)
+          requests <- client.requests
+        } yield requests.length shouldBe 2
+      ).unsafeRunSync()
+    }
 
     "Submit the right info to Datadog when closed" in {
 
@@ -53,7 +78,7 @@ class DatadogTest extends AnyWordSpec with Matchers {
       span.duration > 0 shouldBe true
       span.meta.get("k") shouldBe Some("v")
       span.metrics shouldBe Map("__sampling_priority_v1" -> 2.0)
-      span.meta.get("traceToken").isDefined shouldBe true
+      span.meta.contains("traceToken") shouldBe true
     }
 
     "Infer the right span.type from any tags set" in {
