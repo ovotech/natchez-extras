@@ -86,6 +86,6 @@ workflows:
   pr-build:
     jobs:
       - microsite:
-          filters: {branches: {ignore: master}}
+          filters: {branches: {ignore: [master, gh-pages]}}
       - test:
-          filters: {branches: {ignore: master}}
+          filters: {branches: {ignore: [master, gh-pages]}}
