@@ -172,6 +172,7 @@ lazy val docs = project
     mdocVariables := Map("VERSION" -> version.value),
     micrositeDocumentationUrl := "docs",
     micrositePushSiteWith := GHPagesPlugin,
+    micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,

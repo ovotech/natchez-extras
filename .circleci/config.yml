@@ -39,7 +39,7 @@ jobs:
             git config --global push.default simple
       - run:
           name: Deploy microsite
-          command: sbt "docs / publishMicrosite"
+          command: sbt ";docs / publishMicrosite"
 
   release:
     <<: *docker_sbt
