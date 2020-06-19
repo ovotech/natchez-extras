@@ -57,14 +57,14 @@ jobs:
   microsite_compile:
     <<: *docker_sbt
     steps:
-      microsite:
-        command: makeMicrosite
+      - microsite:
+          command: makeMicrosite
 
   microsite_publish:
     <<: *docker_sbt
     steps:
-      microsite:
-        command: publishMicrosite
+      - microsite:
+          command: publishMicrosite
 
   release:
     <<: *docker_sbt
