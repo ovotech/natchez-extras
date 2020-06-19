@@ -17,6 +17,7 @@ the [agentless logging](https://docs.datadoghq.com/logs/log_collection/java/?tab
 
 ```scala
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "com.ovoenergy.effect" %% "natchez-fs2" % effectUtilsVersion

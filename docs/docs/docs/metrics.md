@@ -17,6 +17,7 @@ For more details about events see the [event documentation.](https://docs.datado
 In your build.sbt
 
 ```scala
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 libraryDependencies += "com.ovoenergy.effect" %% "datadog-metrics" % "@VERSION@"
 ```
 

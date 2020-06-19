@@ -13,6 +13,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 
 ```scala
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "com.ovoenergy.effect" %% "natchez-fs2" % effectUtilsVersion

@@ -18,9 +18,8 @@ Add this module and an SLF4J binding (in this example we're using
 [Logback](http://logback.qos.ch/)) to your `build.sbt`:
 
 ```scala
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
-
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "ch.qos.logback"        % "logback-classic"     % "1.2.3",

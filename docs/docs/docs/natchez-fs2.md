@@ -14,6 +14,7 @@ i.e. Kafka consumers using FS2.
 
 ```scala
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "com.ovoenergy.effect" %% "natchez-fs2" % effectUtilsVersion

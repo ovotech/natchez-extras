@@ -23,6 +23,7 @@ agent in a docker container this should typically be the case.
 ```scala
 val http4sVersion = "0.21.4"
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "org.http4s"           %% "http4s-blaze-client" % http4sVersion,

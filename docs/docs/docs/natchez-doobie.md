@@ -12,6 +12,7 @@ title: "Natchez Doobie"
 
 ```scala
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "com.ovoenergy.effect" %% "natchez-doobie" % effectUtilsVersion

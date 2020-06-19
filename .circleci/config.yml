@@ -27,12 +27,15 @@ cache_restore: &cache_restore
     keys:
       - v1-{{ checksum "build.sbt" }}
       - v1-
-jobs:
 
+commands:
   microsite:
-    <<: *docker_sbt
+    description: "Execute sbt microsite commands"
+    parameters:
+      command: {type: string}
     steps:
       - checkout
+      - *cache_restore
       - add_ssh_keys:
           fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
       - ruby/install:
@@ -48,7 +51,20 @@ jobs:
             git config --global push.default simple
       - run:
           name: Deploy microsite
-          command: sbt docs/publishMicrosite
+          command: sbt docs/<< parameters.command >>
+
+jobs:
+  microsite_compile:
+    <<: *docker_sbt
+    steps:
+      microsite:
+        command: makeMicrosite
+
+  microsite_publish:
+    <<: *docker_sbt
+    steps:
+      microsite:
+        command: publishMicrosite
 
   release:
     <<: *docker_sbt
@@ -77,6 +93,8 @@ workflows:
   version: 2
   master-build:
     jobs:
+      - microsite_publish:
+          filters: {branches: {only: master}}
       - release:
           filters:
             tags:
@@ -85,7 +103,7 @@ workflows:
               ignore: /.*/
   pr-build:
     jobs:
-      - microsite:
-          filters: {branches: {ignore: [master, gh-pages]}}
+      - microsite_compile:
+          filters: {branches: {ignore: master}}
       - test:
-          filters: {branches: {ignore: [master, gh-pages]}}
+          filters: {branches: {ignore: master}}

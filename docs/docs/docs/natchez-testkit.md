@@ -12,6 +12,7 @@ that check your application is sending the right information to Natchez.
 
 ```scala
 val effectUtilsVersion = "@VERSION@"
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "com.ovoenergy.effect" %% "natchez-testkit" % effectUtilsVersion % Test
