@@ -29,6 +29,7 @@ jobs:
   microsite:
     <<: *docker_sbt
     steps:
+      - checkout
       - add_ssh_keys:
           fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
       - run:
