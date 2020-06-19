@@ -171,7 +171,7 @@ lazy val docs = project
     micrositeDescription := "Datadog integrations for functional Scala",
     micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
-    mdocVariables := Map("VERSION" -> version.value),
+    mdocVariables := Map("VERSION" -> version.value.takeWhile(_ != '-')),
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
