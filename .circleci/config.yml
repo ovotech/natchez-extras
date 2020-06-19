@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.0.2
 
 docker_sbt: &docker_sbt
   docker:
@@ -32,6 +35,11 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
+      - ruby/install:
+          version: '2.7'
+      - run:
+          name: Install Jekyll
+          command: gem install jekyll
       - run:
           name: Configure Git
           command: |
