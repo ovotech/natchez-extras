@@ -1,7 +1,6 @@
 ---
 layout: docs
 title: "Natchez FS2"
-section: modules
 ---
 
 # Natchez FS2
@@ -31,7 +30,7 @@ in unwrapping the message, creating a subspan and processing it.
 
 If the stream is cancelled the span will be closed automatically.
 
-```scala
+```scala mdoc
 import cats.Monad
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.functor._

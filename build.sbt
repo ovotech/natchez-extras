@@ -166,11 +166,12 @@ lazy val docs = project
   )
   .settings(
     micrositeName := "effect-utils",
-    micrositeDescription := "Scala Datadog",
+    micrositeDescription := "Datadog integrations for functional Scala",
     micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
     mdocVariables := Map("VERSION" -> version.value),
-    micrositePushSiteWith := GitHub4s,
+    micrositeDocumentationUrl := "docs",
+    micrositePushSiteWith := GHPagesPlugin,
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,

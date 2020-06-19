@@ -25,6 +25,22 @@ cache_restore: &cache_restore
       - v1-{{ checksum "build.sbt" }}
       - v1-
 jobs:
+
+  microsite:
+    <<: *docker_sbt
+    steps:
+      - add_ssh_keys:
+          fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
+      - run:
+          name: Configure Git
+          command: |
+            git config --global user.email '<>'
+            git config --global user.name "CircleCI"
+            git config --global push.default simple
+      - run:
+          name: Deploy microsite
+          command: sbt "docs / publishMicrosite"
+
   release:
     <<: *docker_sbt
     steps:
@@ -60,5 +76,7 @@ workflows:
               ignore: /.*/
   pr-build:
     jobs:
+      - microsite:
+          filters: {branches: {ignore: master}}
       - test:
           filters: {branches: {ignore: master}}

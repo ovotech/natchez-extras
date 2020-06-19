@@ -1,7 +1,7 @@
 ---
 layout: docs
 title: "Metrics"
-section: modules
+permalink: docs/
 ---
 
 # Datadog Metrics

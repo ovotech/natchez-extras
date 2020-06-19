@@ -1,7 +1,6 @@
 ---
 layout: docs
 title: "Natchez SLF4J"
-section: modules
 ---
 
 
@@ -18,7 +17,7 @@ README](https://github.com/tpolecat/natchez/blob/master/README.md).
 Add this module and an SLF4J binding (in this example we're using
 [Logback](http://logback.qos.ch/)) to your `build.sbt`:
 
-```Scala
+```scala
 resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 val effectUtilsVersion = "@VERSION@"
