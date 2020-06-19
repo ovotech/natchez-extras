@@ -7,6 +7,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 <h2 id="installation">Installation</h2>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">effectUtilsVersion</span> <span class="k">=</span> <span class="s">"2.5.0"</span>
+<span class="n">resolvers</span> <span class="o">+=</span> <span class="nv">Resolver</span><span class="o">.</span><span class="py">bintrayRepo</span><span class="o">(</span><span class="s">"ovotech"</span><span class="o">,</span> <span class="s">"maven"</span><span class="o">)</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
   <span class="s">"com.ovoenergy.effect"</span> <span class="o">%%</span> <span class="s">"natchez-fs2"</span> <span class="o">%</span> <span class="n">effectUtilsVersion</span>

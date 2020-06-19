@@ -12,6 +12,7 @@ running applications locally we can get a sense of what is going on without havi
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">http4sVersion</span> <span class="k">=</span> <span class="s">"0.21.4"</span>
 <span class="k">val</span> <span class="nv">effectUtilsVersion</span> <span class="k">=</span> <span class="s">"2.5.0"</span>
+<span class="n">resolvers</span> <span class="o">+=</span> <span class="nv">Resolver</span><span class="o">.</span><span class="py">bintrayRepo</span><span class="o">(</span><span class="s">"ovotech"</span><span class="o">,</span> <span class="s">"maven"</span><span class="o">)</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
   <span class="s">"org.http4s"</span>           <span class="o">%%</span> <span class="s">"http4s-blaze-client"</span> <span class="o">%</span> <span class="n">http4sVersion</span><span class="o">,</span>
