@@ -1,0 +1,29 @@
+options:
+
+
+- title: Metrics
+  url: docs/
+
+- title: Natchez Datadog
+  url: docs/natchez-datadog.html
+
+- title: Natchez Combine
+  url: docs/natchez-combine.html
+
+- title: Natchez Doobie
+  url: docs/natchez-doobie.html
+
+- title: Natchez FS2
+  url: docs/natchez-fs2.html
+
+- title: Natchez HTTP4s
+  url: docs/natchez-http4s.html
+
+- title: Natchez Log4Cats
+  url: docs/natchez-log4cats.html
+
+- title: Natchez SLF4J
+  url: docs/natchez-slf4j.html
+
+- title: Natchez Testkit
+  url: docs/natchez-testkit.html
