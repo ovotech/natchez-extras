@@ -166,11 +166,12 @@ lazy val docs = project
   )
   .settings(
     micrositeName := "effect-utils",
+    micrositeBaseUrl := "/effect-utils",
+    micrositeDocumentationUrl := "/effect-utils/docs",
     micrositeDescription := "Datadog integrations for functional Scala",
     micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
     mdocVariables := Map("VERSION" -> version.value),
-    micrositeDocumentationUrl := "docs",
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
