@@ -1,0 +1,82 @@
+<!DOCTYPE html><html><head><title>effect-utils: Metrics</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="OVO Energy" /><meta name="description" content="Datadog integrations for functional Scala" /><meta name="og:image" content="/img/poster.png" /><meta name="image" property="og:image" content="/img/poster.png" /><meta name="og:title" content="effect-utils: Metrics" /><meta name="title" property="og:title" content="effect-utils: Metrics" /><meta name="og:site_name" content="effect-utils" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Datadog integrations for functional Scala" /><link rel="icon" type="image/png" href="/img/favicon.png" /><meta name="twitter:title" content="effect-utils: Metrics" /><meta name="twitter:image" content="/img/poster.png" /><meta name="twitter:description" content="Datadog integrations for functional Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/img/favicon310x150.png" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/highlight/styles/vs.css" /><link rel="stylesheet" href="/css/light-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><div id="sidebar-brand"><a href="/" class="brand"><div class="brand-wrapper"></div><span>effect-utils</span></a><button id="main-toggle" class="sidebar-toggle"><span class="close"></span></button></div><div class="sidebar-nav"> <div class="sidebar-nav-item active "><a href="/docs/" title="Metrics" class="active">Metrics</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-datadog.html" title="Natchez Datadog" class="">Natchez Datadog</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-combine.html" title="Natchez Combine" class="">Natchez Combine</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-doobie.html" title="Natchez Doobie" class="">Natchez Doobie</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-fs2.html" title="Natchez FS2" class="">Natchez FS2</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-http4s.html" title="Natchez HTTP4s" class="">Natchez HTTP4s</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-log4cats.html" title="Natchez Log4Cats" class="">Natchez Log4Cats</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-slf4j.html" title="Natchez SLF4J" class="">Natchez SLF4J</a></div> <div class="sidebar-nav-item  "><a href="/docs/natchez-testkit.html" title="Natchez Testkit" class="">Natchez Testkit</a></div></div></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/ovotech/effect-utils" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/ovotech/effect-utils" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="ovotech" data-github-repo="effect-utils"><div class="content-wrapper"><section><h1 id="datadog-metrics">Datadog Metrics</h1>
+
+<p>This module provides a <code class="language-plaintext highlighter-rouge">Metrics[F] with Events[F]</code> trait that lets you send counters, histograms and events to the <a href="https://docs.datadoghq.com/agent/">Datadog agent</a> over UDP.
+Note that this means you are unlikely to receive errors if the Datadog agent isn’t reachable!</p>
+
+<p>For more details about counters, histograms &amp; the UDP format see the Datadog <a href="https://docs.datadoghq.com/developers/dogstatsd/?tab=hostagent">DogStatsD documentation</a>.
+For more details about events see the <a href="https://docs.datadoghq.com/events/">event documentation.</a></p>
+
+<h2 id="installation">Installation</h2>
+
+<p>In your build.sbt</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.ovoenergy.effect"</span> <span class="o">%%</span> <span class="s">"datadog-metrics"</span> <span class="o">%</span> <span class="s">"2.5.0-21-gd2ba1fd"</span>
+</code></pre></div></div>
+
+<h2 id="example-usage">Example usage</h2>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.net.InetSocketAddress</span>
+
+<span class="k">import</span> <span class="nn">cats.effect.</span><span class="o">{</span><span class="nc">ExitCode</span><span class="o">,</span> <span class="nc">IO</span><span class="o">,</span> <span class="nc">IOApp</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.Events.</span><span class="o">{</span><span class="nc">AlertType</span><span class="o">,</span> <span class="nc">Priority</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.Metrics.Metric</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.</span><span class="o">{</span><span class="nc">Datadog</span><span class="o">,</span> <span class="nc">Events</span><span class="o">,</span> <span class="nc">Metrics</span><span class="o">}</span>
+
+<span class="k">object</span> <span class="nc">MetricApp</span> <span class="k">extends</span> <span class="nc">IOApp</span> <span class="o">{</span>
+
+  <span class="k">val</span> <span class="nv">metricConfig</span><span class="k">:</span> <span class="kt">Datadog.Config</span> <span class="o">=</span>
+    <span class="nv">Datadog</span><span class="o">.</span><span class="py">Config</span><span class="o">(</span>
+
+      <span class="c1">// adds a prefix to all metrics, e.g. `my_app.metricname`</span>
+      <span class="n">metricPrefix</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="s">"my_app"</span><span class="o">),</span>
+
+      <span class="c1">// the address your Datadog agent is listening on</span>
+      <span class="n">agentHost</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">InetSocketAddress</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="mi">8125</span><span class="o">),</span>
+
+      <span class="c1">// these tags will be added to all metrics + events</span>
+      <span class="n">globalTags</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">(</span><span class="s">"example_tag"</span> <span class="o">-&gt;</span> <span class="s">"example_value"</span><span class="o">)</span>
+    <span class="o">)</span>
+
+  <span class="k">val</span> <span class="nv">exampleEvent</span><span class="k">:</span> <span class="kt">Events.Event</span> <span class="o">=</span>
+    <span class="nv">Events</span><span class="o">.</span><span class="py">Event</span><span class="o">(</span>
+      <span class="n">title</span> <span class="k">=</span> <span class="s">"Gosh, an event just ocurred!"</span><span class="o">,</span>
+      <span class="n">body</span> <span class="k">=</span> <span class="s">"You should investigate this right away"</span><span class="o">,</span>
+      <span class="n">alertType</span> <span class="k">=</span> <span class="nv">AlertType</span><span class="o">.</span><span class="py">Warning</span><span class="o">,</span>
+      <span class="n">priority</span> <span class="k">=</span> <span class="nv">Priority</span><span class="o">.</span><span class="py">Normal</span><span class="o">,</span>
+      <span class="n">tags</span> <span class="k">=</span> <span class="nv">Map</span><span class="o">.</span><span class="py">empty</span>
+    <span class="o">)</span>
+
+  <span class="k">val</span> <span class="nv">exampleCounter</span><span class="k">:</span> <span class="kt">Metric</span> <span class="o">=</span>
+    <span class="nc">Metric</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my_counter"</span><span class="o">,</span> <span class="n">tags</span> <span class="k">=</span> <span class="nv">Map</span><span class="o">.</span><span class="py">empty</span><span class="o">)</span>
+
+  <span class="k">val</span> <span class="nv">exampleHistogram</span><span class="k">:</span> <span class="kt">Metric</span> <span class="o">=</span>
+    <span class="nc">Metric</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my_histogram"</span><span class="o">,</span> <span class="n">tags</span> <span class="k">=</span> <span class="nv">Map</span><span class="o">.</span><span class="py">empty</span><span class="o">)</span>
+
+  <span class="k">def</span> <span class="nf">run</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">ExitCode</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nc">Datadog</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">IO</span><span class="o">](</span><span class="n">metricConfig</span><span class="o">).</span><span class="py">use</span> <span class="o">{</span> <span class="n">metrics</span><span class="k">:</span> <span class="kt">Metrics</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">with</span> <span class="nc">Events</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">=&gt;</span>
+      <span class="k">for</span> <span class="o">{</span>
+        <span class="k">_</span> <span class="k">&lt;-</span> <span class="nv">metrics</span><span class="o">.</span><span class="py">counter</span><span class="o">(</span><span class="n">exampleCounter</span><span class="o">)(</span><span class="mi">1</span><span class="o">)</span>
+        <span class="k">_</span> <span class="k">&lt;-</span> <span class="nv">metrics</span><span class="o">.</span><span class="py">histogram</span><span class="o">(</span><span class="n">exampleHistogram</span><span class="o">)(</span><span class="mi">1</span><span class="o">)</span>
+        <span class="k">_</span> <span class="k">&lt;-</span> <span class="nv">metrics</span><span class="o">.</span><span class="py">event</span><span class="o">(</span><span class="n">exampleEvent</span><span class="o">)</span>
+      <span class="o">}</span> <span class="k">yield</span> <span class="nv">ExitCode</span><span class="o">.</span><span class="py">Success</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+</section></div></div></div></div><script src="/highlight/highlight.pack.js"></script><script>
+// For all code blocks, copy the language from the containing div
+// to the inner code tag (where hljs expects it to be)
+const langPrefix = 'language-';
+document.querySelectorAll(`div[class^='${langPrefix}']`).forEach(function(div) {
+  div.classList.forEach(function(cssClass) {
+    if (cssClass.startsWith(langPrefix)) {
+      const lang = cssClass.substring(langPrefix.length);
+      div.querySelectorAll('pre code').forEach(function(code) {
+        code.classList.add(lang);
+      });
+    }
+  });
+});
+
+hljs.configure({languages:['scala','java','bash']});
+hljs.initHighlightingOnLoad();
+      </script><script>console.info('\x57\x65\x62\x73\x69\x74\x65\x20\x62\x75\x69\x6c\x74\x20\x77\x69\x74\x68\x3a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x5f\x5f\x0a\x20\x20\x20\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x5f\x20\x20\x2f\x20\x2f\x5f\x20\x20\x20\x20\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x5f\x5f\x20\x20\x28\x5f\x29\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x28\x5f\x29\x20\x2f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x60\x5f\x5f\x20\x5c\x2f\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x20\x2f\x20\x5f\x5f\x2f\x20\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x0a\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x5f\x2f\x20\x2f\x20\x2f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x5f\x5f\x2f\x20\x2f\x20\x20\x2f\x20\x2f\x5f\x2f\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x20\x2f\x5f\x2f\x20\x20\x5f\x5f\x28\x5f\x5f\x20\x20\x29\x0a\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2e\x5f\x5f\x5f\x2f\x5c\x5f\x5f\x2f\x20\x20\x20\x20\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x2f\x20\x20\x20\x5c\x5f\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x0a\x0a\x68\x74\x74\x70\x73\x3a\x2f\x2f\x34\x37\x64\x65\x67\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x73\x62\x74\x2d\x6d\x69\x63\x72\x6f\x73\x69\x74\x65\x73')</script><script src="/js/docs.js"></script></body></html>
