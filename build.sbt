@@ -71,12 +71,14 @@ lazy val natchezSlf4j = project
 
 lazy val natchezHttp4s = project
   .in(file("natchez-http4s"))
+  .dependsOn(natchezTestkit)
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-http4s"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.http4s"   %% "http4s-dsl"   % http4sVersion
+      "org.tpolecat" %% "natchez-core"  % natchezVersion,
+      "org.http4s"   %% "http4s-client" % http4sVersion,
+      "org.http4s"   %% "http4s-dsl"    % http4sVersion
     )
   )
 

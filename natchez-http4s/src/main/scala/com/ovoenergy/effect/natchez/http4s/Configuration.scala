@@ -1,4 +1,4 @@
-package com.ovoenergy.effect.natchez.http4s.server
+package com.ovoenergy.effect.natchez.http4s
 
 import cats.Applicative
 import cats.data.Kleisli
@@ -9,7 +9,7 @@ import cats.kernel.{Monoid, Semigroup}
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.monoid._
-import com.ovoenergy.effect.natchez.http4s.server.Configuration.TagReader._
+import com.ovoenergy.effect.natchez.http4s.Configuration.TagReader.{MessageReader, RequestReader, ResponseReader}
 import natchez.TraceValue
 import natchez.TraceValue.StringValue
 import org.http4s.util.{CaseInsensitiveString, StringWriter}

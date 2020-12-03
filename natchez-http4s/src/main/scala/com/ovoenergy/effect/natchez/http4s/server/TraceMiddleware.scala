@@ -7,6 +7,7 @@ import natchez._
 import org.http4s._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
+import com.ovoenergy.effect.natchez.http4s.Configuration
 
 object TraceMiddleware {
 
