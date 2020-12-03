@@ -24,7 +24,8 @@ and pass it into <code class="language-plaintext highlighter-rouge">TraceMiddlew
 <span class="k">import</span> <span class="nn">cats.syntax.flatMap._</span>
 <span class="k">import</span> <span class="nn">cats.syntax.functor._</span>
 <span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.Datadog</span>
-<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.server.</span><span class="o">{</span><span class="nc">Configuration</span><span class="o">,</span> <span class="nc">TraceMiddleware</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.Configuration</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.server.TraceMiddleware</span>
 <span class="k">import</span> <span class="nn">natchez.</span><span class="o">{</span><span class="nc">EntryPoint</span><span class="o">,</span> <span class="nc">Span</span><span class="o">,</span> <span class="nc">Trace</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">org.http4s.</span><span class="o">{</span><span class="nc">HttpApp</span><span class="o">,</span> <span class="nc">HttpRoutes</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">org.http4s.client.blaze.BlazeClientBuilder</span>
@@ -108,8 +109,8 @@ The <code class="language-plaintext highlighter-rouge">Configuration</code> obje
 it is set up to create tags suitable for Datadog but you can use the helper functions in <code class="language-plaintext highlighter-rouge">Configuration</code> to create your own configs:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect.IO</span>
-<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.server.Configuration</span>
-<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.server.Configuration.TagReader._</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.Configuration</span>
+<span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.http4s.Configuration.TagReader._</span>
 <span class="k">import</span> <span class="nn">natchez.TraceValue.BooleanValue</span>
 <span class="k">import</span> <span class="nn">cats.syntax.semigroup._</span>
 
