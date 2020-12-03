@@ -49,6 +49,16 @@ class DatadogTest extends AnyWordSpec with Matchers {
       ).unsafeRunSync()
     }
 
+    "Allow you to modify trace tokens" in {
+      (
+        for {
+          client <- TestClient[IO]
+          ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
+          kernel <- ep.use(_.root("foo").use(s => s.put("X-Trace-Token" -> "foo") >> s.kernel))
+        } yield kernel.toHeaders.get("X-Trace-Token") shouldBe Some("foo")
+        ).unsafeRunSync()
+    }
+
     "Continue to send HTTP calls even if one of them fails" in {
 
       val test: EntryPoint[IO] => IO[Unit] =

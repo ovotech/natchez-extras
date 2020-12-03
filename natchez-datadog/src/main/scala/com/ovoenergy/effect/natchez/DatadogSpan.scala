@@ -1,8 +1,5 @@
 package com.ovoenergy.effect.natchez
 
-import java.util.concurrent.TimeUnit.NANOSECONDS
-
-import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.effect.{Clock, ExitCase, Resource, Sync}
 import cats.syntax.flatMap._
@@ -11,6 +8,11 @@ import com.ovoenergy.effect.natchez.DatadogSpan.SpanNames
 import fs2.concurrent.Queue
 import io.circe.generic.extras.Configuration
 import natchez.{Kernel, Span, TraceValue}
+import cats.syntax.traverse._
+import cats.instances.option._
+import natchez.TraceValue.{BooleanValue, NumberValue, StringValue}
+
+import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
  * Models an in-progress span we'll eventually send to Datadog.
@@ -19,20 +21,28 @@ import natchez.{Kernel, Span, TraceValue}
  */
 case class DatadogSpan[F[_]: Sync: Clock](
   names: SpanNames,
-  ids: SpanIdentifiers,
+  ids: Ref[F, SpanIdentifiers],
   start: Long,
   queue: Queue[F, SubmittableSpan],
   meta: Ref[F, Map[String, TraceValue]],
 ) extends Span[F] {
 
+  def updateTraceToken(fields: Map[String, TraceValue]): F[Unit] =
+    fields.get("X-Trace-Token").traverse {
+      case StringValue(v) => ids.update(_.copy(traceToken = v))
+      case BooleanValue(v) => ids.update(_.copy(traceToken = v.toString))
+      case NumberValue(v) => ids.update(_.copy(traceToken = v.toString))
+    }.void
+
   def put(fields: (String, TraceValue)*): F[Unit] =
-    meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) })
+    meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) }) >>
+    updateTraceToken(fields.toMap)
 
   def span(name: String): Resource[F, Span[F]] =
     DatadogSpan.fromParent(name, parent = this).widen
 
   def kernel: F[Kernel] =
-    Monad[F].pure(SpanIdentifiers.toKernel(ids))
+    ids.get.map(SpanIdentifiers.toKernel)
 }
 
 object DatadogSpan {
@@ -75,7 +85,7 @@ object DatadogSpan {
     queue: Queue[F, SubmittableSpan],
     names: SpanNames,
     meta: Map[String, TraceValue] = Map.empty
-  )(identifiers: SpanIdentifiers): Resource[F, DatadogSpan[F]] =
+  )(identifiers: Ref[F, SpanIdentifiers]): Resource[F, DatadogSpan[F]] =
     Resource.makeCase(
       for {
         start <- Clock[F].realTime(NANOSECONDS)
@@ -92,9 +102,11 @@ object DatadogSpan {
 
   def fromParent[F[_]: Sync: Clock](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =
     for {
+
       meta  <- Resource.liftF(parent.meta.get)
-      ids   <- Resource.liftF(SpanIdentifiers.child(parent.ids))
-      child <- create(parent.queue, SpanNames.withFallback(name, parent.names), meta)(ids)
+      ids   <- Resource.liftF(parent.ids.get.flatMap(SpanIdentifiers.child[F]))
+      ref   <- Resource.liftF(Ref.of[F, SpanIdentifiers](ids))
+      child <- create(parent.queue, SpanNames.withFallback(name, parent.names), meta)(ref)
     } yield child
 
   def fromKernel[F[_]: Sync: Clock](
@@ -102,5 +114,9 @@ object DatadogSpan {
     names: SpanNames,
     kernel: Kernel
   ): Resource[F, DatadogSpan[F]] =
-    Resource.liftF(SpanIdentifiers.fromKernel(kernel)).flatMap(create(queue, names))
+    Resource.liftF(
+      SpanIdentifiers
+        .fromKernel(kernel)
+        .flatMap(Ref.of[F, SpanIdentifiers])
+    ).flatMap(create(queue, names))
 }

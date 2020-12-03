@@ -115,22 +115,23 @@ object SubmittableSpan {
   ): F[SubmittableSpan] =
     (
       span.meta.get,
+      span.ids.get,
       Clock[F].realTime(NANOSECONDS)
     ).mapN {
-      case (meta, end) =>
+      case (meta, ids, end) =>
         SubmittableSpan(
-          traceId = span.ids.traceId,
-          spanId = span.ids.spanId,
+          traceId = ids.traceId,
+          spanId = ids.spanId,
           name = span.names.name,
           service = span.names.service,
           resource = span.names.resource,
           start = span.start,
           duration = end - span.start,
-          parentId = span.ids.parentId,
+          parentId = ids.parentId,
           error = isError(exitCase),
           `type` = inferSpanType(meta),
           metrics = spanMetrics,
-          meta = transformTags(meta, exitCase, span.ids.traceToken)
+          meta = transformTags(meta, exitCase, ids.traceToken)
         )
     }
 }
