@@ -54,7 +54,7 @@ class DatadogTest extends AnyWordSpec with Matchers {
         for {
           client <- TestClient[IO]
           ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
-          kernel <- ep.use(_.root("foo").use(s => s.put("X-Trace-Token" -> "foo") >> s.kernel))
+          kernel <- ep.use(_.root("foo").use(s => s.put("traceToken" -> "foo") >> s.kernel))
         } yield kernel.toHeaders.get("X-Trace-Token") shouldBe Some("foo")
         ).unsafeRunSync()
     }
@@ -78,7 +78,7 @@ class DatadogTest extends AnyWordSpec with Matchers {
 
     "Submit the right info to Datadog when closed" in {
 
-      val res = run(_.root("bar:res").use(_.put("k" -> StringValue("v")))).unsafeRunSync
+      val res = run(_.root("bar:res").use(_.put("k" -> StringValue("v")) >> IO.sleep(1.milli))).unsafeRunSync
       val span = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync.flatten.head
 
       span.name shouldBe "bar"

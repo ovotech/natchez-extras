@@ -28,7 +28,7 @@ case class DatadogSpan[F[_]: Sync: Clock](
 ) extends Span[F] {
 
   def updateTraceToken(fields: Map[String, TraceValue]): F[Unit] =
-    fields.get("X-Trace-Token").traverse {
+    fields.get("traceToken").traverse {
       case StringValue(v) => ids.update(_.copy(traceToken = v))
       case BooleanValue(v) => ids.update(_.copy(traceToken = v.toString))
       case NumberValue(v) => ids.update(_.copy(traceToken = v.toString))
