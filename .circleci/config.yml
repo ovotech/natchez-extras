@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.0.2
 
 docker_sbt: &docker_sbt
   docker:
@@ -24,7 +27,45 @@ cache_restore: &cache_restore
     keys:
       - v1-{{ checksum "build.sbt" }}
       - v1-
+
+commands:
+  microsite:
+    description: "Execute sbt microsite commands"
+    parameters:
+      command: {type: string}
+    steps:
+      - checkout
+      - *cache_restore
+      - add_ssh_keys:
+          fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
+      - ruby/install:
+          version: '2.7'
+      - run:
+          name: Install Jekyll
+          command: gem install jekyll
+      - run:
+          name: Configure Git
+          command: |
+            git config --global user.email '<>'
+            git config --global user.name "CircleCI"
+            git config --global push.default simple
+      - run:
+          name: Deploy microsite
+          command: sbt docs/<< parameters.command >>
+
 jobs:
+  microsite_compile:
+    <<: *docker_sbt
+    steps:
+      - microsite:
+          command: makeMicrosite
+
+  microsite_publish:
+    <<: *docker_sbt
+    steps:
+      - microsite:
+          command: publishMicrosite
+
   release:
     <<: *docker_sbt
     steps:
@@ -52,6 +93,8 @@ workflows:
   version: 2
   master-build:
     jobs:
+      - microsite_publish:
+          filters: {branches: {only: master}}
       - release:
           filters:
             tags:
@@ -60,5 +103,7 @@ workflows:
               ignore: /.*/
   pr-build:
     jobs:
+      - microsite_compile:
+          filters: {branches: {ignore: master}}
       - test:
           filters: {branches: {ignore: master}}
