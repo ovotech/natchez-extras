@@ -4,6 +4,7 @@ import cats.data.Kleisli
 import cats.effect.concurrent.Ref
 import cats.effect.{IO, Resource}
 import cats.{Applicative, Monad}
+import com.ovoenergy.effect.natchez.http4s.Configuration
 import fs2._
 import natchez.TraceValue.{NumberValue, StringValue}
 import natchez.{EntryPoint, Kernel, Span, TraceValue}

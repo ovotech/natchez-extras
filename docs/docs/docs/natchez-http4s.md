@@ -31,7 +31,8 @@ import cats.effect.{ExitCode, IO, IOApp, Resource, Sync, Timer}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import com.ovoenergy.effect.natchez.Datadog
-import com.ovoenergy.effect.natchez.http4s.server.{Configuration, TraceMiddleware}
+import com.ovoenergy.effect.natchez.http4s.Configuration
+import com.ovoenergy.effect.natchez.http4s.server.TraceMiddleware
 import natchez.{EntryPoint, Span, Trace}
 import org.http4s.{HttpApp, HttpRoutes}
 import org.http4s.client.blaze.BlazeClientBuilder
@@ -116,8 +117,8 @@ it is set up to create tags suitable for Datadog but you can use the helper func
 
 ```scala mdoc
 import cats.effect.IO
-import com.ovoenergy.effect.natchez.http4s.server.Configuration
-import com.ovoenergy.effect.natchez.http4s.server.Configuration.TagReader._
+import com.ovoenergy.effect.natchez.http4s.Configuration
+import com.ovoenergy.effect.natchez.http4s.Configuration.TagReader._
 import natchez.TraceValue.BooleanValue
 import cats.syntax.semigroup._
 
