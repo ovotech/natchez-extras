@@ -2,7 +2,6 @@ package com.ovoenergy.effect.natchez
 
 import cats.effect.concurrent.Ref
 import cats.effect.{Blocker, ContextShift, IO, Resource}
-import cats.syntax.functor._
 import com.ovoenergy.effect.natchez.TracedTransactor.Traced
 import doobie.h2.H2Transactor.newH2Transactor
 import doobie.implicits._
@@ -12,6 +11,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import cats.syntax.flatMap._
 
+import java.net.URI
 import scala.concurrent.ExecutionContext.global
 
 class TracedTransactorTest extends AnyWordSpec with Matchers {
@@ -31,6 +31,12 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
           IO.pure(Kernel(Map.empty))
         def put(fields: (String, TraceValue)*): IO[Unit] =
           sps.update(s => s.dropRight(1) :+ s.last.copy(tags = s.last.tags ++ fields.toMap))
+        def traceId: IO[Option[String]] =
+          IO.pure(None)
+        def spanId: IO[Option[String]] =
+          IO.pure(None)
+        def traceUri: IO[Option[URI]] =
+          IO.pure(None)
       }
       a.run(spanMock).attempt.flatMap(_ => sps.get)
     }

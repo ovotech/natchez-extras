@@ -31,32 +31,32 @@ class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {
   "Slf4j span logging" should {
 
     "Log something when the span is created" in {
-      val started = Slf4jSpan.create[IO]("foo").use(_ => flushLogs).unsafeRunSync
+      val started = Slf4jSpan.create[IO]("foo").use(_ => flushLogs).unsafeRunSync()
       started.map(_.getMessage) shouldBe List("foo started")
     }
 
     "Log successes" in {
-      Slf4jSpan.create[IO]("foo").use(_ => flushLogs).unsafeRunSync
-      flushLogs.unsafeRunSync.map(_.getMessage) shouldBe List("foo success")
+      Slf4jSpan.create[IO]("foo").use(_ => flushLogs).unsafeRunSync()
+      flushLogs.unsafeRunSync().map(_.getMessage) shouldBe List("foo success")
     }
 
     "Log cancelled tasks" in {
       val task: IO[List[LoggingEvent]] = Slf4jSpan.create[IO]("foo").use(_ => flushLogs >> IO.never)
-      val result = Concurrent[IO].start(task).flatMap(_.cancel >> flushLogs).unsafeRunSync
+      val result = Concurrent[IO].start(task).flatMap(_.cancel >> flushLogs).unsafeRunSync()
       result.map(_.getMessage) shouldBe List("foo cancelled")
     }
 
     "Log failed tasks" in {
       val explode = flushLogs >> IO.raiseError(new Exception("boo"))
-      Try(Slf4jSpan.create[IO]("foo").use(_ => explode).unsafeRunSync)
-      val logs = flushLogs.unsafeRunSync
+      Try(Slf4jSpan.create[IO]("foo").use(_ => explode).unsafeRunSync())
+      val logs = flushLogs.unsafeRunSync()
       logs.map(_.getMessage) shouldBe List("foo error")
       logs.map(_.getThrowable.get().getMessage) shouldBe List("boo")
     }
 
     "Include trace tokens" in {
-      Slf4jSpan.create[IO]("foo", token = Some("bar")).use(IO.pure).unsafeRunSync
-      flushLogs.unsafeRunSync.map(_.getMdc.asScala) shouldBe List.fill(2)(Map("traceToken" -> "bar"))
+      Slf4jSpan.create[IO]("foo", token = Some("bar")).use(IO.pure).unsafeRunSync()
+      flushLogs.unsafeRunSync().map(_.getMdc.asScala) shouldBe List.fill(2)(Map("traceToken" -> "bar"))
     }
   }
 
@@ -69,7 +69,7 @@ class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {
 
     "Succeed regardless of the case of the trace token" in {
       val res = Slf4jSpan.fromKernel[IO]("foo", Kernel(Map("x-Trace-TOKEN" -> "boz")))
-      res.unsafeRunSync.use(s => IO(s.token)).unsafeRunSync shouldBe "boz"
+      res.unsafeRunSync().use(s => IO(s.token)).unsafeRunSync() shouldBe "boz"
     }
   }
 

@@ -1,9 +1,12 @@
 package com.ovoenergy.effect.natchez
 
+import cats.data.OptionT
 import cats.effect.{Resource, Sync}
 import cats.syntax.apply._
 import cats.syntax.functor._
 import natchez.{EntryPoint, Kernel, Span, TraceValue}
+
+import java.net.URI
 
 /**
  * Given to separate tracing integrations combine them by calling each one of them
@@ -19,6 +22,12 @@ object Combine {
         (s1.span(name), s2.span(name)).mapN[Span[F]](combineSpan[F])
       def put(fields: (String, TraceValue)*): F[Unit] =
         (s1.put(fields: _*), s2.put(fields: _*)).tupled.as(())
+      def traceId: F[Option[String]] =
+        OptionT(s1.traceId).orElseF(s2.traceId).value
+      def spanId: F[Option[String]] =
+        OptionT(s1.spanId).orElseF(s2.spanId).value
+      def traceUri: F[Option[URI]] =
+        OptionT(s1.traceUri).orElseF(s2.traceUri).value
     }
 
   def combine[F[_]: Sync](e1: EntryPoint[F], e2: EntryPoint[F]): EntryPoint[F] =

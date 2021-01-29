@@ -1,6 +1,6 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-scalaVersion in ThisBuild := "2.13.1"
+scalaVersion in ThisBuild := "2.13.4"
 
 classLoaderLayeringStrategy in ThisBuild := ClassLoaderLayeringStrategy.ScalaLibrary
 
@@ -18,12 +18,12 @@ val common = Seq(
   git.useGitDescribe := true,
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full),
-    "org.typelevel" %% "cats-core" % "2.1.1",
-    "org.typelevel" %% "cats-effect" % "2.1.2",
-    "org.scalatest" %% "scalatest" % "3.1.1" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
-    "org.scalatestplus" %% "scalacheck-1-14" % "3.1.1.1" % Test
+    compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
+    "org.typelevel" %% "cats-core" % "2.3.1",
+    "org.typelevel" %% "cats-effect" % "2.3.1",
+    "org.scalatest" %% "scalatest" % "3.2.3" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.15.2" % Test,
+    "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
   ),
 )
 
@@ -32,12 +32,12 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "metrics-common"))
 
-val log4catsVersion = "1.0.1"
-val natchezVersion = "0.0.11"
-val http4sVersion = "0.21.2"
+val log4catsVersion = "1.1.1"
+val natchezVersion = "0.0.19"
+val http4sVersion = "0.21.16"
 val circeVersion = "0.13.0"
 val slf4jVersion = "1.7.30"
-val fs2Version = "2.3.0"
+val fs2Version = "2.5.0"
 
 lazy val natchezDatadog = project
   .in(file("natchez-datadog"))
@@ -110,14 +110,14 @@ lazy val natchezFs2 = project
   .settings(common :+ (name := "natchez-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "2.0.0",
+      "org.typelevel" %% "kittens" % "2.2.1",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
   )
 
-val silencerVersion = "1.6.0"
-val doobieVersion = "0.8.8"
+val silencerVersion = "1.7.1"
+val doobieVersion = "0.10.0"
 lazy val natchezDoobie = project
   .in(file("natchez-doobie"))
   .enablePlugins(GitVersioning)

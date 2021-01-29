@@ -17,6 +17,8 @@ import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+import java.net.URI
+
 class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
   type TraceIO[A] = Kleisli[IO, Span[IO], A]
 
@@ -28,6 +30,9 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
       def kernel: F[Kernel] = Applicative[F].pure(Kernel(Map.empty))
       def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields.toMap)
       def span(name: String): Resource[F, Span[F]] = Resource.pure(spanMock[F](ref))
+      def traceId: F[Option[String]] = Applicative[F].pure(None)
+      def spanId: F[Option[String]] = Applicative[F].pure(None)
+      def traceUri: F[Option[URI]] = Applicative[F].pure(None)
     }
 
   trait TestEntryPoint[F[_]] extends EntryPoint[F] {

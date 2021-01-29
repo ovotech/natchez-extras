@@ -18,7 +18,7 @@ class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
           parent <- SpanIdentifiers.create[IO]
           child  <- SpanIdentifiers.child[IO](parent)
         } yield parent -> child
-      ).unsafeRunSync
+      ).unsafeRunSync()
 
       parent.parentId shouldBe None
       child.traceId shouldBe parent.traceId
@@ -32,7 +32,7 @@ class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
           ids    <- create[IO]
           kernel <- fromKernel[IO](SpanIdentifiers.toKernel(ids))
         } yield ids -> kernel
-      ).unsafeRunSync
+      ).unsafeRunSync()
 
       kernel.traceId shouldBe original.traceId
       kernel.traceToken shouldBe original.traceToken
@@ -41,11 +41,11 @@ class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers {
   }
 
   "Succeed in converting from a kernel even if info is missing" in {
-    fromKernel[IO](Kernel(Map.empty)).attempt.unsafeRunSync should matchPattern { case Right(_) => }
-    fromKernel[IO](Kernel(Map("X-Trace-Token" -> "foo"))).unsafeRunSync.traceToken shouldBe "foo"
+    fromKernel[IO](Kernel(Map.empty)).attempt.unsafeRunSync() should matchPattern { case Right(_) => }
+    fromKernel[IO](Kernel(Map("X-Trace-Token" -> "foo"))).unsafeRunSync().traceToken shouldBe "foo"
   }
 
   "Ignore header case when extracting info" in {
-    fromKernel[IO](Kernel(Map("x-TRACe-tokeN" -> "foo"))).unsafeRunSync.traceToken shouldBe "foo"
+    fromKernel[IO](Kernel(Map("x-TRACe-tokeN" -> "foo"))).unsafeRunSync().traceToken shouldBe "foo"
   }
 }
