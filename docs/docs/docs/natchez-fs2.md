@@ -34,7 +34,6 @@ If the stream is cancelled the span will be closed automatically.
 ```scala mdoc
 import cats.Monad
 import cats.effect.{ExitCode, IO, IOApp}
-import cats.syntax.functor._
 import com.ovoenergy.effect.natchez.syntax._
 import com.ovoenergy.effect.natchez.{AllocatedSpan, Slf4j}
 import fs2._
