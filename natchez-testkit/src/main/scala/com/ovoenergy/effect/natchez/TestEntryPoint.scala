@@ -2,13 +2,14 @@ package com.ovoenergy.effect.natchez
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-
 import cats.effect.concurrent.Ref
 import cats.effect.{Clock, ExitCase, Resource, Sync}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import com.ovoenergy.effect.natchez.TestEntryPoint.TestSpan
 import natchez.{EntryPoint, Kernel, Span, TraceValue}
+
+import java.net.URI
 
 /**
  * Test implementation of Natchez that is backed by a Ref
@@ -34,6 +35,9 @@ object TestEntryPoint {
       def span(myName: String, k: Kernel): Span[F] = new Span[F] {
         def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(myName), k)
         def put(fields: (String, TraceValue)*): F[Unit] = F.unit
+        def traceId: F[Option[String]] = F.pure(None)
+        def spanId: F[Option[String]] = F.pure(None)
+        def traceUri: F[Option[URI]] = F.pure(None)
         def kernel: F[Kernel] = F.pure(k)
       }
 

@@ -1,7 +1,6 @@
 package com.ovoenergy.effect.natchez
 
 import java.util.UUID.randomUUID
-
 import cats.Monad
 import cats.data.OptionT
 import cats.effect.concurrent.Ref
@@ -11,6 +10,8 @@ import cats.syntax.functor._
 import natchez.TraceValue.StringValue
 import natchez.{Kernel, Span, TraceValue}
 import org.slf4j.{Logger, LoggerFactory, MDC}
+
+import java.net.URI
 
 case class Slf4jSpan[F[_]: Sync](
   mdc: Ref[F, Map[String, TraceValue]],
@@ -27,6 +28,15 @@ case class Slf4jSpan[F[_]: Sync](
 
   def span(name: String): Resource[F, Span[F]] =
     Resource.liftF(mdc.get).flatMap(Slf4jSpan.create(name, Some(token), _)).widen
+
+  def traceId: F[Option[String]] =
+    Sync[F].pure(Some(token))
+
+  def spanId: F[Option[String]] =
+    Sync[F].pure(None)
+
+  def traceUri: F[Option[URI]] =
+    Sync[F].pure(None)
 }
 
 object Slf4jSpan {

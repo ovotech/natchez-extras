@@ -8,6 +8,8 @@ import fs2.concurrent.Queue
 import fs2.{Pipe, Stream}
 import natchez.{Kernel, Span, TraceValue}
 
+import java.net.URI
+
 /**
  * A Natchez span that has been pre-allocated and will stay open
  * until either the stream that created it terminates or you call submit
@@ -48,6 +50,12 @@ object AllocatedSpan {
         createSpan(spn, F.uncancelable(F.attempt(task) >> submit))
       def submit: F[Unit] =
         submitTask
+      def traceId: F[Option[String]] =
+        spn.traceId
+      def spanId: F[Option[String]] =
+        spn.spanId
+      def traceUri: F[Option[URI]] =
+        spn.traceUri
     }
 
   /**
@@ -60,7 +68,7 @@ object AllocatedSpan {
 
   object Traced {
     implicit def traverse[F[_]]: Traverse[Traced[F, *]] =
-      cats.derived.semi.traverse[Traced[F, *]]
+      cats.derived.semiauto.traverse[Traced[F, *]]
   }
 
   /**

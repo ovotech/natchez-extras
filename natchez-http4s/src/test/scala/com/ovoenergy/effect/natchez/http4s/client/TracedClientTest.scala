@@ -32,7 +32,7 @@ class TracedClientTest extends AnyWordSpec with Matchers {
           _      <- ep.continue("bar", kernel).use(http.named("foo").status(Request[TraceIO]()).run)
           reqs   <- client.requests
         } yield reqs
-      ).unsafeRunSync
+      ).unsafeRunSync()
 
       requests.forall(_.headers.exists(_.name.value === "X-Trace-Token")) shouldBe true
     }
@@ -47,7 +47,7 @@ class TracedClientTest extends AnyWordSpec with Matchers {
           _      <- ep.root("root").use(http.named("foo").status(Request[TraceIO]()).run)
           reqs   <- ep.spans
         } yield reqs
-      ).unsafeRunSync
+      ).unsafeRunSync()
 
       spans.length shouldBe 2
       spans.head.name shouldBe "foo:http.request:/"

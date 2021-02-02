@@ -20,7 +20,7 @@ case class SpanIdentifiers(
 object SpanIdentifiers {
 
   private def randomAbsLong[F[_]: Sync]: F[Long] =
-    Sync[F].delay(scala.util.Random.nextLong.abs)
+    Sync[F].delay(scala.util.Random.nextLong().abs)
 
   private def randomUUID[F[_]: Sync]: F[String] =
     Sync[F].delay(UUID.randomUUID.toString)

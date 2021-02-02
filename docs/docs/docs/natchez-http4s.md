@@ -94,7 +94,7 @@ object NatchezHttp4s extends IOApp {
       /**
        * We can then serve the routes as normal
        */
-      BlazeServerBuilder[IO]
+      BlazeServerBuilder[IO](global)
         .bindHttp(8080, "0.0.0.0")
         .withHttpApp(routes)
         .withoutBanner

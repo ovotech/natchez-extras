@@ -12,6 +12,7 @@ import cats.syntax.traverse._
 import cats.instances.option._
 import natchez.TraceValue.{BooleanValue, NumberValue, StringValue}
 
+import java.net.URI
 import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
@@ -43,6 +44,15 @@ case class DatadogSpan[F[_]: Sync: Clock](
 
   def kernel: F[Kernel] =
     ids.get.map(SpanIdentifiers.toKernel)
+
+  def traceId: F[Option[String]] =
+    ids.get.map(id => Some(id.traceId.toString))
+
+  def spanId: F[Option[String]] =
+    ids.get.map(id => Some(id.spanId.toString))
+
+  def traceUri: F[Option[URI]] =
+    Sync[F].pure(None)
 }
 
 object DatadogSpan {

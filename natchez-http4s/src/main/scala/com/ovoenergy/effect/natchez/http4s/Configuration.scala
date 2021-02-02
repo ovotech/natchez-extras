@@ -112,7 +112,7 @@ object Configuration {
   def entity[F[_]: Sync](name: String): MessageReader[F] =
     TagReader(
       Kleisli { message =>
-        message.bodyAsText.compile.last
+        message.bodyText.compile.last
           .map { body =>
             body.map(b => name -> StringValue(b)).toMap
           }
