@@ -5,7 +5,7 @@ import cats.data.Kleisli
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import io.chrisdavenport.log4cats.StructuredLogger
+import org.typelevel.log4cats.StructuredLogger
 import natchez.{Kernel, Span, Trace}
 
 object TracedLogger {

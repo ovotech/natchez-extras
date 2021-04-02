@@ -32,8 +32,8 @@ import cats.data.Kleisli
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.ovoenergy.effect.TracedLogger
 import com.ovoenergy.effect.natchez.Datadog
-import io.chrisdavenport.log4cats.StructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.StructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import natchez.{EntryPoint, Span, Trace}
 import org.http4s.client.blaze.BlazeClientBuilder
 import cats.syntax.functor._
