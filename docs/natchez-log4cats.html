@@ -10,7 +10,7 @@ the <a href="https://docs.datadoghq.com/logs/log_collection/java/?tab=log4j#agen
 
 <h2 id="installation">Installation</h2>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">effectUtilsVersion</span> <span class="k">=</span> <span class="s">"3.0.0"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">effectUtilsVersion</span> <span class="k">=</span> <span class="s">"3.1.0"</span>
 <span class="n">resolvers</span> <span class="o">+=</span> <span class="nv">Resolver</span><span class="o">.</span><span class="py">bintrayRepo</span><span class="o">(</span><span class="s">"ovotech"</span><span class="o">,</span> <span class="s">"maven"</span><span class="o">)</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
@@ -25,8 +25,8 @@ the <a href="https://docs.datadoghq.com/logs/log_collection/java/?tab=log4j#agen
 <span class="k">import</span> <span class="nn">cats.effect.</span><span class="o">{</span><span class="nc">ExitCode</span><span class="o">,</span> <span class="nc">IO</span><span class="o">,</span> <span class="nc">IOApp</span><span class="o">,</span> <span class="nc">Resource</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">com.ovoenergy.effect.TracedLogger</span>
 <span class="k">import</span> <span class="nn">com.ovoenergy.effect.natchez.Datadog</span>
-<span class="k">import</span> <span class="nn">io.chrisdavenport.log4cats.StructuredLogger</span>
-<span class="k">import</span> <span class="nn">io.chrisdavenport.log4cats.slf4j.Slf4jLogger</span>
+<span class="k">import</span> <span class="nn">org.typelevel.log4cats.StructuredLogger</span>
+<span class="k">import</span> <span class="nn">org.typelevel.log4cats.slf4j.Slf4jLogger</span>
 <span class="k">import</span> <span class="nn">natchez.</span><span class="o">{</span><span class="nc">EntryPoint</span><span class="o">,</span> <span class="nc">Span</span><span class="o">,</span> <span class="nc">Trace</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">org.http4s.client.blaze.BlazeClientBuilder</span>
 <span class="k">import</span> <span class="nn">cats.syntax.functor._</span>
