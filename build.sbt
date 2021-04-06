@@ -32,7 +32,7 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "metrics-common"))
 
-val log4catsVersion = "1.1.1"
+val log4catsVersion = "1.2.2"
 val natchezVersion = "0.0.19"
 val http4sVersion = "0.21.16"
 val circeVersion = "0.13.0"
@@ -89,7 +89,7 @@ lazy val natchezLog4Cats = project
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "io.chrisdavenport"    %% "log4cats-core" % log4catsVersion
+      "org.typelevel" %% "log4cats-core" % log4catsVersion
     )
   )
 
@@ -180,7 +180,7 @@ lazy val docs = project
       "org.http4s" %% "http4s-blaze-client" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
-      "io.chrisdavenport" %% "log4cats-slf4j" % log4catsVersion
+      "org.typelevel" %% "log4cats-slf4j" % log4catsVersion
     )
   )
 
