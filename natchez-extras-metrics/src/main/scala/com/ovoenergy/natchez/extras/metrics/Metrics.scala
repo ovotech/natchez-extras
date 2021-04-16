@@ -1,7 +1,7 @@
 package com.ovoenergy.natchez.extras.metrics
 
 import cats.syntax.apply._
-import cats.{~>, Functor, Monad}
+import cats.{Monad, ~>}
 import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 
 /**
@@ -21,7 +21,7 @@ object Metrics {
   /**
    * Transform the effect type of the given Metrics instance with a natural transformation
    */
-  def mapK[F[_], G[_]: Functor](metrics: Metrics[F], nt: F ~> G): Metrics[G] =
+  def mapK[F[_], G[_]](metrics: Metrics[F], nt: F ~> G): Metrics[G] =
     new Metrics[G] {
       def counter(metric: Metric)(value: Long): G[Unit] =
         nt(metrics.counter(metric)(value))

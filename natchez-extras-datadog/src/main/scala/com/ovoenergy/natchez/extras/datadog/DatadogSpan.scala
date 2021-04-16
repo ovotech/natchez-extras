@@ -116,9 +116,9 @@ object DatadogSpan {
   def fromParent[F[_]: Sync: Clock](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =
     for {
 
-      meta  <- Resource.liftF(parent.meta.get)
-      ids   <- Resource.liftF(parent.ids.get.flatMap(SpanIdentifiers.child[F]))
-      ref   <- Resource.liftF(Ref.of[F, SpanIdentifiers](ids))
+      meta  <- Resource.eval(parent.meta.get)
+      ids   <- Resource.eval(parent.ids.get.flatMap(SpanIdentifiers.child[F]))
+      ref   <- Resource.eval(Ref.of[F, SpanIdentifiers](ids))
       child <- create(parent.queue, SpanNames.withFallback(name, parent.names), meta)(ref)
     } yield child
 
@@ -128,7 +128,7 @@ object DatadogSpan {
     kernel: Kernel
   ): Resource[F, DatadogSpan[F]] =
     Resource
-      .liftF(
+      .eval(
         SpanIdentifiers
           .fromKernel(kernel)
           .flatMap(Ref.of[F, SpanIdentifiers])

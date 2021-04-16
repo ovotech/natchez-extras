@@ -26,7 +26,7 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
     Ref.of[IO, List[SpanData]](List(SpanData("root", Map.empty))).flatMap { sps =>
       lazy val spanMock: Span[IO] = new Span[IO] {
         def span(name: String): Resource[IO, Span[IO]] =
-          Resource.liftF(sps.update(_ :+ SpanData(name, Map.empty)).as(spanMock))
+          Resource.eval(sps.update(_ :+ SpanData(name, Map.empty)).as(spanMock))
         def kernel: IO[Kernel] =
           IO.pure(Kernel(Map.empty))
         def put(fields: (String, TraceValue)*): IO[Unit] =

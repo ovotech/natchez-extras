@@ -43,11 +43,11 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
     Ref.of[IO, Map[String, TraceValue]](Map.empty).map { ref =>
       new TestEntryPoint[IO] {
         def root(name: String): Resource[IO, Span[IO]] =
-          Resource.liftF(Monad[IO].pure(spanMock(ref)))
+          Resource.eval(Monad[IO].pure(spanMock(ref)))
         def continue(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
-          Resource.liftF(Monad[IO].pure(spanMock(ref)))
+          Resource.eval(Monad[IO].pure(spanMock(ref)))
         def continueOrElseRoot(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
-          Resource.liftF(Monad[IO].pure(spanMock(ref)))
+          Resource.eval(Monad[IO].pure(spanMock(ref)))
         def tags: IO[Map[String, TraceValue]] =
           ref.get
       }

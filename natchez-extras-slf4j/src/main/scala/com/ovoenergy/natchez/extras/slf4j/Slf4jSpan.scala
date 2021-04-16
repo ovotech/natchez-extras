@@ -27,7 +27,7 @@ case class Slf4jSpan[F[_]: Sync](
     Monad[F].pure(Kernel(Map("X-Trace-Token" -> token)))
 
   def span(name: String): Resource[F, Span[F]] =
-    Resource.liftF(mdc.get).flatMap(Slf4jSpan.create(name, Some(token), _)).widen
+    Resource.eval(mdc.get).flatMap(Slf4jSpan.create(name, Some(token), _)).widen
 
   def traceId: F[Option[String]] =
     Sync[F].pure(Some(token))

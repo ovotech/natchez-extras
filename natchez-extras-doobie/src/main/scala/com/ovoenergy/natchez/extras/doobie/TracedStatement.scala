@@ -1,19 +1,18 @@
 package com.ovoenergy.natchez.extras.doobie
 
-import com.github.ghik.silencer.silent
-
 import java.io.{InputStream, Reader}
 import java.net.URL
 import java.sql.{Array => _, _}
 import java.util.Calendar
+import scala.annotation.nowarn
 
 /**
  * This is an absolutely abominable brute force solution to linking PreparedStatements
  * with a SQL string so we can include it in traces but hey I figure it is a one time cost
  * Pretend this doesn't exist and you never had to see it
  */
-@silent("deprecated")
-private[natchez] case class TracedStatement(
+@nowarn
+private[doobie] case class TracedStatement(
   p: PreparedStatement,
   queryString: String
 ) extends PreparedStatement {

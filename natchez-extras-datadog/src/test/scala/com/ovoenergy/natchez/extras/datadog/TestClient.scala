@@ -17,7 +17,7 @@ trait TestClient[F[_]] {
 
 object TestClient {
 
-  def apply[F[_]: Sync: Concurrent]: F[TestClient[F]]  =
+  def apply[F[_]: Concurrent]: F[TestClient[F]]  =
     (
       Ref.of[F, List[Request[F]]](List.empty),
       Queue.unbounded[F, F[Response[F]]]
@@ -29,7 +29,7 @@ object TestClient {
           resps.enqueue1(r)
         def client: Client[F] =
           Client { r =>
-            Resource.liftF(
+            Resource.eval(
               reqs.update(_ :+ r) >>
               resps.tryDequeue1.flatMap(r => r.getOrElse(Sync[F].pure(Response[F]())))
             )

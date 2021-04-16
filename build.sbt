@@ -1,6 +1,6 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-scalaVersion in ThisBuild := "2.13.4"
+scalaVersion in ThisBuild := "2.13.5"
 
 organization in ThisBuild := "com.ovoenergy"
 
@@ -36,10 +36,10 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
-    "org.typelevel" %% "cats-core" % "2.3.1",
-    "org.typelevel" %% "cats-effect" % "2.3.1",
-    "org.scalatest" %% "scalatest" % "3.2.3" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.15.2" % Test,
+    "org.typelevel" %% "cats-core" % "2.5.0",
+    "org.typelevel" %% "cats-effect" % "2.4.1",
+    "org.scalatest" %% "scalatest" % "3.2.7" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.15.3" % Test,
     "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
   ),
 )
@@ -50,11 +50,11 @@ lazy val metricsCommon = project
   .settings(common :+ (name := "natchez-extras-metrics"))
 
 val log4catsVersion = "1.2.2"
-val natchezVersion = "0.0.19"
-val http4sVersion = "0.21.16"
+val natchezVersion = "0.0.22"
+val http4sVersion = "0.21.22"
 val circeVersion = "0.13.0"
 val slf4jVersion = "1.7.30"
-val fs2Version = "2.5.0"
+val fs2Version = "2.5.4"
 
 lazy val natchezDatadog = project
   .in(file("natchez-extras-datadog"))
@@ -127,14 +127,13 @@ lazy val natchezFs2 = project
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "2.2.1",
+      "org.typelevel" %% "kittens" % "2.2.2",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
   )
 
-val silencerVersion = "1.7.1"
-val doobieVersion = "0.10.0"
+val doobieVersion = "0.12.1"
 lazy val natchezDoobie = project
   .in(file("natchez-extras-doobie"))
   .enablePlugins(GitVersioning)
@@ -143,9 +142,7 @@ lazy val natchezDoobie = project
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "org.tpolecat" %% "doobie-core"  % doobieVersion,
-      "org.tpolecat" %% "doobie-h2"    % doobieVersion,
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full,
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+      "org.tpolecat" %% "doobie-h2"    % doobieVersion
     ),
   )
 

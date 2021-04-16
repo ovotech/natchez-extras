@@ -1,6 +1,5 @@
 package com.ovoenergy.natchez.extras.datadog
 
-import cats.Applicative
 import cats.effect.concurrent.{Ref, Semaphore}
 import cats.effect.{Clock, Concurrent, Resource, Sync, Timer}
 import cats.syntax.flatMap._
@@ -26,9 +25,9 @@ object Datadog {
     Sync[F].delay(LoggerFactory.getLogger(getClass.getName))
 
   private def spanQueue[F[_]: Concurrent]: Resource[F, Queue[F, SubmittableSpan]] =
-    Resource.liftF(Queue.circularBuffer[F, SubmittableSpan](maxSize = 1000))
+    Resource.eval(Queue.circularBuffer[F, SubmittableSpan](maxSize = 1000))
 
-  private implicit def encoder[F[_]: Applicative, A: Encoder]: EntityEncoder[F, A] =
+  private implicit def encoder[F[_], A: Encoder]: EntityEncoder[F, A] =
     builder.withPrinter(Printer.noSpaces.copy(dropNullValues = true)).build.jsonEncoderOf[F, A]
 
   /**
@@ -77,7 +76,7 @@ object Datadog {
     agent: Uri,
     queue: Queue[F, SubmittableSpan]
   ): Resource[F, Unit] =
-    Resource.liftF(logger[F]).flatMap { logger =>
+    Resource.eval(logger[F]).flatMap { logger =>
       val submit: F[Unit] = submitOnce(queue, http, logger, agent)
       Resource
         .make(
@@ -115,7 +114,7 @@ object Datadog {
       new EntryPoint[F] {
         def root(name: String): Resource[F, Span[F]] =
           Resource
-            .liftF(
+            .eval(
               SpanIdentifiers.create.flatMap(Ref.of[F, SpanIdentifiers])
             )
             .flatMap(DatadogSpan.create(queue, names(name)))
