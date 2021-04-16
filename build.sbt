@@ -4,7 +4,7 @@ scalaVersion in ThisBuild := "2.13.4"
 
 classLoaderLayeringStrategy in ThisBuild := ClassLoaderLayeringStrategy.ScalaLibrary
 
-organization in ThisBuild := "com.ovoenergy.effect"
+organization in ThisBuild := "com.ovoenergy"
 
 organizationName in ThisBuild := "OVO Energy"
 
@@ -28,9 +28,9 @@ val common = Seq(
 )
 
 lazy val metricsCommon = project
-  .in(file("metrics-common"))
+  .in(file("natchez-extras-metrics"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "metrics-common"))
+  .settings(common :+ (name := "natchez-extras-metrics"))
 
 val log4catsVersion = "1.2.2"
 val natchezVersion = "0.0.19"
@@ -40,9 +40,9 @@ val slf4jVersion = "1.7.30"
 val fs2Version = "2.5.0"
 
 lazy val natchezDatadog = project
-  .in(file("natchez-datadog"))
+  .in(file("natchez-extras-datadog"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-datadog"))
+  .settings(common :+ (name := "natchez-extras-datadog"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core"         % natchezVersion,
@@ -58,9 +58,9 @@ lazy val natchezDatadog = project
   )
 
 lazy val natchezSlf4j = project
-  .in(file("natchez-slf4j"))
+  .in(file("natchez-extras-slf4j"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-slf4j"))
+  .settings(common :+ (name := "natchez-extras-slf4j"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
@@ -70,10 +70,10 @@ lazy val natchezSlf4j = project
   )
 
 lazy val natchezHttp4s = project
-  .in(file("natchez-http4s"))
+  .in(file("natchez-extras-http4s"))
   .dependsOn(natchezTestkit)
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-http4s"))
+  .settings(common :+ (name := "natchez-extras-http4s"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core"  % natchezVersion,
@@ -83,9 +83,9 @@ lazy val natchezHttp4s = project
   )
 
 lazy val natchezLog4Cats = project
-  .in(file("natchez-log4cats"))
+  .in(file("natchez-extras-log4cats"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-log4cats"))
+  .settings(common :+ (name := "natchez-extras-log4cats"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
@@ -94,9 +94,9 @@ lazy val natchezLog4Cats = project
   )
 
 lazy val natchezTestkit = project
-  .in(file("natchez-testkit"))
+  .in(file("natchez-extras-testkit"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-testkit"))
+  .settings(common :+ (name := "natchez-extras-testkit"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion
@@ -104,10 +104,10 @@ lazy val natchezTestkit = project
   )
 
 lazy val natchezFs2 = project
-  .in(file("natchez-fs2"))
+  .in(file("natchez-extras-fs2"))
   .dependsOn(natchezTestkit)
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-fs2"))
+  .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "kittens" % "2.2.1",
@@ -119,9 +119,9 @@ lazy val natchezFs2 = project
 val silencerVersion = "1.7.1"
 val doobieVersion = "0.10.0"
 lazy val natchezDoobie = project
-  .in(file("natchez-doobie"))
+  .in(file("natchez-extras-doobie"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-doobie"))
+  .settings(common :+ (name := "natchez-extras-doobie"))
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
@@ -133,15 +133,15 @@ lazy val natchezDoobie = project
   )
 
 lazy val natchezCombine = project
-  .in(file("natchez-combine"))
+  .in(file("natchez-extras-combine"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-combine"))
+  .settings(common :+ (name := "natchez-extras-combine"))
   .settings(libraryDependencies += "org.tpolecat" %% "natchez-core" % natchezVersion)
 
 lazy val datadogMetrics = project
-  .in(file("metrics-datadog"))
+  .in(file("natchez-extras-dogstatsd"))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "datadog-metrics"))
+  .settings(common :+ (name := "natchez-extras-dogstatsd"))
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
@@ -167,9 +167,9 @@ lazy val docs = project
     natchezLog4Cats
   )
   .settings(
-    micrositeName := "effect-utils",
-    micrositeBaseUrl := "/effect-utils",
-    micrositeDocumentationUrl := "/effect-utils/docs",
+    micrositeName := "natchez-extras",
+    micrositeBaseUrl := "/natchez-extras",
+    micrositeDocumentationUrl := "/natchez-extras/docs",
     micrositeDescription := "Datadog integrations for functional Scala",
     micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
@@ -187,7 +187,7 @@ lazy val docs = project
 lazy val root = (project in file("."))
   .settings(
     common ++ Seq(
-      name := "effect-utils",
+      name := "natchez-extras",
       publish := nop,
       publishLocal := nop
     ))

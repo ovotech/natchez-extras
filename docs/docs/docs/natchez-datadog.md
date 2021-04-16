@@ -92,7 +92,7 @@ A number of helper functions to create tags that Datadog uses to drive its trace
 An example of how to use them follows:
 
 ```scala
-import com.ovoenergy.effect.natchez.DatadogTags._
+import com.ovoenergy.natchez.extras.DatadogTags._
 import natchez.Trace
 
 object DatadogTagsExample {
