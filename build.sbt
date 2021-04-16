@@ -2,19 +2,36 @@ import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
 scalaVersion in ThisBuild := "2.13.4"
 
-classLoaderLayeringStrategy in ThisBuild := ClassLoaderLayeringStrategy.ScalaLibrary
-
 organization in ThisBuild := "com.ovoenergy"
 
 organizationName in ThisBuild := "OVO Energy"
 
 organizationHomepage in ThisBuild := Some(url("http://www.ovoenergy.com"))
 
+scmInfo in ThisBuild := Some(
+  ScmInfo(
+    url("https://github.com/ovotech/natchez-extras"),
+    "scm:git@github.com:ovotech/natchez-extras.git"
+  )
+)
+
+homepage in ThisBuild := Some(url("https://ovotech.github.io/natchez-extras/"))
+
+licenses in ThisBuild += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+
+publishMavenStyle in ThisBuild := true
+
+publishTo in ThisBuild := sonatypePublishToBundle.value
+
+credentials in ThisBuild += (
+  for {
+    user <- sys.env.get("SONATYPE_USERNAME")
+    pass <- sys.env.get("SONATYPE_PASSWORD")
+  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
+).getOrElse(Credentials(Path.userHome / ".sbt" / ".sonatype_credentials"))
+
 val common = Seq(
   fork in Test := true,
-  bintrayRepository := "maven",
-  bintrayOrganization := Some("ovotech"),
-  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   git.useGitDescribe := true,
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
