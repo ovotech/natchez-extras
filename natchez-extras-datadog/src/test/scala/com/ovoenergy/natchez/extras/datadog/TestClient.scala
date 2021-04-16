@@ -1,4 +1,4 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect.concurrent.Ref
 import cats.effect.{Concurrent, Resource, Sync}

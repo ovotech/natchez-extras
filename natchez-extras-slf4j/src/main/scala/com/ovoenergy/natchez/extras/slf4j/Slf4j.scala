@@ -1,4 +1,4 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.slf4j
 
 import cats.MonadError
 import cats.effect.{Resource, Sync}
@@ -11,8 +11,10 @@ object Slf4j {
     new EntryPoint[F] {
       def root(name: String): Resource[F, Span[F]] =
         Slf4jSpan.create(name).widen
+
       def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
         Resource.liftF(Slf4jSpan.fromKernel(name, kernel).widen).flatMap(identity).widen
+
       def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
         Resource
           .liftF(

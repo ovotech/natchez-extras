@@ -1,12 +1,12 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect._
 import cats.instances.list._
 import cats.syntax.flatMap._
 import cats.syntax.traverse._
-import Datadog.entryPoint
-import DatadogTags.SpanType.{Cache, Db, Web}
-import DatadogTags.spanType
+import com.ovoenergy.natchez.extras.datadog.Datadog.entryPoint
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.SpanType.{Cache, Db, Web}
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.spanType
 import natchez.EntryPoint
 import org.http4s.Request
 import org.http4s.circe.CirceEntityDecoder._

@@ -2,9 +2,9 @@ package com.ovoenergy.natchez.extras.http4s.client
 
 import cats.data.Kleisli
 import cats.effect.{IO, Timer}
-import com.ovoenergy.natchez.extras.TestEntryPoint
-import com.ovoenergy.natchez.extras.TestEntryPoint.TestSpan
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.TestSpan
 import com.ovoenergy.natchez.extras.http4s.Configuration
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint
 import natchez.{Kernel, Span}
 import org.http4s.Request
 import org.scalatest.matchers.should.Matchers

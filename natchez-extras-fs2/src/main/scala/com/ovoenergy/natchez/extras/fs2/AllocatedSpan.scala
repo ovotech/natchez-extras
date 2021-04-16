@@ -1,4 +1,4 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.fs2
 
 import cats.Traverse
 import cats.effect.{Concurrent, Resource, Sync}

@@ -1,8 +1,8 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.metrics
 
-import cats.{~>, Functor, Monad}
 import cats.syntax.apply._
-import Metrics.Metric
+import cats.{~>, Functor, Monad}
+import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 
 /**
  * A type class representing the ability to push metrics

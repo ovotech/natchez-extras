@@ -1,16 +1,17 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.datadog
 
-import java.util.concurrent.TimeUnit.NANOSECONDS
 import cats.Applicative
 import cats.effect.{Clock, ExitCase}
 import cats.syntax.apply._
-import com.ovoenergy.natchez.extras.DatadogTags.{SpanType, forThrowable}
-import io.circe.{Decoder, Encoder}
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.{forThrowable, SpanType}
 import io.circe.Encoder.encodeString
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
+import io.circe.{Decoder, Encoder}
 import natchez.TraceValue
 import natchez.TraceValue.StringValue
+
+import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
  * This is the type we need to send to the Datadog agent

@@ -1,6 +1,4 @@
-package com.ovoenergy.natchez.extras
-
-import java.util.UUID
+package com.ovoenergy.natchez.extras.datadog
 
 import cats.data.OptionT
 import cats.effect.Sync
@@ -8,6 +6,7 @@ import cats.syntax.apply._
 import cats.syntax.functor._
 import natchez.Kernel
 
+import java.util.UUID
 import scala.util.Try
 
 case class SpanIdentifiers(

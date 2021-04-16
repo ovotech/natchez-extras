@@ -16,11 +16,10 @@ the [agentless logging](https://docs.datadoghq.com/logs/log_collection/java/?tab
 ## Installation
 
 ```scala
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy.effect" %% "natchez-fs2" % effectUtilsVersion
+  "com.ovoenergy" %% "natchez-fs2" % natchezExtrasVersion
 )
 ```
 
@@ -30,8 +29,8 @@ libraryDependencies ++= Seq(
 import cats.Functor
 import cats.data.Kleisli
 import cats.effect.{ExitCode, IO, IOApp, Resource}
-import com.ovoenergy.effect.TracedLogger
-import com.ovoenergy.effect.natchez.Datadog
+import com.ovoenergy.natchez.extras.log4cats.TracedLogger
+import com.ovoenergy.natchez.extras.datadog.Datadog
 import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import natchez.{EntryPoint, Span, Trace}

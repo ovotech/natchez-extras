@@ -1,6 +1,6 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.dogstatsd
 
-import Events.Event
+import com.ovoenergy.natchez.extras.dogstatsd.Events.Event
 
 /**
  * Events are a Datadog extension to StatsD

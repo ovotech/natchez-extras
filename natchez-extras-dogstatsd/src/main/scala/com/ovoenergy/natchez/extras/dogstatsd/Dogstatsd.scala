@@ -1,13 +1,14 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.dogstatsd
+
+import cats.effect.{Async, Blocker, ConcurrentEffect, ContextShift, Effect, Resource}
+import com.ovoenergy.natchez.extras.dogstatsd.Events.Event
+import com.ovoenergy.natchez.extras.metrics.Metrics
+import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
+import fs2.Chunk.array
+import fs2.io.udp.{Packet, Socket, SocketGroup}
 
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets.UTF_8
-
-import cats.effect._
-import Events.Event
-import Metrics.Metric
-import fs2.Chunk.array
-import fs2.io.udp._
 
 object Dogstatsd {
 
@@ -104,7 +105,11 @@ object Dogstatsd {
    * Take care of the gymnastics required to send a string to the `to` destination through
    * a socket in F before turning the resulting unit into a `G[Unit]` so our types line up
    */
-  private def send[F[_]: Effect, G[_]: Async](skt: Socket[F], to: InetSocketAddress, what: UTF8Bytes): G[Unit] =
+  private def send[F[_]: Effect, G[_]: Async](
+    skt: Socket[F],
+    to: InetSocketAddress,
+    what: UTF8Bytes
+  ): G[Unit] =
     Async[G].liftIO(Effect[F].toIO(skt.write(Packet(to, array(what)))))
 
   /**

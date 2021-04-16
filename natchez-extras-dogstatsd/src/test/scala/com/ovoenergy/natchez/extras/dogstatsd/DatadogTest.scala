@@ -1,17 +1,17 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.dogstatsd
 
-import java.net.InetSocketAddress
-import java.nio.charset.StandardCharsets.UTF_8
-
-import com.ovoenergy.natchez.extras.Dogstatsd._
-import Events.{AlertType, Event, Priority}
-import Metrics.Metric
+import com.ovoenergy.natchez.extras.dogstatsd.Dogstatsd._
+import com.ovoenergy.natchez.extras.dogstatsd.Events.{AlertType, Event, Priority}
+import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 import org.scalacheck.Gen.mapOf
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
 import org.typelevel.claimant.Claim
+
+import java.net.InetSocketAddress
+import java.nio.charset.StandardCharsets.UTF_8
 
 class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 

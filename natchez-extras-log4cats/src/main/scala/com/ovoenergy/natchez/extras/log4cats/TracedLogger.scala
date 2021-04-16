@@ -1,4 +1,4 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.log4cats
 
 import cats.Monad
 import cats.data.Kleisli

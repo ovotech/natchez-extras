@@ -5,7 +5,7 @@ title: "Natchez Combine"
 
 # Natchez Combine
 
-`natchez-combine` is a module that allows you to combine two Natchez EntryPoints into one,
+`natchez-extras-combine` is a module that allows you to combine two Natchez EntryPoints into one,
 allowing you to send tracing information to more than one destination.
 
 At OVO we use this module to send traces both to Datadog and also to STDOUT (via `natchez-slf4j`) so when
@@ -18,24 +18,23 @@ In your build.sbt
 ```scala
 val http4sVersion = "0.21.4"
 val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= Seq(
-  "org.http4s"           %% "http4s-blaze-client" % http4sVersion,
-  "com.ovoenergy.effect" %% "natchez-combine"     % effectUtilsVersion,
-  "com.ovoenergy.effect" %% "natchez-datadog"     % effectUtilsVersion,
-  "com.ovoenergy.effect" %% "natchez-slf4j"       % effectUtilsVersion,
+  "org.http4s"    %% "http4s-blaze-client"    % http4sVersion,
+  "com.ovoenergy" %% "natchez-extras-combine" % effectUtilsVersion,
+  "com.ovoenergy" %% "natchez-extras-datadog" % effectUtilsVersion,
+  "com.ovoenergy" %% "natchez-extras-slf4j"   % effectUtilsVersion
 )
 ```
 
 ## Example usage:
 
-This example combines `natchez-datadog` and `natchez-slf4j` hence the extra dependencies
+This example combines `natchez-extras-datadog` and `natchez-extras-slf4j` hence the extra dependencies
 
 ```scala mdoc
-import com.ovoenergy.effect.natchez.Combine
-import com.ovoenergy.effect.natchez.Slf4j
-import com.ovoenergy.effect.natchez.Datadog
+import com.ovoenergy.natchez.extras.combine.Combine
+import com.ovoenergy.natchez.extras.slf4j.Slf4j
+import com.ovoenergy.natchez.extras.datadog.Datadog
 import org.http4s.client.blaze.BlazeClientBuilder
 import natchez.EntryPoint
 import cats.effect.IO

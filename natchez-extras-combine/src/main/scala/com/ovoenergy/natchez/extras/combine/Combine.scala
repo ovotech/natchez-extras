@@ -1,4 +1,4 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.combine
 
 import cats.data.OptionT
 import cats.effect.{Resource, Sync}
@@ -18,14 +18,19 @@ object Combine {
     new Span[F] {
       def kernel: F[Kernel] =
         (s1.kernel, s2.kernel).mapN { case (k1, k2) => Kernel(k1.toHeaders ++ k2.toHeaders) }
+
       def span(name: String): Resource[F, Span[F]] =
         (s1.span(name), s2.span(name)).mapN[Span[F]](combineSpan[F])
+
       def put(fields: (String, TraceValue)*): F[Unit] =
         (s1.put(fields: _*), s2.put(fields: _*)).tupled.as(())
+
       def traceId: F[Option[String]] =
         OptionT(s1.traceId).orElseF(s2.traceId).value
+
       def spanId: F[Option[String]] =
         OptionT(s1.spanId).orElseF(s2.spanId).value
+
       def traceUri: F[Option[URI]] =
         OptionT(s1.traceUri).orElseF(s2.traceUri).value
     }
@@ -34,8 +39,10 @@ object Combine {
     new EntryPoint[F] {
       def root(name: String): Resource[F, Span[F]] =
         (e1.root(name), e2.root(name)).mapN(combineSpan[F])
+
       def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
         (e1.continue(name, kernel), e2.continue(name, kernel)).mapN(combineSpan[F])
+
       def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
         (e1.continueOrElseRoot(name, kernel), e2.continueOrElseRoot(name, kernel)).mapN(combineSpan[F])
     }

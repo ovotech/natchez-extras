@@ -1,6 +1,8 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.slf4j
 
 import cats.effect.{Concurrent, ContextShift, IO}
+import cats.syntax.flatMap._
+import natchez.Kernel
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -8,9 +10,6 @@ import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
 
 import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
-import cats.syntax.flatMap._
-import natchez.Kernel
-
 import scala.util.Try
 
 class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {

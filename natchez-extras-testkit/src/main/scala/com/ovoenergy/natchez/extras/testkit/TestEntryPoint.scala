@@ -1,15 +1,15 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.testkit
 
-import java.time.Instant
-import java.util.concurrent.TimeUnit
 import cats.effect.concurrent.Ref
 import cats.effect.{Clock, ExitCase, Resource, Sync}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import TestEntryPoint.TestSpan
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.TestSpan
 import natchez.{EntryPoint, Kernel, Span, TraceValue}
 
 import java.net.URI
+import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 /**
  * Test implementation of Natchez that is backed by a Ref
@@ -31,7 +31,6 @@ object TestEntryPoint {
 
   def apply[F[_]: Clock](implicit F: Sync[F]): F[TestEntryPoint[F]] =
     Ref.of[F, List[TestSpan]](List.empty).map { submitted =>
-
       def span(myName: String, k: Kernel): Span[F] = new Span[F] {
         def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(myName), k)
         def put(fields: (String, TraceValue)*): F[Unit] = F.unit

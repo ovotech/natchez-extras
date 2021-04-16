@@ -11,17 +11,16 @@ that check your application is sending the right information to Natchez.
 ## Installation
 
 ```scala
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy.effect" %% "natchez-testkit" % effectUtilsVersion % Test
+  "com.ovoenergy" %% "natchez-testkit" % natchezExtrasVersion % Test
 )
 ```
 
 ## Usage
 
-An example of how to use it can be found in the test for `natchez-fs2`:
+An example of how to use it can be found in the test for `natchez-extras-fs2`:
 
 [https://github.com/ovotech/effect-utils/blob/master/natchez-fs2/src/test/scala/com/ovoenergy/effect/natchez/AllocatedSpanTest.scala](
 https://github.com/ovotech/effect-utils/blob/master/natchez-fs2/src/test/scala/com/ovoenergy/effect/natchez/AllocatedSpanTest.scala

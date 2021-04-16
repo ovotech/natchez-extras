@@ -1,16 +1,16 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect.concurrent.Ref
 import cats.effect.{Clock, ExitCase, Resource, Sync}
+import cats.instances.option._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import DatadogSpan.SpanNames
+import cats.syntax.traverse._
+import com.ovoenergy.natchez.extras.datadog.DatadogSpan.SpanNames
 import fs2.concurrent.Queue
 import io.circe.generic.extras.Configuration
-import natchez.{Kernel, Span, TraceValue}
-import cats.syntax.traverse._
-import cats.instances.option._
 import natchez.TraceValue.{BooleanValue, NumberValue, StringValue}
+import natchez.{Kernel, Span, TraceValue}
 
 import java.net.URI
 import java.util.concurrent.TimeUnit.NANOSECONDS
@@ -29,11 +29,14 @@ case class DatadogSpan[F[_]: Sync: Clock](
 ) extends Span[F] {
 
   def updateTraceToken(fields: Map[String, TraceValue]): F[Unit] =
-    fields.get("traceToken").traverse {
-      case StringValue(v) => ids.update(_.copy(traceToken = v))
-      case BooleanValue(v) => ids.update(_.copy(traceToken = v.toString))
-      case NumberValue(v) => ids.update(_.copy(traceToken = v.toString))
-    }.void
+    fields
+      .get("traceToken")
+      .traverse {
+        case StringValue(v)  => ids.update(_.copy(traceToken = v))
+        case BooleanValue(v) => ids.update(_.copy(traceToken = v.toString))
+        case NumberValue(v)  => ids.update(_.copy(traceToken = v.toString))
+      }
+      .void
 
   def put(fields: (String, TraceValue)*): F[Unit] =
     meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) }) >>
@@ -124,9 +127,11 @@ object DatadogSpan {
     names: SpanNames,
     kernel: Kernel
   ): Resource[F, DatadogSpan[F]] =
-    Resource.liftF(
-      SpanIdentifiers
-        .fromKernel(kernel)
-        .flatMap(Ref.of[F, SpanIdentifiers])
-    ).flatMap(create(queue, names))
+    Resource
+      .liftF(
+        SpanIdentifiers
+          .fromKernel(kernel)
+          .flatMap(Ref.of[F, SpanIdentifiers])
+      )
+      .flatMap(create(queue, names))
 }

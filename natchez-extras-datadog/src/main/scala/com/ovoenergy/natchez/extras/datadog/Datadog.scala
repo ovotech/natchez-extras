@@ -1,23 +1,22 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.datadog
 
 import cats.Applicative
-import cats.effect._
 import cats.effect.concurrent.{Ref, Semaphore}
-import cats.instances.option._
+import cats.effect.{Clock, Concurrent, Resource, Sync, Timer}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
-import DatadogSpan.SpanNames
+import com.ovoenergy.natchez.extras.datadog.DatadogSpan.SpanNames
+import fs2.Stream
 import fs2.concurrent.Queue
 import io.circe.{Encoder, Printer}
-import fs2._
 import natchez.{EntryPoint, Kernel, Span}
 import org.http4s.Method.PUT
 import org.http4s.circe.CirceInstances.builder
 import org.http4s.client.Client
+import org.http4s.syntax.literals._
 import org.http4s.{EntityEncoder, Header, Request, Uri}
 import org.slf4j.{Logger, LoggerFactory}
-import org.http4s.syntax.literals._
 
 import scala.concurrent.duration._
 
@@ -48,20 +47,22 @@ object Datadog {
       .tryDequeueChunk1(maxSize = 1000)
       .flatMap { items =>
         items.traverse { traces =>
-          Sync[F].attempt(
-            client.status(
-              Request[F](uri = agentHost.withPath("/v0.3/traces"), method = PUT)
-                .withHeaders(Header("X-DataDog-Trace-Count", traces.size.toString))
-                .withEntity(traces.toList.groupBy(_.traceId).values.toList)
+          Sync[F]
+            .attempt(
+              client.status(
+                Request[F](uri = agentHost.withPath("/v0.3/traces"), method = PUT)
+                  .withHeaders(Header("X-DataDog-Trace-Count", traces.size.toString))
+                  .withEntity(traces.toList.groupBy(_.traceId).values.toList)
+              )
             )
-          ).flatMap {
-            case Left(exception) =>
-              Sync[F].delay(logger.warn("Failed to submit to Datadog", exception))
-            case Right(status) if !status.isSuccess =>
-              Sync[F].delay(logger.warn(s"Got $status from Datadog agent"))
-            case Right(status) =>
-              Sync[F].delay(logger.debug(s"Got $status from Datadog agent"))
-          }
+            .flatMap {
+              case Left(exception) =>
+                Sync[F].delay(logger.warn("Failed to submit to Datadog", exception))
+              case Right(status) if !status.isSuccess =>
+                Sync[F].delay(logger.warn(s"Got $status from Datadog agent"))
+              case Right(status) =>
+                Sync[F].delay(logger.debug(s"Got $status from Datadog agent"))
+            }
         }
       }
       .as(())
@@ -113,11 +114,16 @@ object Datadog {
     } yield {
       new EntryPoint[F] {
         def root(name: String): Resource[F, Span[F]] =
-          Resource.liftF(
-            SpanIdentifiers.create.flatMap(Ref.of[F, SpanIdentifiers])
-          ).flatMap(DatadogSpan.create(queue, names(name))).widen
+          Resource
+            .liftF(
+              SpanIdentifiers.create.flatMap(Ref.of[F, SpanIdentifiers])
+            )
+            .flatMap(DatadogSpan.create(queue, names(name)))
+            .widen
+
         def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
           DatadogSpan.fromKernel(queue, names(name), kernel).widen
+
         def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
           DatadogSpan.fromKernel(queue, names(name), kernel).widen
       }

@@ -1,15 +1,15 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.doobie
 
 import cats.effect.concurrent.Ref
 import cats.effect.{Blocker, ContextShift, IO, Resource}
-import TracedTransactor.Traced
+import cats.syntax.flatMap._
+import com.ovoenergy.natchez.extras.doobie.TracedTransactor.Traced
 import doobie.h2.H2Transactor.newH2Transactor
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import natchez.{Kernel, Span, TraceValue}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import cats.syntax.flatMap._
 
 import java.net.URI
 import scala.concurrent.ExecutionContext.global

@@ -1,6 +1,5 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.slf4j
 
-import java.util.UUID.randomUUID
 import cats.Monad
 import cats.data.OptionT
 import cats.effect.concurrent.Ref
@@ -12,6 +11,7 @@ import natchez.{Kernel, Span, TraceValue}
 import org.slf4j.{Logger, LoggerFactory, MDC}
 
 import java.net.URI
+import java.util.UUID.randomUUID
 
 case class Slf4jSpan[F[_]: Sync](
   mdc: Ref[F, Map[String, TraceValue]],

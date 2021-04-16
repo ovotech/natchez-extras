@@ -18,12 +18,11 @@ Add this module and an SLF4J binding (in this example we're using
 [Logback](http://logback.qos.ch/)) to your `build.sbt`:
 
 ```scala
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "ch.qos.logback"        % "logback-classic"     % "1.2.3",
-  "com.ovoenergy.effect" %% "natchez-slf4j"       % effectUtilsVersion
+  "ch.qos.logback"  %  "logback-classic"      % "1.2.3",
+  "com.ovoenergy"   %% "natchez-extras-slf4j" % natchezExtrasVersion
 )
 
 ```
@@ -32,7 +31,7 @@ libraryDependencies ++= Seq(
 
 ```scala mdoc
 import cats.effect.{ExitCode, IO, IOApp}
-import com.ovoenergy.effect.natchez.Slf4j
+import com.ovoenergy.natchez.extras.slf4j.Slf4j
 import natchez.EntryPoint
 
 import scala.concurrent.duration._

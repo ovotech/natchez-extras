@@ -25,20 +25,21 @@ object TracedClient {
     Kleisli.liftK
 
   def apply[F[_]: Sync](client: Client[F], config: Configuration[F]): TracedClient[Traced[F, *]] =
-    name => Client[Traced[F, *]] { req =>
-      Resource(
-        Trace[Traced[F, *]].span(s"$name:http.request:${removeNumericPathSegments(req.uri)}") {
-          for {
-            span        <- Kleisli.ask[F, Span[F]]
-            headers     <- trace(span.kernel.map(_.toHeaders.map { case (k, v) => Header(k, v) }))
-            withHeader  = req.putHeaders(headers.toSeq: _*).mapK(dropTracing(span))
-            reqTags     <- trace(config.request.value.run(req.mapK(dropTracing(span))))
-            _           <- trace(span.put(reqTags.toSeq:_*))
-            (resp, rel) <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace)).allocated
-            respTags    <- trace(config.response.value.run(resp.mapK(dropTracing(span))))
-            _           <- trace(span.put(respTags.toSeq:_*))
-          } yield resp -> rel
-        }
-      )
+    name =>
+      Client[Traced[F, *]] { req =>
+        Resource(
+          Trace[Traced[F, *]].span(s"$name:http.request:${removeNumericPathSegments(req.uri)}") {
+            for {
+              span    <- Kleisli.ask[F, Span[F]]
+              headers <- trace(span.kernel.map(_.toHeaders.map { case (k, v) => Header(k, v) }))
+              withHeader = req.putHeaders(headers.toSeq: _*).mapK(dropTracing(span))
+              reqTags     <- trace(config.request.value.run(req.mapK(dropTracing(span))))
+              _           <- trace(span.put(reqTags.toSeq: _*))
+              (resp, rel) <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace)).allocated
+              respTags    <- trace(config.response.value.run(resp.mapK(dropTracing(span))))
+              _           <- trace(span.put(respTags.toSeq: _*))
+            } yield resp -> rel
+          }
+        )
     }
 }

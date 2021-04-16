@@ -13,22 +13,21 @@ Once you've got the `EntryPoint` you can then use Natchez as described in [its R
 Depending on how you're using the Datadog agent you may need to set some configuration values
 to enable the APM. Details can be found [on the Datadog website](https://docs.datadoghq.com/tracing/send_traces/)
 
-`natchez-datadog` currently expects the agent to be reachable over HTTP at `http://localhost:8126` - if you're running the 
+`natchez-extras-datadog` currently expects the agent to be reachable over HTTP at `http://localhost:8126` - if you're running the 
 agent in a docker container this should typically be the case.
 
 ## Installation
 
-`natchez-datadog` uses HTTP4s to submit traces to the [Datadog trace API](https://docs.datadoghq.com/api/v1/tracing/), hence the need for `http4s-blaze-client`.
+`natchez-extras-datadog` uses HTTP4s to submit traces to the [Datadog trace API](https://docs.datadoghq.com/api/v1/tracing/), hence the need for `http4s-blaze-client`.
 
 ```scala
 val http4sVersion = "0.21.4"
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "org.http4s"           %% "http4s-blaze-client" % http4sVersion,
-  "com.ovoenergy.effect" %% "natchez-datadog"     % effectUtilsVersion,
-  "com.ovoenergy.effect" %% "natchez-slf4j"       % effectUtilsVersion
+  "org.http4s"    %% "http4s-blaze-client"    % http4sVersion,
+  "com.ovoenergy" %% "natchez-extras-datadog" % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-slf4j"   % natchezExtrasVersion
 )
 ```
 
@@ -36,7 +35,7 @@ libraryDependencies ++= Seq(
 
 ```scala mdoc
 import cats.effect.{ExitCode, IO, IOApp, Resource}
-import com.ovoenergy.effect.natchez.Datadog
+import com.ovoenergy.natchez.extras.datadog.Datadog
 import natchez.EntryPoint
 import org.http4s.client.blaze.BlazeClientBuilder
 
@@ -91,8 +90,8 @@ for a particular span you can pass the new values into the span name as a colon 
 A number of helper functions to create tags that Datadog uses to drive its trace UI can be found in `DatadogTags.scala`. 
 An example of how to use them follows:
 
-```scala
-import com.ovoenergy.natchez.extras.DatadogTags._
+```scala mdoc
+import com.ovoenergy.natchez.extras.datadog.DatadogTags._
 import natchez.Trace
 
 object DatadogTagsExample {

@@ -1,13 +1,13 @@
-package com.ovoenergy.natchez.extras
-
-import java.util.UUID
+package com.ovoenergy.natchez.extras.fs2
 
 import cats.effect.{Clock, ContextShift, ExitCase, IO, Timer}
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint
 import fs2.Stream
 import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 

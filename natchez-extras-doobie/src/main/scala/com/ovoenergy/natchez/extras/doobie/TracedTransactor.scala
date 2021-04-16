@@ -1,12 +1,12 @@
-package com.ovoenergy.natchez.extras
-
-import java.sql.{Connection, PreparedStatement, ResultSet}
+package com.ovoenergy.natchez.extras.doobie
 
 import cats.data.Kleisli
 import cats.effect.{Async, Blocker, Concurrent, ContextShift}
 import doobie.free.KleisliInterpreter
-import doobie.util.transactor._
+import doobie.util.transactor.Transactor
 import natchez.{Span, Trace}
+
+import java.sql.{Connection, PreparedStatement, ResultSet}
 import cats.syntax.flatMap._
 
 object TracedTransactor {

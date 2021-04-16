@@ -1,7 +1,7 @@
-package com.ovoenergy.natchez.extras
+package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect.IO
-import SpanIdentifiers._
+import com.ovoenergy.natchez.extras.datadog.SpanIdentifiers._
 import natchez.Kernel
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
