@@ -13,17 +13,16 @@ i.e. Kafka consumers using FS2.
 ## Installation
 
 ```scala
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy.effect" %% "natchez-fs2" % effectUtilsVersion
+  "com.ovoenergy" %% "natchez-fs2" % natchezExtrasVersion
 )
 ```
 
 ## Usage
 
-`natchez-fs2` provides an FS2 `Pipe` that given an element in a stream returns it alongside an `AllocatedSpan`.
+`natchez-extras-fs2` provides an FS2 `Pipe` that given an element in a stream returns it alongside an `AllocatedSpan`.
 You can then create subspans for this span as you process the message before manually committing it with `.submit`.
 
 A small `syntax` object provides two functions - `evalMapNamed` and `evalMapTraced` to reduce the boilerplate involved
@@ -34,8 +33,9 @@ If the stream is cancelled the span will be closed automatically.
 ```scala mdoc
 import cats.Monad
 import cats.effect.{ExitCode, IO, IOApp}
-import com.ovoenergy.effect.natchez.syntax._
-import com.ovoenergy.effect.natchez.{AllocatedSpan, Slf4j}
+import com.ovoenergy.natchez.extras.fs2.syntax._
+import com.ovoenergy.natchez.extras.fs2.AllocatedSpan
+import com.ovoenergy.natchez.extras.slf4j.Slf4j
 import fs2._
 import natchez.{EntryPoint, Kernel}
 

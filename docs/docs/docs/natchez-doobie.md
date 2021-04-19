@@ -6,16 +6,15 @@ title: "Natchez Doobie"
 
 # Natchez Doobie
 
-`natchez-doobie` provides a `Transactor` that adds spans for database queries to your traces.
+`natchez-extras-doobie` provides a `Transactor` that adds spans for database queries to your traces.
 
 ## Installation
 
 ```scala
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy.effect" %% "natchez-doobie" % effectUtilsVersion
+  "com.ovoenergy" %% "natchez-extras-doobie" % natchezExtrasVersion
 )
 ```
 
@@ -33,7 +32,8 @@ and then passing that into a tagless final application that queries the database
 import cats.data.Kleisli
 import cats.effect.{Blocker, ExitCode, IO, IOApp, Resource, Sync}
 import cats.syntax.functor._
-import com.ovoenergy.effect.natchez.{Datadog, TracedTransactor}
+import com.ovoenergy.natchez.extras.datadog.Datadog
+import com.ovoenergy.natchez.extras.doobie.TracedTransactor
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import natchez.{EntryPoint, Span, Trace}

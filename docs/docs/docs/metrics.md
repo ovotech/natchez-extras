@@ -17,8 +17,7 @@ For more details about events see the [event documentation.](https://docs.datado
 In your build.sbt
 
 ```scala
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
-libraryDependencies += "com.ovoenergy.effect" %% "datadog-metrics" % "@VERSION@"
+libraryDependencies += "com.ovoenergy" %% "natchez-extras-dogstatsd" % "@VERSION@"
 ```
 
 ## Example usage
@@ -27,14 +26,15 @@ libraryDependencies += "com.ovoenergy.effect" %% "datadog-metrics" % "@VERSION@"
 import java.net.InetSocketAddress
 
 import cats.effect.{ExitCode, IO, IOApp}
-import com.ovoenergy.effect.Events.{AlertType, Priority}
-import com.ovoenergy.effect.Metrics.Metric
-import com.ovoenergy.effect.{Datadog, Events, Metrics}
+import com.ovoenergy.natchez.extras.dogstatsd.Events.{AlertType, Priority}
+import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
+import com.ovoenergy.natchez.extras.metrics.Metrics
+import com.ovoenergy.natchez.extras.dogstatsd.{Dogstatsd, Events}
 
 object MetricApp extends IOApp {
 
-  val metricConfig: Datadog.Config =
-    Datadog.Config(
+  val metricConfig: Dogstatsd.Config =
+    Dogstatsd.Config(
 
       // adds a prefix to all metrics, e.g. `my_app.metricname`
       metricPrefix = Some("my_app"),
@@ -62,7 +62,7 @@ object MetricApp extends IOApp {
     Metric(name = "my_histogram", tags = Map.empty)
 
   def run(args: List[String]): IO[ExitCode] =
-    Datadog[IO, IO](metricConfig).use { metrics: Metrics[IO] with Events[IO] =>
+    Dogstatsd[IO, IO](metricConfig).use { metrics: Metrics[IO] with Events[IO] =>
       for {
         _ <- metrics.counter(exampleCounter)(1)
         _ <- metrics.histogram(exampleHistogram)(1)

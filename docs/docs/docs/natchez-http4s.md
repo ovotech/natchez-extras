@@ -5,18 +5,17 @@ title: "Natchez HTTP4s"
 
 # Natchez HTTP4s
 
-`natchez-http4s` provides HTTP4s [Middleware](https://http4s.org/v0.21/middleware/) to trace all HTTP requests.
+`natchez-extras-http4s` provides HTTP4s [Middleware](https://http4s.org/v0.21/middleware/) to trace all HTTP requests.
 At the time of writing there is a [PR on Natchez itself](https://github.com/tpolecat/natchez/pull/75) that will provide this functionality.
 When it is merged this module will continue to exist but as a wrapper that adds tags used by Datadog.
 
 ## Installation
 
 ```scala
-val effectUtilsVersion = "@VERSION@"
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy.effect" %% "natchez-fs2" % effectUtilsVersion
+  "com.ovoenergy" %% "natchez-fs2" % natchezExtrasVersion
 )
 ```
 
@@ -30,9 +29,9 @@ import cats.data.Kleisli
 import cats.effect.{ExitCode, IO, IOApp, Resource, Sync, Timer}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.ovoenergy.effect.natchez.Datadog
-import com.ovoenergy.effect.natchez.http4s.Configuration
-import com.ovoenergy.effect.natchez.http4s.server.TraceMiddleware
+import com.ovoenergy.natchez.extras.datadog.Datadog
+import com.ovoenergy.natchez.extras.http4s.Configuration
+import com.ovoenergy.natchez.extras.http4s.server.TraceMiddleware
 import natchez.{EntryPoint, Span, Trace}
 import org.http4s.{HttpApp, HttpRoutes}
 import org.http4s.client.blaze.BlazeClientBuilder
@@ -117,8 +116,8 @@ it is set up to create tags suitable for Datadog but you can use the helper func
 
 ```scala mdoc
 import cats.effect.IO
-import com.ovoenergy.effect.natchez.http4s.Configuration
-import com.ovoenergy.effect.natchez.http4s.Configuration.TagReader._
+import com.ovoenergy.natchez.extras.http4s.Configuration
+import com.ovoenergy.natchez.extras.http4s.Configuration.TagReader._
 import natchez.TraceValue.BooleanValue
 import cats.syntax.semigroup._
 
