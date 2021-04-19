@@ -17,13 +17,13 @@ In your build.sbt
 
 ```scala
 val http4sVersion = "0.21.4"
-val effectUtilsVersion = "@VERSION@"
+val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
   "org.http4s"    %% "http4s-blaze-client"    % http4sVersion,
-  "com.ovoenergy" %% "natchez-extras-combine" % effectUtilsVersion,
-  "com.ovoenergy" %% "natchez-extras-datadog" % effectUtilsVersion,
-  "com.ovoenergy" %% "natchez-extras-slf4j"   % effectUtilsVersion
+  "com.ovoenergy" %% "natchez-extras-combine" % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-datadog" % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-slf4j"   % natchezExtrasVersion
 )
 ```
 
