@@ -72,11 +72,14 @@ jobs:
       - checkout
       - *cache_restore
       - run:
+          name: import PGP key
+          command: echo -e "$PGP_KEY" | gpg --batch --import
+      - run:
           name: Release
           command: |
             set -e
             tags=`git describe --tags`
-            sbt ';set version in ThisBuild := "'${tags}'"; test; publish'
+            sbt ';set version in ThisBuild := "'${tags}'"; test; publishSigned; sonatypeBundleRelease'
       - *cache_save
 
   test:

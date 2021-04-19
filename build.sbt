@@ -23,6 +23,10 @@ publishMavenStyle in ThisBuild := true
 
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
+developers in ThisBuild ++= List(
+  Developer("tomverran", "Tom Verran", "github@tomverran.co.uk", url("https://github.com/tomverran"))
+)
+
 credentials in ThisBuild += (
   for {
     user <- sys.env.get("SONATYPE_USERNAME")
