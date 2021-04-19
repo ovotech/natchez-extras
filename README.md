@@ -19,6 +19,16 @@ If you're upgrading your dependencies the renamings are as follows:
 "com.ovoenergy.effect" % "natchez-testkit"  => "com.ovoenergy" % "natchez-extras-testkit"
 ```
 
+Other significant changes are the `Datadog` metrics object being renamed to `Dogstatsd` and the
+modules having their code moved into a subpackage under `com.ovoenergy.natchez.extras`
+
+i.e.
+
+`com.ovoenergy.effect.Combine` becomes `com.ovoenergy.natchez.extras.combine.Combine`
+
+This is to ensure that the `com.ovoenergy.natchez.extras` namespace won't be polluted by
+two modules defining, for example, a `syntax` object.
+
 ## Current modules
 
   Module   | Description                                                                    | Artifact
