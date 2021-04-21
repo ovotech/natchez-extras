@@ -146,7 +146,7 @@ lazy val natchezDoobie = project
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "org.tpolecat" %% "doobie-core"  % doobieVersion,
-      "org.tpolecat" %% "doobie-h2"    % doobieVersion
+      "org.tpolecat" %% "doobie-h2"    % doobieVersion % Test
     ),
   )
 
@@ -206,8 +206,7 @@ lazy val root = (project in file("."))
   .settings(
     common ++ Seq(
       name := "natchez-extras",
-      publish := nop,
-      publishLocal := nop
+      publish / skip := true
     ))
   .aggregate(
     metricsCommon,
