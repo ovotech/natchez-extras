@@ -1,4 +1,4 @@
-# natchez-extras
+# Natchez Extras
 
 This repository consists of a number of additional integrations for [Natchez](https://github.com/tpolecat/natchez), 
 primarily to assist with integrating Natchez & Datadog. Separate to the Natchez integrations but included here for simplicity
@@ -20,28 +20,63 @@ If you're upgrading your dependencies the renamings are as follows:
 ```
 
 Other significant changes are the `Datadog` metrics object being renamed to `Dogstatsd` and the
-modules having their code moved into a subpackage under `com.ovoenergy.natchez.extras`
+modules having their code moved into a subpackage under `com.ovoenergy.natchez.extras`, for example:
 
-i.e.
+```scala
+import com.ovoenergy.effect.Combine // effect-utils
+import com.ovoenergy.natchez.extras.combine.Combine // natchez-extras
+```
 
-`com.ovoenergy.effect.Combine` becomes `com.ovoenergy.natchez.extras.combine.Combine`
-
-This is to ensure that the `com.ovoenergy.natchez.extras` namespace won't be polluted by
-two modules defining, for example, a `syntax` object.
+This is to ensure that each module has an isolated package and so can
+define, for example, a `syntax` object without affecting anything else.
 
 ## Current modules
 
-  Module   | Description                                                                    | Artifact
------------|--------------------------------------------------------------------------------|-----------------------------------------
-Dogstatsd  | Submits metrics to Datadog over UDP with FS2                                   | "com.ovoenergy" % "natchez-extras-dogstatsd"
-Datadog    | Integrates [natchez](https://github.com/tpolecat/natchez) with the Datadog APM | "com.ovoenergy" % "natchez-extras-datadog"
-Doobie     | Integrates [natchez](https://github.com/tpolecat/natchez) with Doobie          | "com.ovoenergy" % "natchez-extras-doobie"
-SLF4J      | Integrates [natchez](https://github.com/tpolecat/natchez) with SLF4J           | "com.ovoenergy" % "natchez-extras-slf4j"
-Combine    | Provides a function to combine two Natchez `EntryPoint[F]`s together           | "com.ovoenergy" % "natchez-extras-combine"
-FS2        | Provides an `AllocatedSpan` you submit manually for streams                    | "com.ovoenergy" % "natchez-extras-fs2"
-Testkit    | Provides a `TestEntrypoint` backed by a `Ref` for unit tests                   | "com.ovoenergy" % "natchez-extras-testkit"
+### [Dogstatsd](https://ovotech.github.io/natchez-extras/docs/)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-dogstatsd/latest.svg)
 
-### For maintainers
+This module allows you to send Metrics and Events to the Datadog agent over UDP with FS2.
+
+### [Datadog](https://ovotech.github.io/natchez-extras/docs/natchez-datadog.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-datadog/latest.svg)
+
+This module integrates Natchez with Datadog. It uses HTTP4s and does not depend on the Java Datadog library.
+
+### [Doobie](https://ovotech.github.io/natchez-extras/docs/natchez-doobie.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-doobie/latest.svg)
+
+This module integrates Natchez with Doobie so you can trace which DB queries are being run and for how long.
+
+### [Sl4fj](https://ovotech.github.io/natchez-extras/docs/natchez-slf4j.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-slf4j/latest.svg)
+
+This module provides an `Slf4j` integration with Natchez that logs whenever spans get started or completed.
+This is mainly useful when running applications locally or integrating with existing logging platforms.
+
+### [Combine](https://ovotech.github.io/natchez-extras/docs/natchez-combine.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-combine/latest.svg)
+
+This module allows two Natchez `EntryPoint`s to be combined so that they'll both be used. For example
+if you want to log spans with the above Slf4j integration as well as submitting them to Datadog.
+
+### [FS2](https://ovotech.github.io/natchez-extras/docs/natchez-fs2.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-fs2/latest.svg)
+
+This module provides an `AllocatedSpan` that can be manually submitted, for use in FS2 streams
+where the `Resource` based model of Natchez isn't a good fit if you want to have one trace per stream item.
+
+### [Testkit](https://ovotech.github.io/natchez-extras/docs/natchez-testkit.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-testkit/latest.svg)
+
+This module provides a `TestEntrypoint` backed by a `Ref` which can be useful in unit tests.
+
+### [Log4cats](https://ovotech.github.io/natchez-extras/docs/natchez-log4cats.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-log4cats/latest.svg)
+
+This module provides a `TracedLogger` for `log4cats` that will automatically add trace & span IDs
+to your log lines so that they're linked in the Datadog UI.
+
+## Notes for maintainers
 
 To create a release, push a tag to master of the format `x.y.z`. See the [semantic versioning guide](https://semver.org/)
 for details of how to choose a version number.
