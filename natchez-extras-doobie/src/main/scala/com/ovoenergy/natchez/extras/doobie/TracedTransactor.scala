@@ -1,13 +1,13 @@
 package com.ovoenergy.natchez.extras.doobie
 
 import cats.data.Kleisli
-import cats.effect.{Async, Blocker, Concurrent, ContextShift}
+import cats.effect.Async
+import doobie.WeakAsync
 import doobie.free.KleisliInterpreter
 import doobie.util.transactor.Transactor
 import natchez.{Span, Trace}
 
 import java.sql.{Connection, PreparedStatement, ResultSet}
-import cats.syntax.flatMap._
 
 object TracedTransactor {
 
@@ -16,23 +16,22 @@ object TracedTransactor {
   private def formatQuery(q: String): String =
     q.replace("\n", " ").replaceAll("\\s+", " ").trim()
 
-  def apply[F[_]: Concurrent: ContextShift](
+  def apply[F[_]: Async](
     service: String,
-    blocking: Blocker,
     transactor: Transactor[F]
   ): Transactor[Traced[F, *]] =
     transactor
-      .mapK(Kleisli.liftK[F, Span[F]])
+      .mapK(Kleisli.liftK[F, Span[F]])(implicitly, Async.asyncForKleisli(implicitly))
       .copy(
-        interpret0 = (
-          new KleisliInterpreter[Traced[F, *]] {
+        interpret0 = new KleisliInterpreter[Traced[F, *]] {
 
-            val blocker: Blocker = blocking
-            val trace: Trace.KleisliTrace[F] = Trace[Traced[F, *]]
-            val contextShiftM: ContextShift[Traced[F, *]] = ContextShift.deriveKleisli[F, Span[F]]
-            implicit val asyncM: Async[Traced[F, *]] = Async.catsKleisliAsync[F, Span[F]]
+          implicit val asyncM: WeakAsync[Traced[F, *]] =
+            WeakAsync.doobieWeakAsyncForAsync(Async.asyncForKleisli[F, Span[F]])
 
-            override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
+          val trace: Trace[Traced[F, *]] =
+            Trace.kleisliInstance
+
+          override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
               new PreparedStatementInterpreter {
 
                 type TracedOp[A] = Kleisli[Traced[F, *], PreparedStatement, A]
@@ -41,8 +40,7 @@ object TracedTransactor {
                   Kleisli {
                     case TracedStatement(p, sql) =>
                       trace.span(s"$service-db:db.execute:${formatQuery(sql)}")(
-                        trace.put("span.type" -> "db") >>
-                        f(p)
+                        trace.put("span.type" -> "db").flatMap(_ => f(p))
                       )
                     case a =>
                       f(a)
@@ -66,12 +64,9 @@ object TracedTransactor {
 
             override lazy val ConnectionInterpreter: ConnectionInterpreter =
               new ConnectionInterpreter {
-                override def prepareStatement(
-                  a: String
-                ): Kleisli[Traced[F, *], Connection, PreparedStatement] =
+                override def prepareStatement(a: String): Kleisli[Traced[F, *], Connection, PreparedStatement] =
                   super.prepareStatement(a).map(TracedStatement(_, a): PreparedStatement)
               }
-          }
-        ).ConnectionInterpreter
+          }.ConnectionInterpreter
       )
 }

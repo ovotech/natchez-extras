@@ -1,26 +1,27 @@
 package com.ovoenergy.natchez.extras.datadog
 
-import cats.effect.concurrent.Ref
-import cats.effect.{Clock, ExitCase, Resource, Sync}
+import cats.Monad
+import cats.effect.kernel.Async
+import cats.effect.kernel.Resource.ExitCase
+import cats.effect.std.Queue
+import cats.effect.{Clock, Ref, Resource}
 import cats.instances.option._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import com.ovoenergy.natchez.extras.datadog.DatadogSpan.SpanNames
-import fs2.concurrent.Queue
 import io.circe.generic.extras.Configuration
 import natchez.TraceValue.{BooleanValue, NumberValue, StringValue}
 import natchez.{Kernel, Span, TraceValue}
 
 import java.net.URI
-import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
  * Models an in-progress span we'll eventually send to Datadog.
  * We have a trace token as well as a trace ID because Datadog mandates that trace IDs are numeric
  * while we interact with systems that provide non numeric trace tokens
  */
-case class DatadogSpan[F[_]: Sync: Clock](
+case class DatadogSpan[F[_]: Async](
   names: SpanNames,
   ids: Ref[F, SpanIdentifiers],
   start: Long,
@@ -55,7 +56,7 @@ case class DatadogSpan[F[_]: Sync: Clock](
     ids.get.map(id => Some(id.spanId.toString))
 
   def traceUri: F[Option[URI]] =
-    Sync[F].pure(None)
+    Monad[F].pure(None)
 }
 
 object DatadogSpan {
@@ -86,34 +87,34 @@ object DatadogSpan {
    * which 1:1 matches the Datadog JSON structure before submitting it to a queue of spans
    * we'll eventually submit to the local agent in the background
    */
-  def complete[F[_]: Clock: Sync](
+  def complete[F[_]: Monad: Clock](
     datadogSpan: DatadogSpan[F],
-    exitCase: ExitCase[Throwable]
+    exitCase: ExitCase
   ): F[Unit] =
     SubmittableSpan
       .fromSpan(datadogSpan, exitCase)
-      .flatMap(datadogSpan.queue.enqueue1)
+      .flatMap(datadogSpan.queue.offer)
 
-  def create[F[_]: Sync: Clock](
+  def create[F[_]: Async](
     queue: Queue[F, SubmittableSpan],
     names: SpanNames,
     meta: Map[String, TraceValue] = Map.empty
   )(identifiers: Ref[F, SpanIdentifiers]): Resource[F, DatadogSpan[F]] =
     Resource.makeCase(
       for {
-        start <- Clock[F].realTime(NANOSECONDS)
+        start <- Clock[F].realTime
         meta  <- Ref.of(meta)
       } yield
         DatadogSpan(
           names = names,
           identifiers,
-          start = start,
+          start = start.toNanos,
           queue = queue,
           meta = meta
         )
     )(complete)
 
-  def fromParent[F[_]: Sync: Clock](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =
+  def fromParent[F[_]: Async](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =
     for {
 
       meta  <- Resource.eval(parent.meta.get)
@@ -122,7 +123,7 @@ object DatadogSpan {
       child <- create(parent.queue, SpanNames.withFallback(name, parent.names), meta)(ref)
     } yield child
 
-  def fromKernel[F[_]: Sync: Clock](
+  def fromKernel[F[_]: Async](
     queue: Queue[F, SubmittableSpan],
     names: SpanNames,
     kernel: Kernel

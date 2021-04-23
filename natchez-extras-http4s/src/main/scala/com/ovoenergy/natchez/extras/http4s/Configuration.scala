@@ -9,11 +9,11 @@ import cats.kernel.{Monoid, Semigroup}
 import cats.syntax.foldable._
 import cats.syntax.functor._
 import cats.syntax.monoid._
-import Configuration.TagReader.{MessageReader, RequestReader, ResponseReader}
+import com.ovoenergy.natchez.extras.http4s.Configuration.TagReader._
 import natchez.TraceValue
 import natchez.TraceValue.StringValue
-import org.http4s.util.{CaseInsensitiveString, StringWriter}
 import org.http4s.{Headers, Message, Request, Response}
+import org.typelevel.ci.CIString
 
 /**
  * The tricky part about putting HTTP4s middleware into a library is that
@@ -72,8 +72,8 @@ object Configuration {
       TagReader(Kleisli(a => Applicative[F].pure(f(a))))
   }
 
-  private val isSensitive: CaseInsensitiveString => Boolean =
-    cs => Headers.SensitiveHeaders.contains(cs) || cs.value.toLowerCase.contains("key")
+  private val isSensitive: CIString => Boolean =
+    cs => Headers.SensitiveHeaders.contains(cs) || cs.toString.toLowerCase.contains("key")
 
   /**
    * Only run the given tag extractor if the response was not successful
@@ -92,15 +92,16 @@ object Configuration {
    * and place them into the span with the given tag name separated by newlines
    */
   def headers[F[_]: Applicative](name: String)(
-    redact: CaseInsensitiveString => Boolean
+    redact: CIString => Boolean
   ): MessageReader[F] =
     TagReader.message { message =>
       Map(
         name -> StringValue(
-          message.headers
+          message
+            .headers
             .redactSensitive(redact)
-            .foldLeft(new StringWriter) { case (sw, h) => h.render(sw).append('\n') }
-            .result
+            .headers
+            .foldMap(_.toString() + "\n")
         )
       )
     }

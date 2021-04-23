@@ -7,7 +7,7 @@ import cats.~>
 import com.ovoenergy.natchez.extras.http4s.Configuration
 import com.ovoenergy.natchez.extras.http4s.server.TraceMiddleware.removeNumericPathSegments
 import natchez.{Span, Trace}
-import org.http4s._
+import org.http4s.Header.ToRaw.keyValuesToRaw
 import org.http4s.client.Client
 
 trait TracedClient[F[_]] {
@@ -31,8 +31,8 @@ object TracedClient {
           Trace[Traced[F, *]].span(s"$name:http.request:${removeNumericPathSegments(req.uri)}") {
             for {
               span    <- Kleisli.ask[F, Span[F]]
-              headers <- trace(span.kernel.map(_.toHeaders.map { case (k, v) => Header(k, v) }))
-              withHeader = req.putHeaders(headers.toSeq: _*).mapK(dropTracing(span))
+              headers <- trace(span.kernel.map(_.toHeaders.toSeq))
+              withHeader = req.putHeaders(headers.map(keyValuesToRaw):_*).mapK(dropTracing(span))
               reqTags     <- trace(config.request.value.run(req.mapK(dropTracing(span))))
               _           <- trace(span.put(reqTags.toSeq: _*))
               (resp, rel) <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace)).allocated

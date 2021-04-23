@@ -1,17 +1,16 @@
 package com.ovoenergy.natchez.extras.datadog
 
 import cats.Applicative
-import cats.effect.{Clock, ExitCase}
+import cats.effect.Clock
+import cats.effect.kernel.Resource.ExitCase
 import cats.syntax.apply._
-import com.ovoenergy.natchez.extras.datadog.DatadogTags.{forThrowable, SpanType}
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.{SpanType, forThrowable}
 import io.circe.Encoder.encodeString
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
 import natchez.TraceValue
 import natchez.TraceValue.StringValue
-
-import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
  * This is the type we need to send to the Datadog agent
@@ -61,10 +60,10 @@ object SubmittableSpan {
   /**
    * Datadog docs: "Set this [error] value to 1 to indicate if an error occurred"
    */
-  private def isError[A](exitCase: ExitCase[A]): Option[Int] =
+  private def isError(exitCase: ExitCase): Option[Int] =
     exitCase match {
-      case ExitCase.Completed => None
-      case ExitCase.Error(_)  => Some(1)
+      case ExitCase.Succeeded => None
+      case ExitCase.Errored(_)  => Some(1)
       case ExitCase.Canceled  => None
     }
 
@@ -72,9 +71,9 @@ object SubmittableSpan {
    * Create some Datadog tags from an exit case,
    * i.e. if the span failed include exception details
    */
-  private def exitTags(exitCase: ExitCase[Throwable]): Map[String, String] =
+  private def exitTags(exitCase: ExitCase): Map[String, String] =
     exitCase match {
-      case ExitCase.Error(e) => forThrowable(e).view.mapValues(_.value.toString).toMap
+      case ExitCase.Errored(e) => forThrowable(e).view.mapValues(_.value.toString).toMap
       case _                 => Map.empty
     }
 
@@ -95,7 +94,7 @@ object SubmittableSpan {
    */
   private def transformTags(
     tags: Map[String, TraceValue],
-    exitCase: ExitCase[Throwable],
+    exitCase: ExitCase,
     traceToken: String
   ): Map[String, String] =
     exitTags(exitCase) ++
@@ -111,12 +110,12 @@ object SubmittableSpan {
    */
   def fromSpan[F[_]: Applicative: Clock](
     span: DatadogSpan[F],
-    exitCase: ExitCase[Throwable]
+    exitCase: ExitCase
   ): F[SubmittableSpan] =
     (
       span.meta.get,
       span.ids.get,
-      Clock[F].realTime(NANOSECONDS)
+      Clock[F].realTime
     ).mapN {
       case (meta, ids, end) =>
         SubmittableSpan(
@@ -126,7 +125,7 @@ object SubmittableSpan {
           service = span.names.service,
           resource = span.names.resource,
           start = span.start,
-          duration = end - span.start,
+          duration = end.toNanos - span.start,
           parentId = ids.parentId,
           error = isError(exitCase),
           `type` = inferSpanType(meta),

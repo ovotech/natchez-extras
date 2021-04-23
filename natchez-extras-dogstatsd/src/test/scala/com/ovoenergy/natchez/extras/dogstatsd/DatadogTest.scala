@@ -1,5 +1,6 @@
 package com.ovoenergy.natchez.extras.dogstatsd
 
+import com.comcast.ip4s.{IpAddress, Port, SocketAddress}
 import com.ovoenergy.natchez.extras.dogstatsd.Dogstatsd._
 import com.ovoenergy.natchez.extras.dogstatsd.Events.{AlertType, Event, Priority}
 import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
@@ -10,7 +11,6 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
 import org.typelevel.claimant.Claim
 
-import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets.UTF_8
 
 class DatadogTest extends AnyWordSpec with Matchers with Checkers {
@@ -26,6 +26,9 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
   val stringTags: Gen[Map[String, String]] =
     mapOf(Gen.zip(string, string))
+
+  val localAddress: SocketAddress[IpAddress] =
+    new SocketAddress(IpAddress.fromString("127.0.0.1").get, Port.fromInt(0).get)
 
   implicit val metric: Gen[Metric] =
     for {
@@ -94,14 +97,14 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
   "Configuration" should {
 
     "Not overwrite existing tags" in {
-      val config = Config(new InetSocketAddress(0), None, Map("bar" -> "boz"))
+      val config = Config(localAddress, None, Map("bar" -> "boz"))
       applyConfig(Metric("foo", Map("bar" -> "baz")), config).tags shouldBe Map("bar" -> "baz")
     }
 
     "Add new tags where they're not specified" in {
       check(
         Prop.forAll(stringTags) { ts =>
-          val config = Config(new InetSocketAddress(0), None, ts)
+          val config = Config(localAddress, None, ts)
           applyConfig(Metric("foo", Map.empty), config).tags == ts
         }
       )
@@ -110,7 +113,7 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
     "Separate the global prefix from the metric name with a dot" in {
       check(
         Prop.forAll(string) { prefix =>
-          val config = Config(new InetSocketAddress(0), Some(prefix), Map("bar" -> "boz"))
+          val config = Config(localAddress, Some(prefix), Map("bar" -> "boz"))
           applyConfig(Metric("foo", Map.empty), config).name == s"$prefix.foo"
         }
       )

@@ -53,12 +53,12 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-val log4catsVersion = "1.2.2"
-val natchezVersion = "0.0.22"
-val http4sVersion = "0.21.22"
+val log4catsVersion = "2.0.1"
+val natchezVersion = "0.1.1"
+val http4sVersion = "1.0.0-M21"
 val circeVersion = "0.13.0"
 val slf4jVersion = "1.7.30"
-val fs2Version = "2.5.4"
+val fs2Version = "3.0.0"
 
 lazy val natchezDatadog = project
   .in(file("natchez-extras-datadog"))
@@ -137,7 +137,7 @@ lazy val natchezFs2 = project
     )
   )
 
-val doobieVersion = "0.12.1"
+val doobieVersion = "1.0.0-M1"
 lazy val natchezDoobie = project
   .in(file("natchez-extras-doobie"))
   .enablePlugins(GitVersioning)

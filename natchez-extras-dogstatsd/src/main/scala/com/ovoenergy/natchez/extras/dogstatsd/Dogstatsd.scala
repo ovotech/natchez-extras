@@ -1,13 +1,13 @@
 package com.ovoenergy.natchez.extras.dogstatsd
 
-import cats.effect.{Async, Blocker, ConcurrentEffect, ContextShift, Effect, Resource}
+import cats.effect.Resource
+import com.comcast.ip4s.{IpAddress, SocketAddress}
 import com.ovoenergy.natchez.extras.dogstatsd.Events.Event
 import com.ovoenergy.natchez.extras.metrics.Metrics
 import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 import fs2.Chunk.array
-import fs2.io.udp.{Packet, Socket, SocketGroup}
+import fs2.io.net.{Datagram, DatagramSocket, Network}
 
-import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets.UTF_8
 
 object Dogstatsd {
@@ -26,7 +26,7 @@ object Dogstatsd {
   }
 
   case class Config(
-    agentHost: InetSocketAddress,
+    agentHost: SocketAddress[IpAddress],
     metricPrefix: Option[String],
     globalTags: Map[String, String]
   )
@@ -105,29 +105,22 @@ object Dogstatsd {
    * Take care of the gymnastics required to send a string to the `to` destination through
    * a socket in F before turning the resulting unit into a `G[Unit]` so our types line up
    */
-  private def send[F[_]: Effect, G[_]: Async](
-    skt: Socket[F],
-    to: InetSocketAddress,
-    what: UTF8Bytes
-  ): G[Unit] =
-    Async[G].liftIO(Effect[F].toIO(skt.write(Packet(to, array(what)))))
+  private def send[F[_]](s: DatagramSocket[F], to: SocketAddress[IpAddress], what: UTF8Bytes): F[Unit] =
+    s.write(Datagram(to, array(what)))
 
   /**
    * Create an instance of Metrics that uses a UDP socket to communicate with Datadog.
    */
-  def apply[F[_]: ContextShift, G[_]](config: Config)(
-    implicit
-    G: Async[G],
-    F: ConcurrentEffect[F]
-  ): Resource[F, Metrics[G] with Events[G]] =
-    Blocker[F].flatMap(SocketGroup[F]).flatMap(_.open()).map { sock =>
-      new Metrics[G] with Events[G] {
-        def counter(m: Metric)(value: Long): G[Unit] =
-          send[F, G](sock, config.agentHost, serialiseCounter(applyConfig(m, config), value))
-        def histogram(m: Metric)(value: Long): G[Unit] =
-          send[F, G](sock, config.agentHost, serialiseHistogram(applyConfig(m, config), value))
-        def event(event: Event): G[Unit] =
-          send[F, G](sock, config.agentHost, serialiseEvent(event.withTags(config.globalTags ++ event.tags)))
+  def apply[F[_]: Network](config: Config): Resource[F, Metrics[F] with Events[F]] = {
+   Network[F].openDatagramSocket().map { sock =>
+      new Metrics[F] with Events[F] {
+        def counter(m: Metric)(value: Long): F[Unit] =
+          send[F](sock, config.agentHost, serialiseCounter(applyConfig(m, config), value))
+        def histogram(m: Metric)(value: Long): F[Unit] =
+          send[F](sock, config.agentHost, serialiseHistogram(applyConfig(m, config), value))
+        def event(event: Event): F[Unit] =
+          send[F](sock, config.agentHost, serialiseEvent(event.withTags(config.globalTags ++ event.tags)))
       }
     }
+  }
 }

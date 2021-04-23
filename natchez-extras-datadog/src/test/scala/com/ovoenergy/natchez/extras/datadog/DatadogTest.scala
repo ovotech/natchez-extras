@@ -1,8 +1,8 @@
 package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect._
+import cats.effect.unsafe.implicits._
 import cats.instances.list._
-import cats.syntax.flatMap._
 import cats.syntax.traverse._
 import com.ovoenergy.natchez.extras.datadog.Datadog.entryPoint
 import com.ovoenergy.natchez.extras.datadog.DatadogTags.SpanType.{Cache, Db, Web}
@@ -15,7 +15,6 @@ import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 
 /**
@@ -23,12 +22,6 @@ import scala.concurrent.duration._
  * Could be expanded but even just these tests exposed concurrency issues with my original code.
  */
 class DatadogTest extends AnyWordSpec with Matchers {
-
-  implicit val timer: Timer[IO] =
-    IO.timer(global)
-
-  implicit val cs: ContextShift[IO] =
-    IO.contextShift(global)
 
   def run(f: EntryPoint[IO] => IO[Unit]): IO[List[Request[IO]]] =
     TestClient[IO].flatMap(c => entryPoint(c.client, "test", "blah").use(f) >> c.requests)
@@ -99,7 +92,7 @@ class DatadogTest extends AnyWordSpec with Matchers {
     }
 
     "Submit multiple spans across multiple calls when span() is called" in {
-      val res = run(_.root("bar").use(_.span("subspan").use(_ => timer.sleep(1.second)))).unsafeRunSync()
+      val res = run(_.root("bar").use(_.span("subspan").use(_ => IO.sleep(1.second)))).unsafeRunSync()
       val spans = res.flatTraverse(_.as[List[List[SubmittableSpan]]]).unsafeRunSync().flatten
       spans.map(_.traceId).distinct.length shouldBe 1
       spans.map(_.spanId).distinct.length shouldBe 2

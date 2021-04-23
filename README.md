@@ -4,6 +4,11 @@ This repository consists of a number of additional integrations for [Natchez](ht
 primarily to assist with integrating Natchez & Datadog. Separate to the Natchez integrations but included here for simplicity
 is a module to send metrics to Datadog over UDP with FS2.
 
+## Cats Effect versions
+
+If you're using Cats Effect 2.x you should use versions 4.x.x of this library,
+for Cats Effect 3 use versions 5.0.0 and up.
+
 ## Migration from effect-utils
 
 For historical reasons prior to 4.0.0 this repository was called `effect-utils`.

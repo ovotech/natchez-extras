@@ -1,10 +1,11 @@
 package com.ovoenergy.natchez.extras.datadog
 
-import cats.effect.concurrent.Ref
-import cats.effect.{Concurrent, Resource, Sync}
+import cats.Monad
+import cats.effect.Resource
+import cats.effect.kernel.{Concurrent, Ref}
+import cats.effect.std.Queue
 import cats.syntax.apply._
 import cats.syntax.flatMap._
-import fs2.concurrent.Queue
 import org.http4s.client.Client
 import org.http4s.{Request, Response}
 
@@ -26,12 +27,12 @@ object TestClient {
         def requests: F[List[Request[F]]] =
           reqs.get
         def respondWith(r: F[Response[F]]): F[Unit] =
-          resps.enqueue1(r)
+          resps.offer(r)
         def client: Client[F] =
           Client { r =>
             Resource.eval(
               reqs.update(_ :+ r) >>
-              resps.tryDequeue1.flatMap(r => r.getOrElse(Sync[F].pure(Response[F]())))
+              resps.tryTake.flatMap(r => r.getOrElse(Monad[F].pure(Response[F]())))
             )
           }
       }
