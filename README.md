@@ -32,7 +32,7 @@ define, for example, a `syntax` object without affecting anything else.
 
 ## Current modules
 
-### [Dogstatsd](https://ovotech.github.io/natchez-extras/docs/)
+### [Dogstatsd](https://ovotech.github.io/natchez-extras/docs/) 
 ![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-dogstatsd/latest.svg)
 
 This module allows you to send Metrics and Events to the Datadog agent over UDP with FS2.
@@ -46,6 +46,13 @@ This module integrates Natchez with Datadog. It uses HTTP4s and does not depend 
 ![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-doobie/latest.svg)
 
 This module integrates Natchez with Doobie so you can trace which DB queries are being run and for how long.
+
+### [HTTP4S](https://ovotech.github.io/natchez-extras/docs/natchez-http4s.html)
+![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-http4s/latest.svg)
+
+
+This module integrates Natchez with the HTTP4S client and provides middleware to trace both inbound and outbound HTTP requests.
+It aims to be as configurable as possible so can be configured for use with tracing platforms other than Datadog.
 
 ### [Sl4fj](https://ovotech.github.io/natchez-extras/docs/natchez-slf4j.html)
 ![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-slf4j/latest.svg)
