@@ -1,6 +1,6 @@
 package com.ovoenergy.natchez.extras.http4s.server
 
-import cats.data.Kleisli
+import cats.data.{Kleisli, OptionT}
 import cats.effect.Sync
 import cats.~>
 import natchez._
@@ -48,5 +48,38 @@ object TraceMiddleware {
             _        <- span.put(respTags.toSeq: _*)
           } yield response
         }
+    }
+
+  def applyRoutes[F[_]](
+    entryPoint: EntryPoint[F],
+    configuration: Configuration[F]
+  )(
+    routes: HttpRoutes[Kleisli[F, Span[F], *]]
+  )(implicit F: Sync[F]): HttpRoutes[F] =
+    Kleisli { r =>
+      val spanName = s"http.request:${removeNumericPathSegments(r.uri)}"
+      val kernel = Kernel(r.headers.toList.map(h => h.name.toString -> h.value).toMap)
+      val traceRequest = r.mapK(Kleisli.liftK[F, Span[F]])
+
+      OptionT(
+        entryPoint
+          .continueOrElseRoot(spanName, kernel)
+          .use { span =>
+            (for {
+              reqTags <- OptionT.liftF(configuration.request.value.run(r))
+              _       <- OptionT.liftF(span.put(reqTags.toSeq: _*))
+
+              response <- routes
+                .run(traceRequest)
+                .map { response =>
+                  response.mapK(runTracing(span))
+                }
+                .mapK(runTracing(span))
+
+              respTags <- OptionT.liftF(configuration.response.value.run(response))
+              _        <- OptionT.liftF(span.put(respTags.toSeq: _*))
+            } yield response).value
+          }
+      )
     }
 }

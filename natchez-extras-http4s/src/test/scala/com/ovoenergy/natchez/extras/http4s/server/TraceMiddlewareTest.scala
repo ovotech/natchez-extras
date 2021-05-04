@@ -3,6 +3,7 @@ package com.ovoenergy.natchez.extras.http4s.server
 import cats.data.Kleisli
 import cats.effect.concurrent.Ref
 import cats.effect.{IO, Resource}
+import cats.implicits._
 import cats.{Applicative, Monad}
 import com.ovoenergy.natchez.extras.http4s.Configuration
 import fs2._
@@ -29,7 +30,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
     new Span[F] {
       def kernel: F[Kernel] = Applicative[F].pure(Kernel(Map.empty))
       def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields.toMap)
-      def span(name: String): Resource[F, Span[F]] = Resource.pure(spanMock[F](ref))
+      def span(name: String): Resource[F, Span[F]] = Resource.pure[F, Span[F]](spanMock[F](ref))
       def traceId: F[Option[String]] = Applicative[F].pure(None)
       def spanId: F[Option[String]] = Applicative[F].pure(None)
       def traceUri: F[Option[URI]] = Applicative[F].pure(None)
@@ -56,6 +57,13 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
   def okService(body: String, headers: Headers = Headers.empty): HttpRoutes[TraceIO] =
     Kleisli.pure(Response[TraceIO](Ok, headers = headers, body = Stream.emits(body.getBytes)))
 
+  def partialOkService(path: String = "foo", resp: String = "ok"): HttpRoutes[IO] = {
+    import org.http4s.dsl.io._
+    HttpRoutes.of { case GET -> Root / `path` =>
+      Ok(resp)
+    }
+  }
+
   def errorService(body: String): HttpRoutes[TraceIO] =
     Kleisli.pure(Response(InternalServerError, body = Stream.emits(body.getBytes)))
 
@@ -70,7 +78,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(okService("ok").orNotFound)
-          _   <- svc.run(Request(headers = Headers.of(Header("X-Trace-Token", "foobar"))))
+          _    <- svc.run(Request(headers = Headers.of(Header("X-Trace-Token", "foobar"))))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -81,6 +89,31 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           "http.response.headers" -> s(""),
           "http.url" -> s("/")
         )
+      ).unsafeRunSync()
+    }
+
+    "Add tracing info & log requests + responses to traced routes only" in {
+      (
+        for {
+          entryPoint <- entrypointMock
+          svc = (partialOkService() <+> TraceMiddleware.applyRoutes[IO](entryPoint, config)(
+            okService("ok")
+          )).orNotFound
+          _    <- svc.run(Request(uri = uri"/foo", headers = Headers.of(Header("X-Trace-Token", "foobar"))))
+          tags <- entryPoint.tags
+          _ = tags shouldBe empty
+          _    <- svc.run(Request(uri = uri"/", headers = Headers.of(Header("X-Trace-Token", "foobar"))))
+          tags <- entryPoint.tags
+          _ = tags shouldBe Map(
+            "span.type" -> s("web"),
+            "http.url" -> s("/"),
+            "http.method" -> s("GET"),
+            "http.status_code" -> NumberValue(200),
+            "http.request.headers" -> s("X-Trace-Token: foobar\n"),
+            "http.response.headers" -> s(""),
+            "http.url" -> s("/")
+          )
+        } yield ()
       ).unsafeRunSync()
     }
 
@@ -101,7 +134,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(okService("", responseHeaders).orNotFound)
-          _   <- svc.run(Request(headers = requestHeaders))
+          _    <- svc.run(Request(headers = requestHeaders))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -119,7 +152,6 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
             """|Set-Cookie: <REDACTED>
                |X-Polite: come back soon!
                |""".stripMargin
-
           )
         )
       ).unsafeRunSync()
@@ -130,7 +162,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(errorService("oh no").orNotFound)
-          _   <- svc.run(Request())
+          _    <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -149,7 +181,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(noContentService.orNotFound)
-          _   <- svc.run(Request())
+          _    <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -159,9 +191,8 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           "http.request.headers" -> s(""),
           "http.url" -> s("/")
         )
-        ).unsafeRunSync()
+      ).unsafeRunSync()
     }
-
 
     "convert URI to a tag-friendly version" in {
       val uri = uri"https://test.com/test/path/ACC-1234/CUST-456/test"
