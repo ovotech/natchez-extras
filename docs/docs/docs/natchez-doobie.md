@@ -30,7 +30,7 @@ and then passing that into a tagless final application that queries the database
 
 ```scala mdoc
 import cats.data.Kleisli
-import cats.effect.{Blocker, ExitCode, IO, IOApp, Resource, Sync}
+import cats.effect._
 import cats.syntax.functor._
 import com.ovoenergy.natchez.extras.datadog.Datadog
 import com.ovoenergy.natchez.extras.doobie.TracedTransactor
@@ -58,19 +58,16 @@ object NatchezDoobie extends IOApp {
    * Create a Doobie transactor that connects to a preexisting postgres instance
    * and then wrap it in TracedTransactor so it creates spans for queries
    */
-  val transactor: Resource[IO, Transactor[TracedIO]] =
-    Blocker[IO].map { blocker =>
-      TracedTransactor(
-        service = "my-example-service-db",
-        blocking = blocker,
-        transactor = Transactor.fromDriverManager[IO](
-          driver = "org.postgresql.Driver",
-          url = "jdbc:postgresql:example",
-          user = "postgres",
-          pass = "password" // of course don't hard code these details in your applications!
-        )
+  val transactor: Transactor[TracedIO] =
+    TracedTransactor(
+      service = "my-example-service-db",
+      transactor = Transactor.fromDriverManager[IO](
+        driver = "org.postgresql.Driver",
+        url = "jdbc:postgresql:example",
+        user = "postgres",
+        pass = "password" // of course don't hard code these details in your applications!
       )
-    }
+    )
 
   /**
    * Your application code doesn't need to know about the TracedIO type,
@@ -88,12 +85,12 @@ object NatchezDoobie extends IOApp {
    * To run the application we create a root span
    * and use that to turn the application from a TracedIO into an IO
    */
-   def run(args: List[String]): IO[ExitCode] =
-     datadog.use { entryPoint =>
-       entryPoint.root("root_span").use { root =>
-         transactor.use { db => application(db).run(root) }
-       }
-     }
+  def run(args: List[String]): IO[ExitCode] =
+    datadog.use { entryPoint =>
+      entryPoint.root("root_span").use { root =>
+        application(transactor).run(root) 
+      }
+    }
 }
 ```
 

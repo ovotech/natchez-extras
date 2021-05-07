@@ -25,6 +25,14 @@ libraryDependencies ++= Seq(
 
 ## Usage
 
+This example assumes you've installed the following extra dependency:
+
+```scala
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "log4cats-slf4j" % "@LOG4CATSVERSION@"
+)
+```
+
 ```scala mdoc
 import cats.Functor
 import cats.data.Kleisli

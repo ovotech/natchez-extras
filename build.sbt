@@ -40,10 +40,10 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
-    "org.typelevel" %% "cats-core" % "2.5.0",
-    "org.typelevel" %% "cats-effect" % "2.4.1",
-    "org.scalatest" %% "scalatest" % "3.2.7" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.15.3" % Test,
+    "org.typelevel" %% "cats-core" % "2.6.0",
+    "org.typelevel" %% "cats-effect" % "3.1.0",
+    "org.scalatest" %% "scalatest" % "3.2.8" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
     "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
   ),
 )
@@ -53,12 +53,13 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-val log4catsVersion = "2.0.1"
-val natchezVersion = "0.1.1"
+val log4catsVersion = "2.1.0"
+val natchezVersion = "0.1.2"
 val http4sVersion = "1.0.0-M21"
 val circeVersion = "0.13.0"
 val slf4jVersion = "1.7.30"
-val fs2Version = "3.0.0"
+val fs2Version = "3.0.2"
+val doobieVersion = "1.0.0-M2"
 
 lazy val natchezDatadog = project
   .in(file("natchez-extras-datadog"))
@@ -131,13 +132,12 @@ lazy val natchezFs2 = project
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "2.2.2",
+      "org.typelevel" %% "kittens" % "2.3.0",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
   )
 
-val doobieVersion = "1.0.0-M1"
 lazy val natchezDoobie = project
   .in(file("natchez-extras-doobie"))
   .enablePlugins(GitVersioning)
@@ -191,7 +191,11 @@ lazy val docs = project
     micrositeDescription := "Datadog integrations for functional Scala",
     micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
-    mdocVariables := Map("VERSION" -> version.value.takeWhile(_ != '-')),
+    mdocVariables := Map(
+      "VERSION" -> version.value.takeWhile(_ != '-'),
+      "LOG4CATSVERSION" -> log4catsVersion,
+      "HTTP4SVERSION" -> http4sVersion
+    ),
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(

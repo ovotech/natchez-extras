@@ -23,13 +23,12 @@ libraryDependencies += "com.ovoenergy" %% "natchez-extras-dogstatsd" % "@VERSION
 ## Example usage
 
 ```scala mdoc
-import java.net.InetSocketAddress
-
 import cats.effect.{ExitCode, IO, IOApp}
+import com.comcast.ip4s._
 import com.ovoenergy.natchez.extras.dogstatsd.Events.{AlertType, Priority}
-import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
-import com.ovoenergy.natchez.extras.metrics.Metrics
 import com.ovoenergy.natchez.extras.dogstatsd.{Dogstatsd, Events}
+import com.ovoenergy.natchez.extras.metrics.Metrics
+import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 
 object MetricApp extends IOApp {
 
@@ -40,7 +39,7 @@ object MetricApp extends IOApp {
       metricPrefix = Some("my_app"),
 
       // the address your Datadog agent is listening on
-      agentHost = new InetSocketAddress("localhost", 8125),
+      agentHost = SocketAddress(ip"127.0.0.1", port"8080"),
 
       // these tags will be added to all metrics + events
       globalTags = Map("example_tag" -> "example_value")
@@ -62,7 +61,7 @@ object MetricApp extends IOApp {
     Metric(name = "my_histogram", tags = Map.empty)
 
   def run(args: List[String]): IO[ExitCode] =
-    Dogstatsd[IO, IO](metricConfig).use { metrics: Metrics[IO] with Events[IO] =>
+    Dogstatsd[IO](metricConfig).use { metrics: Metrics[IO] with Events[IO] =>
       for {
         _ <- metrics.counter(exampleCounter)(1)
         _ <- metrics.histogram(exampleHistogram)(1)

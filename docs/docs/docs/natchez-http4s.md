@@ -21,23 +21,34 @@ libraryDependencies ++= Seq(
 
 ## Usage
 
+These examples assume you've installed the following extra dependencies:
+
+```scala
+val http4sVersion = "@HTTP4SVERSION@"
+
+libraryDependencies ++= Seq(
+  "org.http4s"    %% "http4s-blaze-server"   % http4sVersion,
+  "org.http4s"    %% "http4s-blaze-client"   % http4sVersion
+)
+```
+
 To use Natchez HTTP4s you create an `HttpApp[Kleisli[F, Span[F], *]]` (i.e. an HttpApp that requires a span to run)
 and pass it into `TraceMiddleware` to obtain an `HttpApp[F]` you can then run normally.
 
 ```scala mdoc
 import cats.data.Kleisli
-import cats.effect.{ExitCode, IO, IOApp, Resource, Sync, Timer}
+import cats.effect._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import com.ovoenergy.natchez.extras.datadog.Datadog
 import com.ovoenergy.natchez.extras.http4s.Configuration
 import com.ovoenergy.natchez.extras.http4s.server.TraceMiddleware
 import natchez.{EntryPoint, Span, Trace}
-import org.http4s.{HttpApp, HttpRoutes}
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax.kleisli._
+import org.http4s.{HttpApp, HttpRoutes}
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
@@ -48,7 +59,7 @@ object NatchezHttp4s extends IOApp {
    * An example API with a simple GET endpoint
    * and a POST endpoint that does a few sub operations
    */
-  def createRoutes[F[_]: Trace: Sync: Timer]: HttpRoutes[F] = {
+  def createRoutes[F[_]: Trace: Temporal]: HttpRoutes[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
     HttpRoutes.of {
@@ -56,8 +67,8 @@ object NatchezHttp4s extends IOApp {
         Ok("Well done")
       case POST -> Root =>
         for {
-          _ <- Trace[F].span("operation-1")(Timer[F].sleep(10.millis))
-          _ <- Trace[F].span("operation-2")(Timer[F].sleep(50.millis))
+          _ <- Trace[F].span("operation-1")(Temporal[F].sleep(10.millis))
+          _ <- Trace[F].span("operation-2")(Temporal[F].sleep(50.millis))
           res <- Created("Thanks")
         } yield res
     }
