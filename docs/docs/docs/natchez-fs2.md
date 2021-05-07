@@ -16,7 +16,7 @@ i.e. Kafka consumers using FS2.
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "natchez-fs2" % natchezExtrasVersion
+  "com.ovoenergy" %% "natchez-extras-fs2" % natchezExtrasVersion
 )
 ```
 
