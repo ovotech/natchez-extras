@@ -115,7 +115,7 @@ Often you don't want to trace all of your routes, for example if you have a heal
 that is polled by a load balancer every few seconds you may wish to exclude it from your traces.
 
 You can do this using `.fallthroughTo` provided in the `syntax` package which allows the combination
-of un-traced `HttpRoutes[F]` and the `HttpApp` that the tracing middleware returns:
+of un-traced `HttpRoutes[F]` and the `HttpApp[F]` that the tracing middleware returns:
 
 ```scala mdoc
 import cats.data.Kleisli
