@@ -19,7 +19,7 @@ the [agentless logging](https://docs.datadoghq.com/logs/log_collection/java/?tab
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "natchez-fs2" % natchezExtrasVersion
+  "com.ovoenergy" %% "natchez-extras-log4cats" % natchezExtrasVersion
 )
 ```
 

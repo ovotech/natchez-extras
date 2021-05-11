@@ -14,7 +14,7 @@ that check your application is sending the right information to Natchez.
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "natchez-testkit" % natchezExtrasVersion % Test
+  "com.ovoenergy" %% "natchez-extras-testkit" % natchezExtrasVersion % Test
 )
 ```
 

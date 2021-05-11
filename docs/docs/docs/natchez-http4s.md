@@ -15,7 +15,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "natchez-fs2" % natchezExtrasVersion
+  "com.ovoenergy" %% "natchez-extras-http4s" % natchezExtrasVersion
 )
 ```
 
@@ -107,6 +107,64 @@ object NatchezHttp4s extends IOApp {
 Running the above app and hitting the `POST` endpoint should generate a trace like this:
 
 ![datadog trace]({{site.baseurl}}/img/example-http-trace.png)
+
+
+## Tracing only some routes
+
+Often you don't want to trace all of your routes, for example if you have a healthcheck route
+that is polled by a load balancer every few seconds you may wish to exclude it from your traces.
+
+You can do this using `.fallthroughTo` provided in the `syntax` package which allows the combination
+of un-traced `HttpRoutes[F]` and the `HttpApp[F]` that the tracing middleware returns:
+
+```scala mdoc
+import cats.data.Kleisli
+import cats.effect.{ExitCode, IO, IOApp, Resource}
+import com.ovoenergy.natchez.extras.datadog.Datadog
+import com.ovoenergy.natchez.extras.http4s.Configuration
+import com.ovoenergy.natchez.extras.http4s.server.TraceMiddleware
+import com.ovoenergy.natchez.extras.http4s.server.syntax.KleisliSyntax
+import natchez.{EntryPoint, Span}
+import org.http4s._
+import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.dsl.io._
+import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.syntax.kleisli._
+
+import scala.concurrent.ExecutionContext.global
+
+object Main extends IOApp {
+  
+  type TraceIO[A] = Kleisli[IO, Span[IO], A]
+  val conf: Configuration[IO] = Configuration.default()
+
+  val datadog: Resource[IO, EntryPoint[IO]] =
+    for {
+      httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
+      entryPoint <- Datadog.entryPoint(httpClient, "example-http-api", "default-resource")
+    } yield entryPoint
+
+  val healthcheck: HttpRoutes[IO] =
+    HttpRoutes.of { case GET -> Root / "health" => Ok("healthy") }
+  
+  val application: HttpRoutes[TraceIO] = 
+    HttpRoutes.pure(Response(status = Status.InternalServerError))
+   
+  def run(args: List[String]): IO[ExitCode] =
+    datadog.use { entryPoint =>
+
+      val combinedRoutes: HttpApp[IO] =
+        healthcheck.fallthroughTo(TraceMiddleware(entryPoint, conf)(application.orNotFound))
+    
+      BlazeServerBuilder[IO](global)
+        .withHttpApp(combinedRoutes)
+        .bindHttp(port = 8080)
+        .serve
+        .compile
+        .lastOrError
+    }
+}
+```
 
 ## Configuration
 
