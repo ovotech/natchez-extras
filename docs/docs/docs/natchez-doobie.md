@@ -36,7 +36,7 @@ import com.ovoenergy.natchez.extras.datadog.Datadog
 import com.ovoenergy.natchez.extras.doobie.TracedTransactor
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import natchez.{EntryPoint, Span, Trace}
+import natchez.{EntryPoint, Span}
 import org.http4s.client.blaze.BlazeClientBuilder
 
 import scala.concurrent.ExecutionContext.global
@@ -70,10 +70,9 @@ object NatchezDoobie extends IOApp {
     )
 
   /**
-   * Your application code doesn't need to know about the TracedIO type,
-   * it just works with an effect type that has a Trace instance
+   * Your application code doesn't need to know about the TracedIO type
    */
-  def application[F[_]: Sync: Trace](db: Transactor[F]): F[ExitCode] =
+  def application[F[_]: Sync](db: Transactor[F]): F[ExitCode] =
     sql"SELECT * FROM example"
       .query[String]
       .to[List]

@@ -41,7 +41,7 @@ import com.ovoenergy.natchez.extras.log4cats.TracedLogger
 import com.ovoenergy.natchez.extras.datadog.Datadog
 import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import natchez.{EntryPoint, Span, Trace}
+import natchez.{EntryPoint, Span}
 import org.http4s.client.blaze.BlazeClientBuilder
 import cats.syntax.functor._
 
@@ -71,7 +71,7 @@ object NatchezLog4Cats extends IOApp {
    * The application that uses the logger can depend on it
    * without knowing that it is a TracedLogger
    */
-  def application[F[_]: Functor: Trace: StructuredLogger]: F[ExitCode] =
+  def application[F[_]: Functor: StructuredLogger]: F[ExitCode] =
     StructuredLogger[F].info("I am running!").as(ExitCode.Success)
 
   def run(args: List[String]): IO[ExitCode] =
