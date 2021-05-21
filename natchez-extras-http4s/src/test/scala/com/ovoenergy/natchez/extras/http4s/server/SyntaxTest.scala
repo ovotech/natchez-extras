@@ -1,6 +1,7 @@
 package com.ovoenergy.natchez.extras.http4s.server
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits._
 import com.ovoenergy.natchez.extras.http4s.server.syntax._
 import org.http4s.Status.{InsufficientStorage, Ok}
 import org.http4s.{HttpApp, HttpRoutes, Request, Response}

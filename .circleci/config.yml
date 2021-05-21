@@ -5,7 +5,7 @@ orbs:
 
 docker_sbt: &docker_sbt
   docker:
-    - image: circleci/openjdk:8-jdk
+    - image: cimg/openjdk:11.0
       environment:
         DEBIAN_FRONTEND: noninteractive
         SBT_OPTS: -Xms256m -Xmx756G -XX:+CMSClassUnloadingEnabled -XX:+UseSerialGC -XX:MaxMetaspaceSize=2G
@@ -13,6 +13,14 @@ docker_sbt: &docker_sbt
   working_directory: ~/repo
   environment:
     JVM_OPTS: -Xmx3200m
+
+install_sbt: &install_sbt
+  run:
+    name: Install SBT
+    command: |
+      wget https://github.com/sbt/sbt/releases/download/v1.5.2/sbt-1.5.2.zip && unzip sbt*
+      echo "export PATH=$PATH:$(pwd)/sbt/bin" >> $BASH_ENV
+      chmod +x ./sbt/bin/sbt
 
 cache_save: &cache_save
   save_cache:
@@ -36,6 +44,7 @@ commands:
     steps:
       - checkout
       - *cache_restore
+      - *install_sbt
       - add_ssh_keys:
           fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
       - ruby/install:
@@ -71,6 +80,7 @@ jobs:
     steps:
       - checkout
       - *cache_restore
+      - *install_sbt
       - run:
           name: import PGP key
           command: echo -e "$PGP_KEY" | gpg --batch --import
@@ -87,6 +97,7 @@ jobs:
     steps:
       - checkout
       - *cache_restore
+      - *install_sbt
       - run:
           name: Test
           command: sbt test
