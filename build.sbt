@@ -54,12 +54,12 @@ lazy val metricsCommon = project
   .settings(common :+ (name := "natchez-extras-metrics"))
 
 val log4catsVersion = "2.1.1"
-val natchezVersion = "0.1.4"
-val http4sVersion = "1.0.0-M21"
-val circeVersion = "0.13.0"
+val natchezVersion = "0.1.5"
+val http4sVersion = "1.0.0-M23"
+val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.30"
 val fs2Version = "3.0.4"
-val doobieVersion = "1.0.0-M2"
+val doobieVersion = "1.0.0-M5"
 
 lazy val natchezDatadog = project
   .in(file("natchez-extras-datadog"))
@@ -132,7 +132,7 @@ lazy val natchezFs2 = project
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "2.3.0",
+      "org.typelevel" %% "kittens" % "2.3.2",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
@@ -163,7 +163,7 @@ lazy val datadogMetrics = project
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "claimant" % "0.1.3" % Test,
+      "org.typelevel" %% "claimant" % "0.2.0" % Test,
       "co.fs2" %% "fs2-core" % fs2Version,
       "co.fs2" %% "fs2-io" % fs2Version,
     )

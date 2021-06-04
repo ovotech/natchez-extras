@@ -39,7 +39,7 @@ object MetricApp extends IOApp {
       metricPrefix = Some("my_app"),
 
       // the address your Datadog agent is listening on
-      agentHost = SocketAddress(ip"127.0.0.1", port"8080"),
+      agentHost = SocketAddress(ip"127.0.0.1", port"8125"),
 
       // these tags will be added to all metrics + events
       globalTags = Map("example_tag" -> "example_value")
