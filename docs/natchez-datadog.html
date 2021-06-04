@@ -16,7 +16,7 @@ agent in a docker container this should typically be the case.</p>
 <p><code class="language-plaintext highlighter-rouge">natchez-extras-datadog</code> uses HTTP4s to submit traces to the <a href="https://docs.datadoghq.com/api/v1/tracing/">Datadog trace API</a>, hence the need for <code class="language-plaintext highlighter-rouge">http4s-blaze-client</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">http4sVersion</span> <span class="k">=</span> <span class="s">"1.0.0-M23"</span>
-<span class="k">val</span> <span class="nv">natchezExtrasVersion</span> <span class="k">=</span> <span class="s">"4.0.2"</span>
+<span class="k">val</span> <span class="nv">natchezExtrasVersion</span> <span class="k">=</span> <span class="s">"5.0.0"</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
   <span class="s">"org.http4s"</span>    <span class="o">%%</span> <span class="s">"http4s-blaze-client"</span>    <span class="o">%</span> <span class="n">http4sVersion</span><span class="o">,</span>
