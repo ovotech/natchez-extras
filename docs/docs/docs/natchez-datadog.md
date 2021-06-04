@@ -21,7 +21,7 @@ agent in a docker container this should typically be the case.
 `natchez-extras-datadog` uses HTTP4s to submit traces to the [Datadog trace API](https://docs.datadoghq.com/api/v1/tracing/), hence the need for `http4s-blaze-client`.
 
 ```scala
-val http4sVersion = "0.21.4"
+val http4sVersion = "@HTTP4SVERSION@"
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.ovoenergy.natchez.extras.datadog.Datadog
 import natchez.EntryPoint
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._

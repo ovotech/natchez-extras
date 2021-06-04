@@ -16,7 +16,7 @@ object TraceMiddleware {
    * replace with an underscore. This is to stop things like Account IDs showing up in URLs
    */
   def removeNumericPathSegments(uri: Uri): String =
-    uri.path.replaceAll("(^|/)[^/]*[0-9]{2,}[^/]*", "$1_")
+    uri.path.renderString.replaceAll("(^|/)[^/]*[0-9]{2,}[^/]*", "$1_")
 
   private def runTracing[F[_]](s: Span[F]): Kleisli[F, Span[F], *] ~> F =
     new (Kleisli[F, Span[F], *] ~> F) { def apply[A](a: Kleisli[F, Span[F], A]): F[A] = a.run(s) }
@@ -33,7 +33,7 @@ object TraceMiddleware {
   )(implicit F: Sync[F]): HttpApp[F] =
     Kleisli { r =>
       val spanName = s"http.request:${removeNumericPathSegments(r.uri)}"
-      val kernel = Kernel(r.headers.toList.map(h => h.name.toString -> h.value).toMap)
+      val kernel = Kernel(r.headers.headers.map(h => h.name.toString -> h.value).toMap)
       val traceRequest = r.mapK(Kleisli.liftK[F, Span[F]])
 
       entryPoint

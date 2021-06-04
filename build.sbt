@@ -1,33 +1,35 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-scalaVersion in ThisBuild := "2.13.5"
+ThisBuild / scalaVersion := "2.13.5"
 
-organization in ThisBuild := "com.ovoenergy"
+ThisBuild / organization := "com.ovoenergy"
 
-organizationName in ThisBuild := "OVO Energy"
+ThisBuild / organizationName := "OVO Energy"
 
-organizationHomepage in ThisBuild := Some(url("http://www.ovoenergy.com"))
+ThisBuild / organizationHomepage := Some(url("http://www.ovoenergy.com"))
 
-scmInfo in ThisBuild := Some(
+ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/ovotech/natchez-extras"),
     "scm:git@github.com:ovotech/natchez-extras.git"
   )
 )
 
-homepage in ThisBuild := Some(url("https://ovotech.github.io/natchez-extras/"))
+ThisBuild / homepage := Some(url("https://ovotech.github.io/natchez-extras/"))
 
-licenses in ThisBuild += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-publishMavenStyle in ThisBuild := true
+ThisBuild / publishMavenStyle := true
 
-publishTo in ThisBuild := sonatypePublishToBundle.value
+ThisBuild / publishTo := sonatypePublishToBundle.value
 
-developers in ThisBuild ++= List(
+ThisBuild / scalafmtOnCompile := true
+
+ThisBuild / developers ++= List(
   Developer("tomverran", "Tom Verran", "github@tomverran.co.uk", url("https://github.com/tomverran"))
 )
 
-credentials in ThisBuild += (
+ThisBuild / credentials += (
   for {
     user <- sys.env.get("SONATYPE_USERNAME")
     pass <- sys.env.get("SONATYPE_PASSWORD")
@@ -35,15 +37,15 @@ credentials in ThisBuild += (
 ).getOrElse(Credentials(Path.userHome / ".sbt" / ".sonatype_credentials"))
 
 val common = Seq(
-  fork in Test := true,
+  Test / fork := true,
   git.useGitDescribe := true,
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
-    "org.typelevel" %% "cats-core" % "2.5.0",
-    "org.typelevel" %% "cats-effect" % "2.4.1",
-    "org.scalatest" %% "scalatest" % "3.2.7" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.15.3" % Test,
+    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
+    "org.typelevel" %% "cats-core" % "2.6.1",
+    "org.typelevel" %% "cats-effect" % "3.1.1",
+    "org.scalatest" %% "scalatest" % "3.2.9" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
     "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
   ),
 )
@@ -53,12 +55,13 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-val log4catsVersion = "1.2.2"
-val natchezVersion = "0.0.22"
-val http4sVersion = "0.21.22"
-val circeVersion = "0.13.0"
+val log4catsVersion = "2.1.1"
+val natchezVersion = "0.1.5"
+val http4sVersion = "1.0.0-M23"
+val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.30"
-val fs2Version = "2.5.4"
+val fs2Version = "3.0.4"
+val doobieVersion = "1.0.0-M5"
 
 lazy val natchezDatadog = project
   .in(file("natchez-extras-datadog"))
@@ -131,13 +134,12 @@ lazy val natchezFs2 = project
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "2.2.2",
+      "org.typelevel" %% "kittens" % "2.3.2",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
   )
 
-val doobieVersion = "0.12.1"
 lazy val natchezDoobie = project
   .in(file("natchez-extras-doobie"))
   .enablePlugins(GitVersioning)
@@ -163,7 +165,7 @@ lazy val datadogMetrics = project
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "claimant" % "0.1.3" % Test,
+      "org.typelevel" %% "claimant" % "0.2.0" % Test,
       "co.fs2" %% "fs2-core" % fs2Version,
       "co.fs2" %% "fs2-io" % fs2Version,
     )
@@ -189,9 +191,13 @@ lazy val docs = project
     micrositeBaseUrl := "/natchez-extras",
     micrositeDocumentationUrl := "/natchez-extras/docs",
     micrositeDescription := "Datadog integrations for functional Scala",
-    micrositeImgDirectory := (resourceDirectory in Compile).value / "microsite" / "img",
+    micrositeImgDirectory := (Compile / resourceDirectory).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
-    mdocVariables := Map("VERSION" -> version.value.takeWhile(_ != '-')),
+    mdocVariables := Map(
+      "VERSION" -> version.value.takeWhile(_ != '-'),
+      "LOG4CATSVERSION" -> log4catsVersion,
+      "HTTP4SVERSION" -> http4sVersion
+    ),
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(

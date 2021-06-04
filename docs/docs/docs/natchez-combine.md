@@ -15,27 +15,37 @@ running applications locally we can get a sense of what is going on without havi
 
 In your build.sbt
 
+(The http4s and datadog dependencies are included for the example below)
+
 ```scala
-val http4sVersion = "0.21.4"
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "org.http4s"    %% "http4s-blaze-client"    % http4sVersion,
   "com.ovoenergy" %% "natchez-extras-combine" % natchezExtrasVersion,
-  "com.ovoenergy" %% "natchez-extras-datadog" % natchezExtrasVersion,
-  "com.ovoenergy" %% "natchez-extras-slf4j"   % natchezExtrasVersion
 )
 ```
 
 ## Example usage:
 
-This example combines `natchez-extras-datadog` and `natchez-extras-slf4j` hence the extra dependencies
+This example combines `natchez-extras-datadog` and `natchez-extras-slf4j` hence requires the following:
+
+```scala
+val http4sVersion = "@HTTP4SVERSION@"
+val natchezExtrasVersion = "@VERSION@"
+
+libraryDependencies ++= Seq(
+  "org.http4s"    %% "http4s-blaze-client"    % http4sVersion,
+  "com.ovoenergy" %% "natchez-extras-datadog" % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-combine" % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-slf4j"   % natchezExtrasVersion
+)
+```
 
 ```scala mdoc
 import com.ovoenergy.natchez.extras.combine.Combine
 import com.ovoenergy.natchez.extras.slf4j.Slf4j
 import com.ovoenergy.natchez.extras.datadog.Datadog
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import natchez.EntryPoint
 import cats.effect.IO
 import cats.effect.Resource

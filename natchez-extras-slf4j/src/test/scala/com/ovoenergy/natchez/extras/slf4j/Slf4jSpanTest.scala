@@ -1,21 +1,18 @@
 package com.ovoenergy.natchez.extras.slf4j
 
-import cats.effect.{Concurrent, ContextShift, IO}
-import cats.syntax.flatMap._
+import cats.effect.{Concurrent, IO}
 import natchez.Kernel
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
+import cats.effect.unsafe.implicits.global
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {
-
-  implicit val cs: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
 
   override def beforeEach(): Unit =
     TestLoggerFactory.clearAll()
@@ -41,7 +38,8 @@ class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {
 
     "Log cancelled tasks" in {
       val task: IO[List[LoggingEvent]] = Slf4jSpan.create[IO]("foo").use(_ => flushLogs >> IO.never)
-      val result = Concurrent[IO].start(task).flatMap(_.cancel >> flushLogs).unsafeRunSync()
+      val result =
+        Concurrent[IO].start(task).flatMap(t => IO.sleep(1.milli) >> t.cancel >> flushLogs).unsafeRunSync()
       result.map(_.getMessage) shouldBe List("foo cancelled")
     }
 

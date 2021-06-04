@@ -1,7 +1,7 @@
 package com.ovoenergy.natchez.extras.doobie
 
-import cats.effect.concurrent.Ref
-import cats.effect.{Blocker, ContextShift, IO, Resource}
+import cats.effect.unsafe.implicits._
+import cats.effect.{IO, Ref, Resource}
 import cats.syntax.flatMap._
 import com.ovoenergy.natchez.extras.doobie.TracedTransactor.Traced
 import doobie.h2.H2Transactor.newH2Transactor
@@ -12,10 +12,9 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import java.net.URI
-import scala.concurrent.ExecutionContext.global
+import scala.concurrent.ExecutionContext
 
 class TracedTransactorTest extends AnyWordSpec with Matchers {
-  implicit val cs: ContextShift[IO] = IO.contextShift(global)
 
   case class SpanData(
     name: String,
@@ -42,17 +41,15 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
     }
 
   val db: Resource[IO, Transactor[Traced[IO, *]]] =
-    for {
-      block <- Blocker[IO]
-      xa    <- newH2Transactor[IO]("jdbc:h2:mem:test", "foo", "bar", global, block)
-    } yield TracedTransactor("test", block, xa)
+    newH2Transactor[IO]("jdbc:h2:mem:test", "foo", "bar", ExecutionContext.global)
+      .map(TracedTransactor("test", _))
 
   "TracedTransactor" should {
 
     "Trace queries" in {
       val query = sql"""
-        |SELECT 1
-        |WHERE true = ${true: Boolean}
+                       |SELECT 1
+                       |WHERE true = ${true: Boolean}
       """.stripMargin.query[Int].unique
       val res = db.use(d => run(query.transact(d))).unsafeRunSync()
       res.last shouldBe SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map("span.type" -> "db"))

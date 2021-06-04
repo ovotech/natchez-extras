@@ -2,8 +2,8 @@ package com.ovoenergy.natchez.extras.slf4j
 
 import cats.Monad
 import cats.data.OptionT
-import cats.effect.concurrent.Ref
-import cats.effect.{ExitCase, Resource, Sync}
+import cats.effect.kernel.Resource.ExitCase
+import cats.effect.{Ref, Resource, Sync}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import natchez.TraceValue.StringValue
@@ -17,7 +17,7 @@ case class Slf4jSpan[F[_]: Sync](
   mdc: Ref[F, Map[String, TraceValue]],
   logger: Logger,
   token: String,
-  name: String,
+  name: String
 ) extends Span[F] {
 
   def put(fields: (String, TraceValue)*): F[Unit] =
@@ -70,16 +70,16 @@ object Slf4jSpan {
         logger <- Sync[F].delay(LoggerFactory.getLogger("natchez"))
         token  <- OptionT.fromOption[F](token).getOrElseF(Sync[F].delay(randomUUID.toString))
         _      <- log(logger, mdc.updated("traceToken", StringValue(token)))(_.info(s"$name started"))
-        mdc    <- Ref.of(mdc)
+        mdc    <- Ref.of[F, Map[String, TraceValue]](mdc)
       } yield Slf4jSpan(mdc, logger, token, name)
     )(complete)
 
-  def complete[F[_]: Sync](span: Slf4jSpan[F], exitCase: ExitCase[Throwable]): F[Unit] = {
+  def complete[F[_]: Sync](span: Slf4jSpan[F], exitCase: ExitCase): F[Unit] = {
     span.mdc.get.map(_.updated("traceToken", StringValue(span.token))).flatMap { mdc =>
       exitCase match {
-        case ExitCase.Completed => log(span.logger, mdc)(_.info(s"${span.name} success"))
-        case ExitCase.Error(e)  => log(span.logger, mdc)(_.error(s"${span.name} error", e))
-        case ExitCase.Canceled  => log(span.logger, mdc)(_.info(s"${span.name} cancelled"))
+        case ExitCase.Succeeded  => log(span.logger, mdc)(_.info(s"${span.name} success"))
+        case ExitCase.Errored(e) => log(span.logger, mdc)(_.error(s"${span.name} error", e))
+        case ExitCase.Canceled   => log(span.logger, mdc)(_.info(s"${span.name} cancelled"))
       }
     }
   }

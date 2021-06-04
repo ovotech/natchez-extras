@@ -16,7 +16,8 @@ object Slf4j {
         Resource.eval(Slf4jSpan.fromKernel(name, kernel).widen).flatMap(identity).widen
 
       def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
-        Resource.eval(
+        Resource
+          .eval(
             MonadError[F, Throwable]
               .recover(Slf4jSpan.fromKernel(name, kernel)) { case _ => Slf4jSpan.create(name) }
           )

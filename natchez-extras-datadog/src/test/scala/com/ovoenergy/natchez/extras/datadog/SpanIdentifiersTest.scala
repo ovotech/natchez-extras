@@ -1,6 +1,7 @@
 package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.ovoenergy.natchez.extras.datadog.SpanIdentifiers._
 import natchez.Kernel
 import org.scalatest.matchers.should.Matchers

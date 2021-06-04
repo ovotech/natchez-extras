@@ -1,30 +1,21 @@
 package com.ovoenergy.natchez.extras.fs2
 
-import cats.effect.{Clock, ContextShift, ExitCase, IO, Timer}
+import cats.effect.IO
+import cats.effect.kernel.Resource.ExitCase
 import com.ovoenergy.natchez.extras.testkit.TestEntryPoint
 import fs2.Stream
 import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import cats.effect.unsafe.implicits.global
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 class AllocatedSpanTest extends AnyWordSpec with Matchers {
 
-  implicit val cs: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
-
-  implicit val timer: Timer[IO] =
-    IO.timer(ExecutionContext.global)
-
-  implicit val clock: Clock[IO] =
-    Clock.extractFromTimer(timer)
-
   val testEp: IO[TestEntryPoint[IO]] =
     TestEntryPoint.apply[IO]
-
 
   "AllocatedSpan.create" should {
 
@@ -41,17 +32,16 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream.attempt
+            _     <- stream.attempt
             spans <- ep.spans
           } yield {
             spans.length shouldBe 1
             spans.maxBy(_.completed).name shouldBe "root"
-            Inspectors.forAll(spans)(_.exitCase shouldBe ExitCase.Completed)
+            Inspectors.forAll(spans)(_.exitCase shouldBe ExitCase.Succeeded)
           }
         }
         .unsafeRunSync()
     }
-
 
     "Hold the parent span open until it is explicitly submitted" in {
       testEp
@@ -62,19 +52,19 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .covary[IO]
               .through(AllocatedSpan.create(maxOpen = 10)(_ => ep.root("root")))
               .evalTap(_.span.span("foo").use(_ => IO.unit))
-              .metered(1.millisecond)
+              .metered(5.millisecond)
               .evalTap(_.span.submit)
               .compile
               .drain
 
           for {
-            _ <- stream
+            _     <- stream
             spans <- ep.spans
           } yield {
             spans.length shouldBe 2
             spans.minBy(_.completed).name shouldBe "foo"
             spans.maxBy(_.completed).name shouldBe "root"
-            Inspectors.forAll(spans)(_.exitCase shouldBe ExitCase.Completed)
+            Inspectors.forAll(spans)(_.exitCase shouldBe ExitCase.Succeeded)
           }
         }
         .unsafeRunSync()
@@ -94,7 +84,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream.attempt
+            _     <- stream.attempt
             spans <- ep.spans
           } yield {
             spans.length shouldBe 2
@@ -102,7 +92,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
             val first = spans.minBy(_.completed)
 
             last.exitCase shouldBe ExitCase.Canceled
-            first.exitCase shouldBe ExitCase.Completed
+            first.exitCase shouldBe ExitCase.Succeeded
           }
         }
         .unsafeRunSync()
@@ -124,7 +114,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream.attempt
+            _     <- stream.attempt
             spans <- ep.spans
           } yield spans.length shouldBe 100
         }
@@ -132,4 +122,3 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
     }
   }
 }
-

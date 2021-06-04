@@ -25,6 +25,14 @@ libraryDependencies ++= Seq(
 
 ## Usage
 
+This example assumes you've installed the following extra dependency:
+
+```scala
+libraryDependencies ++= Seq(
+  "org.typelevel" %% "log4cats-slf4j" % "@LOG4CATSVERSION@"
+)
+```
+
 ```scala mdoc
 import cats.Functor
 import cats.data.Kleisli
@@ -33,8 +41,8 @@ import com.ovoenergy.natchez.extras.log4cats.TracedLogger
 import com.ovoenergy.natchez.extras.datadog.Datadog
 import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import natchez.{EntryPoint, Span, Trace}
-import org.http4s.client.blaze.BlazeClientBuilder
+import natchez.{EntryPoint, Span}
+import org.http4s.blaze.client.BlazeClientBuilder
 import cats.syntax.functor._
 
 import scala.concurrent.ExecutionContext.global
@@ -63,7 +71,7 @@ object NatchezLog4Cats extends IOApp {
    * The application that uses the logger can depend on it
    * without knowing that it is a TracedLogger
    */
-  def application[F[_]: Functor: Trace: StructuredLogger]: F[ExitCode] =
+  def application[F[_]: Functor: StructuredLogger]: F[ExitCode] =
     StructuredLogger[F].info("I am running!").as(ExitCode.Success)
 
   def run(args: List[String]): IO[ExitCode] =

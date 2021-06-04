@@ -64,8 +64,4 @@ object NatchezFS2 extends IOApp {
       .drain
       .as(ExitCode.Error)
 }
-
-
 ```
-
-
