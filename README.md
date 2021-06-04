@@ -1,6 +1,6 @@
 # Natchez Extras
 
-This repository consists of a number of additional integrations for [Natchez](https://github.com/tpolecat/natchez), 
+This repository consists of a number of additional integrations for [Natchez](https://github.com/tpolecat/natchez),
 primarily to assist with integrating Natchez & Datadog. Separate to the Natchez integrations but included here for simplicity
 is a module to send metrics to Datadog over UDP with FS2.
 
@@ -17,6 +17,7 @@ If you're upgrading your dependencies the renamings are as follows:
 "com.ovoenergy.effect" % "natchez-combine"  => "com.ovoenergy" % "natchez-extras-combine"
 "com.ovoenergy.effect" % "natchez-fs2"      => "com.ovoenergy" % "natchez-extras-fs2"
 "com.ovoenergy.effect" % "natchez-testkit"  => "com.ovoenergy" % "natchez-extras-testkit"
+"com.ovoenergy.effect" % "natchez-http4s"   => "com.ovoenergy" % "natchez-extras-http4s"
 ```
 
 Other significant changes are the `Datadog` metrics object being renamed to `Dogstatsd` and the
@@ -32,7 +33,7 @@ define, for example, a `syntax` object without affecting anything else.
 
 ## Current modules
 
-### [Dogstatsd](https://ovotech.github.io/natchez-extras/docs/) 
+### [Dogstatsd](https://ovotech.github.io/natchez-extras/docs/)
 ![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-dogstatsd/latest.svg)
 
 This module allows you to send Metrics and Events to the Datadog agent over UDP with FS2.
