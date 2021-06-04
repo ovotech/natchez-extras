@@ -45,7 +45,7 @@ libraryDependencies ++= Seq(
 import com.ovoenergy.natchez.extras.combine.Combine
 import com.ovoenergy.natchez.extras.slf4j.Slf4j
 import com.ovoenergy.natchez.extras.datadog.Datadog
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import natchez.EntryPoint
 import cats.effect.IO
 import cats.effect.Resource

@@ -71,7 +71,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(okService("ok").orNotFound)
-          _   <- svc.run(Request(headers = Headers("X-Trace-Token" -> "foobar")))
+          _    <- svc.run(Request(headers = Headers("X-Trace-Token" -> "foobar")))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -102,7 +102,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(okService("", responseHeaders).orNotFound)
-          _   <- svc.run(Request(headers = requestHeaders))
+          _    <- svc.run(Request(headers = requestHeaders))
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -120,7 +120,6 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
             """|Set-Cookie: <REDACTED>
                |X-Polite: come back soon!
                |""".stripMargin
-
           )
         )
       ).unsafeRunSync()
@@ -131,7 +130,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(errorService("oh no").orNotFound)
-          _   <- svc.run(Request())
+          _    <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -150,7 +149,7 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
         for {
           entryPoint <- entrypointMock
           svc = TraceMiddleware[IO](entryPoint, config)(noContentService.orNotFound)
-          _   <- svc.run(Request())
+          _    <- svc.run(Request())
           tags <- entryPoint.tags
         } yield tags shouldBe Map(
           "span.type" -> s("web"),
@@ -160,9 +159,8 @@ class TraceMiddlewareTest extends AnyWordSpec with Matchers with Inspectors {
           "http.request.headers" -> s(""),
           "http.url" -> s("/")
         )
-        ).unsafeRunSync()
+      ).unsafeRunSync()
     }
-
 
     "convert URI to a tag-friendly version" in {
       val uri = uri"https://test.com/test/path/ACC-1234/CUST-456/test"

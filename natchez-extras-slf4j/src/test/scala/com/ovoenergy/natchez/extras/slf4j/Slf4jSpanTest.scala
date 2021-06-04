@@ -38,7 +38,8 @@ class Slf4jSpanTest extends AnyWordSpec with Matchers with BeforeAndAfterEach {
 
     "Log cancelled tasks" in {
       val task: IO[List[LoggingEvent]] = Slf4jSpan.create[IO]("foo").use(_ => flushLogs >> IO.never)
-      val result = Concurrent[IO].start(task).flatMap(t => IO.sleep(1.milli) >> t.cancel >> flushLogs).unsafeRunSync()
+      val result =
+        Concurrent[IO].start(task).flatMap(t => IO.sleep(1.milli) >> t.cancel >> flushLogs).unsafeRunSync()
       result.map(_.getMessage) shouldBe List("foo cancelled")
     }
 

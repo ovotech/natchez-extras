@@ -17,7 +17,6 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
   val testEp: IO[TestEntryPoint[IO]] =
     TestEntryPoint.apply[IO]
 
-
   "AllocatedSpan.create" should {
 
     "Submit the span even if a pre-submit task fails" in {
@@ -33,7 +32,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream.attempt
+            _     <- stream.attempt
             spans <- ep.spans
           } yield {
             spans.length shouldBe 1
@@ -43,7 +42,6 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
         }
         .unsafeRunSync()
     }
-
 
     "Hold the parent span open until it is explicitly submitted" in {
       testEp
@@ -60,7 +58,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream
+            _     <- stream
             spans <- ep.spans
           } yield {
             spans.length shouldBe 2
@@ -86,7 +84,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream.attempt
+            _     <- stream.attempt
             spans <- ep.spans
           } yield {
             spans.length shouldBe 2
@@ -116,7 +114,7 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
               .drain
 
           for {
-            _ <- stream.attempt
+            _     <- stream.attempt
             spans <- ep.spans
           } yield spans.length shouldBe 100
         }
@@ -124,4 +122,3 @@ class AllocatedSpanTest extends AnyWordSpec with Matchers {
     }
   }
 }
-

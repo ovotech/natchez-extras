@@ -42,7 +42,7 @@ import com.ovoenergy.natchez.extras.datadog.Datadog
 import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import natchez.{EntryPoint, Span}
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import cats.syntax.functor._
 
 import scala.concurrent.ExecutionContext.global

@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
 import cats.effect.{ExitCode, IO, IOApp, Resource}
 import com.ovoenergy.natchez.extras.datadog.Datadog
 import natchez.EntryPoint
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._

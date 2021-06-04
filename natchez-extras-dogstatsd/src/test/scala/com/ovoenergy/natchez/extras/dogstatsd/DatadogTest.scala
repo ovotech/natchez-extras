@@ -81,9 +81,10 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
 
     "Limit the size of a UDP packet to below the maximum 65535 bytes" in {
       check(
-        Prop.forAllNoShrink(string, stringTags) { case (name, tags) =>
-          Claim(serialiseHistogram(Metric(name, tags), 1).length < 65535) &&
-          Claim(serialiseCounter(Metric(name, tags), 1).length < 65535)
+        Prop.forAllNoShrink(string, stringTags) {
+          case (name, tags) =>
+            Claim(serialiseHistogram(Metric(name, tags), 1).length < 65535) &&
+            Claim(serialiseCounter(Metric(name, tags), 1).length < 65535)
         }
       )
     }

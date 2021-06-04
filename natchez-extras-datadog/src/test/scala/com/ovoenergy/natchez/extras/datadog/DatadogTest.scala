@@ -32,8 +32,8 @@ class DatadogTest extends AnyWordSpec with Matchers {
       (
         for {
           client <- TestClient[IO]
-          ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
-          _      <- ep.use(_.root("foo").use(_ => IO.unit))
+          ep = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
+          _        <- ep.use(_.root("foo").use(_ => IO.unit))
           requests <- client.requests
         } yield requests.map(_.uri) shouldBe List(
           uri"http://example.com/v0.3/traces"
@@ -45,24 +45,25 @@ class DatadogTest extends AnyWordSpec with Matchers {
       (
         for {
           client <- TestClient[IO]
-          ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
+          ep = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
           kernel <- ep.use(_.root("foo").use(s => s.put("traceToken" -> "foo") >> s.kernel))
         } yield kernel.toHeaders.get("X-Trace-Token") shouldBe Some("foo")
-        ).unsafeRunSync()
+      ).unsafeRunSync()
     }
 
     "Continue to send HTTP calls even if one of them fails" in {
 
       val test: EntryPoint[IO] => IO[Unit] =
-        ep => ep.root("first").use(_ => IO.unit) >>
-              IO.sleep(1.second) >>
-              ep.root("second").use(_ => IO.unit)
+        ep =>
+          ep.root("first").use(_ => IO.unit) >>
+          IO.sleep(1.second) >>
+          ep.root("second").use(_ => IO.unit)
       (
         for {
           client <- TestClient[IO]
           _      <- client.respondWith(IO.raiseError(new Exception))
-          ep     = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
-          _      <- ep.use(test)
+          ep = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
+          _        <- ep.use(test)
           requests <- client.requests
         } yield requests.length shouldBe 2
       ).unsafeRunSync()

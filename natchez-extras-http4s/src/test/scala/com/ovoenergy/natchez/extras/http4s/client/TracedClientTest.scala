@@ -26,11 +26,11 @@ class TracedClientTest extends AnyWordSpec with Matchers {
       val requests: List[Request[IO]] = (
         for {
           client <- TestClient[IO]
-          ep    <- TestEntryPoint[IO]
-          http   = TracedClient(client.client, config)
+          ep     <- TestEntryPoint[IO]
+          http = TracedClient(client.client, config)
           kernel = Kernel(Map("X-Trace-Token" -> "token"))
-          _      <- ep.continue("bar", kernel).use(http.named("foo").status(Request[TraceIO]()).run)
-          reqs   <- client.requests
+          _    <- ep.continue("bar", kernel).use(http.named("foo").status(Request[TraceIO]()).run)
+          reqs <- client.requests
         } yield reqs
       ).unsafeRunSync()
 
@@ -44,10 +44,10 @@ class TracedClientTest extends AnyWordSpec with Matchers {
       val spans: List[TestSpan] = (
         for {
           client <- TestClient[IO]
-          ep    <- TestEntryPoint[IO]
-          http   = TracedClient(client.client, config)
-          _      <- ep.root("root").use(http.named("foo").status(Request[TraceIO]()).run)
-          reqs   <- ep.spans
+          ep     <- TestEntryPoint[IO]
+          http = TracedClient(client.client, config)
+          _    <- ep.root("root").use(http.named("foo").status(Request[TraceIO]()).run)
+          reqs <- ep.spans
         } yield reqs
       ).unsafeRunSync()
 

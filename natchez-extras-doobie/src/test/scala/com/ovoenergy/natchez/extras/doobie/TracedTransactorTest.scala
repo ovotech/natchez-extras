@@ -48,8 +48,8 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
 
     "Trace queries" in {
       val query = sql"""
-        |SELECT 1
-        |WHERE true = ${true: Boolean}
+                       |SELECT 1
+                       |WHERE true = ${true: Boolean}
       """.stripMargin.query[Int].unique
       val res = db.use(d => run(query.transact(d))).unsafeRunSync()
       res.last shouldBe SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map("span.type" -> "db"))
