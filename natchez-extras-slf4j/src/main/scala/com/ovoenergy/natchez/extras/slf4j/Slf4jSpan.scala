@@ -17,7 +17,7 @@ case class Slf4jSpan[F[_]: Sync](
   mdc: Ref[F, Map[String, TraceValue]],
   logger: Logger,
   token: String,
-  name: String,
+  name: String
 ) extends Span[F] {
 
   def put(fields: (String, TraceValue)*): F[Unit] =
@@ -77,9 +77,9 @@ object Slf4jSpan {
   def complete[F[_]: Sync](span: Slf4jSpan[F], exitCase: ExitCase): F[Unit] = {
     span.mdc.get.map(_.updated("traceToken", StringValue(span.token))).flatMap { mdc =>
       exitCase match {
-        case ExitCase.Succeeded => log(span.logger, mdc)(_.info(s"${span.name} success"))
-        case ExitCase.Errored(e)  => log(span.logger, mdc)(_.error(s"${span.name} error", e))
-        case ExitCase.Canceled  => log(span.logger, mdc)(_.info(s"${span.name} cancelled"))
+        case ExitCase.Succeeded  => log(span.logger, mdc)(_.info(s"${span.name} success"))
+        case ExitCase.Errored(e) => log(span.logger, mdc)(_.error(s"${span.name} error", e))
+        case ExitCase.Canceled   => log(span.logger, mdc)(_.info(s"${span.name} cancelled"))
       }
     }
   }

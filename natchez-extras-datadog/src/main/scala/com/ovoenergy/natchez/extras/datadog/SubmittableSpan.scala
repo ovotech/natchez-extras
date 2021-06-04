@@ -4,7 +4,7 @@ import cats.Applicative
 import cats.effect.Clock
 import cats.effect.kernel.Resource.ExitCase
 import cats.syntax.apply._
-import com.ovoenergy.natchez.extras.datadog.DatadogTags.{SpanType, forThrowable}
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.{forThrowable, SpanType}
 import io.circe.Encoder.encodeString
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
@@ -62,9 +62,9 @@ object SubmittableSpan {
    */
   private def isError(exitCase: ExitCase): Option[Int] =
     exitCase match {
-      case ExitCase.Succeeded => None
-      case ExitCase.Errored(_)  => Some(1)
-      case ExitCase.Canceled  => None
+      case ExitCase.Succeeded  => None
+      case ExitCase.Errored(_) => Some(1)
+      case ExitCase.Canceled   => None
     }
 
   /**
@@ -74,7 +74,7 @@ object SubmittableSpan {
   private def exitTags(exitCase: ExitCase): Map[String, String] =
     exitCase match {
       case ExitCase.Errored(e) => forThrowable(e).view.mapValues(_.value.toString).toMap
-      case _                 => Map.empty
+      case _                   => Map.empty
     }
 
   /**

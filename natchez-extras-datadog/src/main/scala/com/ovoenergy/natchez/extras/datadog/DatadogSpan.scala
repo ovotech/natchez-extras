@@ -26,7 +26,7 @@ case class DatadogSpan[F[_]: Async](
   ids: Ref[F, SpanIdentifiers],
   start: Long,
   queue: Queue[F, SubmittableSpan],
-  meta: Ref[F, Map[String, TraceValue]],
+  meta: Ref[F, Map[String, TraceValue]]
 ) extends Span[F] {
 
   def updateTraceToken(fields: Map[String, TraceValue]): F[Unit] =
@@ -104,14 +104,13 @@ object DatadogSpan {
       for {
         start <- Clock[F].realTime
         meta  <- Ref.of(meta)
-      } yield
-        DatadogSpan(
-          names = names,
-          identifiers,
-          start = start.toNanos,
-          queue = queue,
-          meta = meta
-        )
+      } yield DatadogSpan(
+        names = names,
+        identifiers,
+        start = start.toNanos,
+        queue = queue,
+        meta = meta
+      )
     )(complete)
 
   def fromParent[F[_]: Async](name: String, parent: DatadogSpan[F]): Resource[F, DatadogSpan[F]] =

@@ -1,7 +1,7 @@
 package com.ovoenergy.natchez.extras.metrics
 
 import cats.syntax.apply._
-import cats.{Monad, ~>}
+import cats.{~>, Monad}
 import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 
 /**

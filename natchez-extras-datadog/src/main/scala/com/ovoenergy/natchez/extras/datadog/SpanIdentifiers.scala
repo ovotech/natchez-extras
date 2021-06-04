@@ -56,7 +56,7 @@ object SpanIdentifiers {
       longHeader(kernel, "x-trace-id").getOrElseF(randomAbsLong),
       randomAbsLong,
       longHeader(kernel, "x-parent-id").value,
-      stringHeader(kernel, "x-trace-token").getOrElseF(randomUUID),
+      stringHeader(kernel, "x-trace-token").getOrElseF(randomUUID)
     ).mapN(SpanIdentifiers.apply)
   }
 

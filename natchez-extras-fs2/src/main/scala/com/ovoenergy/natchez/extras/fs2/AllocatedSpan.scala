@@ -112,11 +112,10 @@ object AllocatedSpan {
                * to come back from the task we've just submitted
                */
               s <- out.take
-            } yield
-              Traced(
-                value = item,
-                span = createSpan(s, halt.offer(Right(())))
-              )
+            } yield Traced(
+              value = item,
+              span = createSpan(s, halt.offer(Right(())))
+            )
           }
       }
   }

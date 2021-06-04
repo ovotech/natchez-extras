@@ -34,7 +34,7 @@ object Events {
     body: String,
     alertType: AlertType,
     tags: Map[String, String],
-    priority: Priority,
+    priority: Priority
   ) {
     def withTags(tags: Map[String, String]): Event =
       copy(tags = tags)

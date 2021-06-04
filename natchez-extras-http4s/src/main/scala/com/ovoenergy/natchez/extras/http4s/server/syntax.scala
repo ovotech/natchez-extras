@@ -4,6 +4,7 @@ import cats.Monad
 import cats.data.{Kleisli, OptionT}
 
 object syntax {
+
   /**
    * Given an `A => F[Option[B]]` and an `A => F[B]` run the first function
    * and if it returns F[None] then fall through to the second function.

@@ -97,8 +97,7 @@ object Configuration {
     TagReader.message { message =>
       Map(
         name -> StringValue(
-          message
-            .headers
+          message.headers
             .redactSensitive(redact)
             .headers
             .foldMap(_.toString() + "\n")
@@ -159,13 +158,13 @@ object Configuration {
     val static = defaults.toList.foldMap { case (k, v) => const[F](k, v) }
     Configuration[F](
       request = uri[F]("http.url") |+|
-      headers("http.request.headers")(isSensitive) |+|
-      const("span.type", "web") |+|
-      method("http.method") |+|
-      static,
+        headers("http.request.headers")(isSensitive) |+|
+        const("span.type", "web") |+|
+        method("http.method") |+|
+        static,
       response = statusCode[F]("http.status_code") |+|
-      headers("http.response.headers")(isSensitive) |+|
-      ifFailure(entity("http.response.entity"))
+        headers("http.response.headers")(isSensitive) |+|
+        ifFailure(entity("http.response.entity"))
     )
   }
 }

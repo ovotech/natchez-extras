@@ -38,9 +38,9 @@ object Datadog {
   private def takeWhileAvailable[F[_]: Monad, A](queue: Queue[F, A], max: Int): F[Vector[A]] =
     Monad[F].tailRecM[Vector[A], Vector[A]](Vector.empty) { list =>
       queue.tryTake.map {
-        case None => Right(list)
+        case None                                 => Right(list)
         case Some(item) if list.length >= max - 1 => Right(list :+ item)
-        case Some(item) => Left(list :+ item)
+        case Some(item)                           => Left(list :+ item)
       }
     }
 
@@ -56,28 +56,29 @@ object Datadog {
     logger: Logger,
     agentHost: Uri
   ): F[Unit] = {
-      takeWhileAvailable(queue, max = 1000)
+    takeWhileAvailable(queue, max = 1000)
       .flatMap {
         case Vector() =>
           Sync[F].unit
         case traces =>
-          Sync[F].attempt(
-            client.status(
-              Request[F](uri = agentHost.withPath(unsafeFromString("/v0.3/traces")), method = PUT)
-                .withHeaders("X-DataDog-Trace-Count" -> traces.length.toString)
-                withEntity(traces.groupBy(_.traceId).values.toList)
+          Sync[F]
+            .attempt(
+              client.status(
+                Request[F](uri = agentHost.withPath(unsafeFromString("/v0.3/traces")), method = PUT)
+                  .withHeaders("X-DataDog-Trace-Count" -> traces.length.toString)
+                withEntity (traces.groupBy(_.traceId).values.toList)
+              )
             )
-          )
-          .flatMap {
-            case Left(exception) =>
-              Sync[F].delay(logger.warn("Failed to submit to Datadog", exception))
-            case Right(status) if !status.isSuccess =>
-              Sync[F].delay(logger.warn(s"Got $status from Datadog agent"))
-            case Right(status) =>
-              Sync[F].delay(logger.debug(s"Got $status from Datadog agent"))
-          }
+            .flatMap {
+              case Left(exception) =>
+                Sync[F].delay(logger.warn("Failed to submit to Datadog", exception))
+              case Right(status) if !status.isSuccess =>
+                Sync[F].delay(logger.warn(s"Got $status from Datadog agent"))
+              case Right(status) =>
+                Sync[F].delay(logger.debug(s"Got $status from Datadog agent"))
+            }
       }
-        .as(())
+      .as(())
   }
 
   /**

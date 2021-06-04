@@ -30,19 +30,19 @@ object TestEntryPoint {
 
   def apply[F[_]](implicit F: Sync[F]): F[TestEntryPoint[F]] =
     Ref.of[F, List[TestSpan]](List.empty).map { submitted =>
-      def span(myName: String, k: Kernel): Span[F] = new Span[F] {
-        def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(myName), k)
-        def put(fields: (String, TraceValue)*): F[Unit] = F.unit
-        def traceId: F[Option[String]] = F.pure(None)
-        def spanId: F[Option[String]] = F.pure(None)
-        def traceUri: F[Option[URI]] = F.pure(None)
-        def kernel: F[Kernel] = F.pure(k)
-      }
+      def span(myName: String, k: Kernel): Span[F] =
+        new Span[F] {
+          def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(myName), k)
+          def put(fields: (String, TraceValue)*): F[Unit] = F.unit
+          def traceId: F[Option[String]] = F.pure(None)
+          def spanId: F[Option[String]] = F.pure(None)
+          def traceUri: F[Option[URI]] = F.pure(None)
+          def kernel: F[Kernel] = F.pure(k)
+        }
 
       def makeSpan(name: String, parent: Option[String], kernel: Kernel): Resource[F, Span[F]] =
         Resource.makeCase(F.delay(span(name, kernel))) { (_, ec) =>
-          Clock[F]
-            .realTimeInstant
+          Clock[F].realTimeInstant
             .flatMap { time =>
               val span = TestSpan(ec, parent, time, kernel, name)
               submitted.update(_ :+ span)

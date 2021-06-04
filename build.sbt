@@ -23,6 +23,8 @@ ThisBuild / publishMavenStyle := true
 
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
+ThisBuild / scalafmtOnCompile := true
+
 ThisBuild / developers ++= List(
   Developer("tomverran", "Tom Verran", "github@tomverran.co.uk", url("https://github.com/tomverran"))
 )
