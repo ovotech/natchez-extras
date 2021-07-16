@@ -1,12 +1,26 @@
 package com.ovoenergy.natchez.extras.datadog.data
 
-import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong.fromString
+import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong._
+import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import io.circe.syntax._
 
-class UnsignedLongTest extends AnyWordSpec with Matchers {
+class UnsignedLongTest extends AnyWordSpec with Matchers with EitherValues {
 
   "Unsigned long" should {
+
+    val maxValue: UnsignedLong =
+      fromString("18446744073709551615", 10).value
+
+    "Encode JSON values" in {
+      encoder(maxValue).toString shouldBe "18446744073709551615"
+    }
+
+    "Decode JSON values" in {
+      val jsonValue = BigInt("18446744073709551615").asJson
+      decoder.decodeJson(jsonValue) shouldBe Right(maxValue)
+    }
 
     "Decode and Encode decimal-encoded unsigned long values" in {
       fromString("18446744073709551615", 10).map(_.toString(10)) shouldBe Right("18446744073709551615")

@@ -9,10 +9,11 @@ import scala.util.Random
 
 /**
  * Wrapper for unsigned longs to make dealing with them less error prone
+ * I looked at Spire & Guava but both seem like large dependencies for this small class
  */
 case class UnsignedLong(value: Long) extends AnyVal {
-  def toString(radix: Int): String = toUnsignedString(value, radix)
   override def toString: String = toString(radix = 10)
+  def toString(radix: Int): String = toUnsignedString(value, radix)
 }
 
 object UnsignedLong {
@@ -24,8 +25,11 @@ object UnsignedLong {
     Either.catchNonFatal(parseUnsignedLong(string, radix)).bimap(_.getMessage, UnsignedLong.apply)
 
   implicit val decoder: Decoder[UnsignedLong] =
-    Decoder.decodeString.emap(fromString(_, radix = 10))
+    Decoder.decodeBigInt.map(b => UnsignedLong(b.longValue))
 
   implicit val encoder: Encoder[UnsignedLong] =
-    Encoder.encodeString.contramap(_.toString(radix = 10))
+    Encoder.encodeBigInt.contramap { ul =>
+      val bigInt = BigInt(ul.value)
+      if (bigInt < 0) bigInt + (BigInt(1) << 64) else bigInt
+    }
 }
