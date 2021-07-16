@@ -12,6 +12,7 @@ import scala.util.Random
  */
 case class UnsignedLong(value: Long) extends AnyVal {
   def toString(radix: Int): String = toUnsignedString(value, radix)
+  override def toString: String = toString(radix = 10)
 }
 
 object UnsignedLong {
@@ -26,7 +27,5 @@ object UnsignedLong {
     Decoder.decodeString.emap(fromString(_, radix = 10))
 
   implicit val encoder: Encoder[UnsignedLong] =
-    Encoder.encodeString.contramap(_.toString)
+    Encoder.encodeString.contramap(_.toString(radix = 10))
 }
-
-

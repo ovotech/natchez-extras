@@ -4,7 +4,7 @@ import cats.Applicative
 import cats.effect.Clock
 import cats.effect.kernel.Resource.ExitCase
 import cats.syntax.apply._
-import com.ovoenergy.natchez.extras.datadog.DatadogTags.{SpanType, forThrowable}
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.{forThrowable, SpanType}
 import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong
 import io.circe.Encoder.encodeString
 import io.circe.generic.extras.Configuration
@@ -56,7 +56,7 @@ object SubmittableSpan {
    * means the Datadog Agent should always keep all our traces.
    */
   private val spanMetrics: Map[String, Double] =
-    Map("__sampling_priority_v1" -> 2.0d)
+    Map("_sampling_priority_v1" -> 2.0d)
 
   /**
    * Datadog docs: "Set this [error] value to 1 to indicate if an error occurred"
@@ -130,7 +130,7 @@ object SubmittableSpan {
           parentId = ids.parentId,
           error = isError(exitCase),
           `type` = inferSpanType(meta),
-          metrics = spanMetrics,
+          metrics = ids.parentId.fold(spanMetrics)(_ => Map.empty),
           meta = transformTags(meta, exitCase, ids.traceToken)
         )
     }

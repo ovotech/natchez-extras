@@ -10,7 +10,12 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{EitherValues, OptionValues}
 import org.scalatestplus.scalacheck.Checkers
 
-class SpanIdentifiersTest extends AnyWordSpec with Matchers with Checkers with OptionValues with EitherValues {
+class SpanIdentifiersTest
+    extends AnyWordSpec
+    with Matchers
+    with Checkers
+    with OptionValues
+    with EitherValues {
 
   "Span identifiers" should {
 
