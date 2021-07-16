@@ -4,7 +4,8 @@ import cats.Applicative
 import cats.effect.Clock
 import cats.effect.kernel.Resource.ExitCase
 import cats.syntax.apply._
-import com.ovoenergy.natchez.extras.datadog.DatadogTags.{forThrowable, SpanType}
+import com.ovoenergy.natchez.extras.datadog.DatadogTags.{SpanType, forThrowable}
+import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong
 import io.circe.Encoder.encodeString
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
@@ -18,15 +19,15 @@ import natchez.TraceValue.StringValue
  * with tags, hence this being its own file now
  */
 case class SubmittableSpan(
-  traceId: Long,
-  spanId: Long,
+  traceId: UnsignedLong,
+  spanId: UnsignedLong,
   name: String,
   service: String,
   resource: String,
   `type`: Option[SpanType],
   start: Long,
   duration: Long,
-  parentId: Option[Long],
+  parentId: Option[UnsignedLong],
   error: Option[Int],
   meta: Map[String, String],
   metrics: Map[String, Double]
