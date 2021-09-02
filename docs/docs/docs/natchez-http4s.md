@@ -47,7 +47,6 @@ import natchez.{EntryPoint, Span, Trace}
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.blaze.server.BlazeServerBuilder
-import org.http4s.syntax.kleisli._
 import org.http4s.{HttpApp, HttpRoutes}
 
 import scala.concurrent.ExecutionContext.global
@@ -140,7 +139,6 @@ import org.http4s._
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.dsl.io._
 import org.http4s.blaze.server.BlazeServerBuilder
-import org.http4s.syntax.kleisli._
 
 import scala.concurrent.ExecutionContext.global
 
