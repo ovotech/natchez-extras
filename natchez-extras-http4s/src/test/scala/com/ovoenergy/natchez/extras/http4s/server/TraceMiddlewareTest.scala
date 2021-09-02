@@ -11,7 +11,6 @@ import natchez.{EntryPoint, Kernel, Span, TraceValue}
 import org.http4s.Status._
 import org.http4s._
 import org.http4s.headers._
-import org.http4s.syntax.kleisli._
 import org.http4s.syntax.literals._
 import org.scalatest.Inspectors
 import org.scalatest.matchers.should.Matchers
