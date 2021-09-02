@@ -6,7 +6,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 
 <h2 id="installation">Installation</h2>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">natchezExtrasVersion</span> <span class="k">=</span> <span class="s">"5.0.0"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">natchezExtrasVersion</span> <span class="k">=</span> <span class="s">"5.0.1"</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
   <span class="s">"com.ovoenergy"</span> <span class="o">%%</span> <span class="s">"natchez-extras-http4s"</span> <span class="o">%</span> <span class="n">natchezExtrasVersion</span>
@@ -17,7 +17,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 
 <p>These examples assume you’ve installed the following extra dependencies:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">http4sVersion</span> <span class="k">=</span> <span class="s">"1.0.0-M23"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">http4sVersion</span> <span class="k">=</span> <span class="s">"1.0.0-M25"</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
   <span class="s">"org.http4s"</span>    <span class="o">%%</span> <span class="s">"http4s-blaze-server"</span>   <span class="o">%</span> <span class="n">http4sVersion</span><span class="o">,</span>
@@ -39,7 +39,6 @@ and pass it into <code class="language-plaintext highlighter-rouge">TraceMiddlew
 <span class="k">import</span> <span class="nn">org.http4s.blaze.client.BlazeClientBuilder</span>
 <span class="k">import</span> <span class="nn">org.http4s.dsl.Http4sDsl</span>
 <span class="k">import</span> <span class="nn">org.http4s.blaze.server.BlazeServerBuilder</span>
-<span class="k">import</span> <span class="nn">org.http4s.syntax.kleisli._</span>
 <span class="k">import</span> <span class="nn">org.http4s.</span><span class="o">{</span><span class="nc">HttpApp</span><span class="o">,</span> <span class="nc">HttpRoutes</span><span class="o">}</span>
 
 <span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.global</span>
@@ -130,7 +129,6 @@ of un-traced <code class="language-plaintext highlighter-rouge">HttpRoutes[F]</c
 <span class="k">import</span> <span class="nn">org.http4s.blaze.client.BlazeClientBuilder</span>
 <span class="k">import</span> <span class="nn">org.http4s.dsl.io._</span>
 <span class="k">import</span> <span class="nn">org.http4s.blaze.server.BlazeServerBuilder</span>
-<span class="k">import</span> <span class="nn">org.http4s.syntax.kleisli._</span>
 
 <span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.global</span>
 
