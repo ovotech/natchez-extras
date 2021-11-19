@@ -1,6 +1,8 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-ThisBuild / scalaVersion := "2.13.5"
+val scalaVer: String = "2.13.7"
+
+ThisBuild / scalaVersion := scalaVer
 
 ThisBuild / organization := "com.ovoenergy"
 
@@ -41,13 +43,13 @@ val common = Seq(
   git.useGitDescribe := true,
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
+    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
     "org.typelevel" %% "cats-core" % "2.6.1",
-    "org.typelevel" %% "cats-effect" % "3.1.1",
-    "org.scalatest" %% "scalatest" % "3.2.9" % Test,
+    "org.typelevel" %% "cats-effect" % "3.2.9",
+    "org.scalatest" %% "scalatest" % "3.2.10" % Test,
     "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
     "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
-  ),
+  )
 )
 
 lazy val metricsCommon = project
@@ -57,28 +59,50 @@ lazy val metricsCommon = project
 
 val log4catsVersion = "2.1.1"
 val natchezVersion = "0.1.5"
-val http4sVersion = "1.0.0-M25"
+val http4sMilestoneVersion = "1.0.0-M29"
+val http4sStableVersion = "0.23.6"
 val circeVersion = "0.14.1"
-val slf4jVersion = "1.7.30"
-val fs2Version = "3.0.4"
-val doobieVersion = "1.0.0-M5"
+val slf4jVersion = "1.7.32"
+val fs2Version = "3.2.2"
+val doobieVersion = "1.0.0-RC1"
 
-lazy val natchezDatadog = project
+lazy val natchezDatadog = projectMatrix
   .in(file("natchez-extras-datadog"))
+  .customRow(
+    scalaVersions = Seq(scalaVer),
+    axisValues = Seq(Http4sVersion.Milestone, VirtualAxis.jvm),
+    settings = List(
+      name := "natchez-extras-datadog",
+      libraryDependencies ++= Seq(
+        "org.http4s"   %% "http4s-dsl"           % http4sMilestoneVersion,
+        "org.http4s"   %% "http4s-circe"         % http4sMilestoneVersion,
+        "org.http4s"   %% "http4s-client"        % http4sMilestoneVersion
+      )
+    )
+  )
+  .customRow(
+    scalaVersions = Seq(scalaVer),
+    axisValues = Seq(Http4sVersion.Stable, VirtualAxis.jvm),
+    settings = List(
+      name := "natchez-extras-datadog-stable",
+      libraryDependencies ++= Seq(
+        "org.http4s"   %% "http4s-dsl"           % http4sStableVersion,
+        "org.http4s"   %% "http4s-circe"         % http4sStableVersion,
+        "org.http4s"   %% "http4s-client"        % http4sStableVersion
+      )
+    )
+  )
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-extras-datadog"))
+  .settings(common)
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core"         % natchezVersion,
-      "org.http4s"   %% "http4s-dsl"           % http4sVersion,
-      "org.http4s"   %% "http4s-circe"         % http4sVersion,
-      "org.http4s"   %% "http4s-client"        % http4sVersion,
       "io.circe"     %% "circe-core"           % circeVersion,
       "io.circe"     %% "circe-generic"        % circeVersion,
       "io.circe"     %% "circe-generic-extras" % circeVersion,
       "io.circe"     %% "circe-parser"         % circeVersion,
       "org.slf4j"    % "slf4j-api"             % slf4jVersion
-)
+    )
   )
 
 lazy val natchezSlf4j = project
@@ -93,16 +117,36 @@ lazy val natchezSlf4j = project
     )
   )
 
-lazy val natchezHttp4s = project
+lazy val natchezHttp4s = projectMatrix
   .in(file("natchez-extras-http4s"))
-  .dependsOn(natchezTestkit)
+  .customRow(
+    scalaVersions = Seq(scalaVer),
+    axisValues = Seq(Http4sVersion.Milestone, VirtualAxis.jvm),
+    settings = List(
+      name := "natchez-extras-http4s",
+      libraryDependencies ++= Seq(
+        "org.http4s"   %% "http4s-dsl"           % http4sMilestoneVersion,
+        "org.http4s"   %% "http4s-client"        % http4sMilestoneVersion
+      )
+    )
+  )
+  .customRow(
+    scalaVersions = Seq(scalaVer),
+    axisValues = Seq(Http4sVersion.Stable, VirtualAxis.jvm),
+    settings = List(
+      name := "natchez-extras-http4s-stable",
+      libraryDependencies ++= Seq(
+        "org.http4s"   %% "http4s-dsl"           % http4sStableVersion,
+        "org.http4s"   %% "http4s-client"        % http4sStableVersion
+      )
+    )
+  )
+  .configure(_.dependsOn(natchezTestkit))
   .enablePlugins(GitVersioning)
-  .settings(common :+ (name := "natchez-extras-http4s"))
+  .settings(common)
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core"  % natchezVersion,
-      "org.http4s"   %% "http4s-client" % http4sVersion,
-      "org.http4s"   %% "http4s-dsl"    % http4sVersion
+      "org.tpolecat" %% "natchez-core"  % natchezVersion
     )
   )
 
@@ -149,7 +193,7 @@ lazy val natchezDoobie = project
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "org.tpolecat" %% "doobie-core"  % doobieVersion,
       "org.tpolecat" %% "doobie-h2"    % doobieVersion % Test
-    ),
+    )
   )
 
 lazy val natchezCombine = project
@@ -173,17 +217,23 @@ lazy val datadogMetrics = project
 
 val logbackVersion = "1.2.3"
 
+lazy val datadogStable = natchezDatadog.finder(Http4sVersion.Stable, VirtualAxis.jvm)(scalaVer)
+lazy val datadogMilestone = natchezDatadog.finder(Http4sVersion.Milestone, VirtualAxis.jvm)(scalaVer)
+
+lazy val natchezHttp4sStable = natchezHttp4s.finder(Http4sVersion.Stable, VirtualAxis.jvm)(scalaVer)
+lazy val natchezHttp4sMilestone = natchezHttp4s.finder(Http4sVersion.Milestone, VirtualAxis.jvm)(scalaVer)
+
 lazy val docs = project
   .in(file("docs"))
   .enablePlugins(MicrositesPlugin)
   .dependsOn(
     datadogMetrics,
     natchezDoobie,
-    natchezDatadog,
+    datadogStable,
     natchezCombine,
     natchezSlf4j,
     natchezFs2,
-    natchezHttp4s,
+    natchezHttp4sStable,
     natchezLog4Cats
   )
   .settings(
@@ -196,13 +246,13 @@ lazy val docs = project
     mdocVariables := Map(
       "VERSION" -> version.value.takeWhile(_ != '-'),
       "LOG4CATSVERSION" -> log4catsVersion,
-      "HTTP4SVERSION" -> http4sVersion
+      "HTTP4SVERSION" -> http4sStableVersion
     ),
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-blaze-client" % http4sVersion,
-      "org.http4s" %% "http4s-blaze-server" % http4sVersion,
+      "org.http4s" %% "http4s-blaze-client" % http4sStableVersion,
+      "org.http4s" %% "http4s-blaze-server" % http4sStableVersion,
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
       "org.typelevel" %% "log4cats-slf4j" % log4catsVersion
     )
@@ -217,12 +267,14 @@ lazy val root = (project in file("."))
   .aggregate(
     metricsCommon,
     datadogMetrics,
-    natchezDatadog,
+    datadogMilestone,
+    datadogStable,
     natchezCombine,
     natchezSlf4j,
     natchezDoobie,
     natchezLog4Cats,
-    natchezHttp4s,
+    natchezHttp4sMilestone,
+    natchezHttp4sStable,
     natchezFs2,
     natchezTestkit
   )

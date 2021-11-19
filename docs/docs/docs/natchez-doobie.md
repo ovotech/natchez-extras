@@ -39,8 +39,6 @@ import doobie.util.transactor.Transactor
 import natchez.{EntryPoint, Span}
 import org.http4s.blaze.client.BlazeClientBuilder
 
-import scala.concurrent.ExecutionContext.global
-
 object NatchezDoobie extends IOApp {
 
   type TracedIO[A] = Kleisli[IO, Span[IO], A]
@@ -50,7 +48,7 @@ object NatchezDoobie extends IOApp {
    */
   val datadog: Resource[IO, EntryPoint[IO]] =
     for {
-      httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
+      httpClient <- BlazeClientBuilder[IO].withDefaultSslContext.resource
       entryPoint <- Datadog.entryPoint(httpClient, "example-database", "default-resource")
     } yield entryPoint
 

@@ -15,7 +15,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "natchez-extras-http4s" % natchezExtrasVersion
+  "com.ovoenergy" %% "natchez-extras-http4s-stable" % natchezExtrasVersion
 )
 ```
 
@@ -49,7 +49,6 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.{HttpApp, HttpRoutes}
 
-import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 
 object NatchezHttp4s extends IOApp {
@@ -78,7 +77,7 @@ object NatchezHttp4s extends IOApp {
    */
   val datadog: Resource[IO, EntryPoint[IO]] =
     for {
-      httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
+      httpClient <- BlazeClientBuilder[IO].withDefaultSslContext.resource
       entryPoint <- Datadog.entryPoint(httpClient, "example-http-api", "default-resource")
     } yield entryPoint
 
@@ -103,7 +102,7 @@ object NatchezHttp4s extends IOApp {
       /**
        * We can then serve the routes as normal
        */
-      BlazeServerBuilder[IO](global)
+      BlazeServerBuilder[IO]
         .bindHttp(8080, "0.0.0.0")
         .withHttpApp(routes)
         .withoutBanner
@@ -140,8 +139,6 @@ import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.dsl.io._
 import org.http4s.blaze.server.BlazeServerBuilder
 
-import scala.concurrent.ExecutionContext.global
-
 object Main extends IOApp {
   
   type TraceIO[A] = Kleisli[IO, Span[IO], A]
@@ -149,7 +146,7 @@ object Main extends IOApp {
 
   val datadog: Resource[IO, EntryPoint[IO]] =
     for {
-      httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
+      httpClient <- BlazeClientBuilder[IO].withDefaultSslContext.resource
       entryPoint <- Datadog.entryPoint(httpClient, "example-http-api", "default-resource")
     } yield entryPoint
 
@@ -165,7 +162,7 @@ object Main extends IOApp {
       val combinedRoutes: HttpApp[IO] =
         healthcheck.fallthroughTo(TraceMiddleware(entryPoint, conf)(application.orNotFound))
     
-      BlazeServerBuilder[IO](global)
+      BlazeServerBuilder[IO]
         .withHttpApp(combinedRoutes)
         .bindHttp(port = 8080)
         .serve
