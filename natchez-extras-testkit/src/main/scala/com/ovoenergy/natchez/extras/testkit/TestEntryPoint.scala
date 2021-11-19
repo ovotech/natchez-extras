@@ -4,7 +4,7 @@ import cats.effect.kernel.Resource.ExitCase
 import cats.effect.{Clock, Ref, Resource, Sync}
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.TestSpan
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.SubmittedSpan
 import natchez.{EntryPoint, Kernel, Span, TraceValue}
 
 import java.net.URI
@@ -15,42 +15,50 @@ import java.time.Instant
  * and additionally lets you see all the completed spans
  */
 trait TestEntryPoint[F[_]] extends EntryPoint[F] {
-  def spans: F[List[TestSpan]]
+  def spans: F[List[SubmittedSpan]]
 }
 
 object TestEntryPoint {
 
-  case class TestSpan(
-    exitCase: ExitCase,
+  case class SubmittedSpan(
+    tags: List[(String, TraceValue)],
     parent: Option[String],
     completed: Instant,
+    exitCase: ExitCase,
     kernel: Kernel,
     name: String
   )
 
-  def apply[F[_]](implicit F: Sync[F]): F[TestEntryPoint[F]] =
-    Ref.of[F, List[TestSpan]](List.empty).map { submitted =>
-      def span(myName: String, k: Kernel): Span[F] =
-        new Span[F] {
-          def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(myName), k)
-          def put(fields: (String, TraceValue)*): F[Unit] = F.unit
-          def traceId: F[Option[String]] = F.pure(None)
-          def spanId: F[Option[String]] = F.pure(None)
-          def traceUri: F[Option[URI]] = F.pure(None)
-          def kernel: F[Kernel] = F.pure(k)
-        }
+  private trait TestSpan[F[_]] extends Span[F] {
+    def tags: F[List[(String, TraceValue)]]
+  }
 
-      def makeSpan(name: String, parent: Option[String], kernel: Kernel): Resource[F, Span[F]] =
-        Resource.makeCase(F.delay(span(name, kernel))) { (_, ec) =>
-          Clock[F].realTimeInstant
-            .flatMap { time =>
-              val span = TestSpan(ec, parent, time, kernel, name)
-              submitted.update(_ :+ span)
+  def apply[F[_]](implicit F: Sync[F]): F[TestEntryPoint[F]] =
+    Ref.of[F, List[SubmittedSpan]](List.empty).map { submitted =>
+      def makeSpan(name: String, parent: Option[String], kern: Kernel): Resource[F, Span[F]] =
+        Resource.makeCase(
+          Ref.of[F, List[(String, TraceValue)]](List.empty).map { ref =>
+            new TestSpan[F] {
+              def tags: F[List[(String, TraceValue)]] = ref.get
+              def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(name), kern)
+              def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields)
+              def traceId: F[Option[String]] = F.pure(None)
+              def spanId: F[Option[String]] = F.pure(None)
+              def traceUri: F[Option[URI]] = F.pure(None)
+              def kernel: F[Kernel] = F.pure(kern)
             }
+          }
+        ) { (span, ec) =>
+          for {
+            tags <- span.tags
+            time <- Clock[F].realTimeInstant
+            testSpan = SubmittedSpan(tags, parent, time, ec, kern, name)
+            _ <- submitted.update(_ :+ testSpan)
+          } yield ()
         }
 
       new TestEntryPoint[F] {
-        def spans: F[List[TestSpan]] = submitted.get
+        def spans: F[List[SubmittedSpan]] = submitted.get
         def root(name: String): Resource[F, Span[F]] = makeSpan(name, None, Kernel(Map.empty))
         def continue(name: String, k: Kernel): Resource[F, Span[F]] = makeSpan(name, None, k)
         def continueOrElseRoot(name: String, k: Kernel): Resource[F, Span[F]] = makeSpan(name, None, k)

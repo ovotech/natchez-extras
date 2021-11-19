@@ -5,7 +5,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.ovoenergy.natchez.extras.http4s.Configuration
 import com.ovoenergy.natchez.extras.testkit.TestEntryPoint
-import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.TestSpan
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.SubmittedSpan
 import natchez.{Kernel, Span}
 import org.http4s.{Header, Request}
 import org.scalatest.Inspectors
@@ -41,7 +41,7 @@ class TracedClientTest extends AnyWordSpec with Matchers {
 
     "Create a new span for HTTP requests" in {
 
-      val spans: List[TestSpan] = (
+      val spans: List[SubmittedSpan] = (
         for {
           client <- TestClient[IO]
           ep     <- TestEntryPoint[IO]
