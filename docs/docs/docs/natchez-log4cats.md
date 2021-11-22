@@ -45,8 +45,6 @@ import natchez.{EntryPoint, Span}
 import org.http4s.blaze.client.BlazeClientBuilder
 import cats.syntax.functor._
 
-import scala.concurrent.ExecutionContext.global
-
 object NatchezLog4Cats extends IOApp {
 
   type TracedIO[A] = Kleisli[IO, Span[IO], A]
@@ -56,7 +54,7 @@ object NatchezLog4Cats extends IOApp {
    */
   val datadog: Resource[IO, EntryPoint[IO]] =
     for {
-      httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
+      httpClient <- BlazeClientBuilder[IO].withDefaultSslContext.resource
       entryPoint <- Datadog.entryPoint(httpClient, "example-service", "default-resource")
     } yield entryPoint
 

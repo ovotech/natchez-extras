@@ -34,10 +34,10 @@ val http4sVersion = "@HTTP4SVERSION@"
 val natchezExtrasVersion = "@VERSION@"
 
 libraryDependencies ++= Seq(
-  "org.http4s"    %% "http4s-blaze-client"    % http4sVersion,
-  "com.ovoenergy" %% "natchez-extras-datadog" % natchezExtrasVersion,
-  "com.ovoenergy" %% "natchez-extras-combine" % natchezExtrasVersion,
-  "com.ovoenergy" %% "natchez-extras-slf4j"   % natchezExtrasVersion
+  "org.http4s"    %% "http4s-blaze-client"           % http4sVersion,
+  "com.ovoenergy" %% "natchez-extras-datadog-stable" % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-combine"        % natchezExtrasVersion,
+  "com.ovoenergy" %% "natchez-extras-slf4j"          % natchezExtrasVersion
 )
 ```
 
@@ -51,9 +51,6 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.ExitCode
 import cats.effect.IOApp
-
-
-import scala.concurrent.ExecutionContext.global
 
 object MyTracedApp extends IOApp {
 
@@ -69,7 +66,7 @@ object MyTracedApp extends IOApp {
    */
   val datadog: Resource[IO, EntryPoint[IO]] =
     for {
-      httpClient <- BlazeClientBuilder[IO](global).withDefaultSslContext.resource
+      httpClient <- BlazeClientBuilder[IO].withDefaultSslContext.resource
       entryPoint <- Datadog.entryPoint(httpClient, "service", "resource")
     } yield entryPoint
 
