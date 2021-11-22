@@ -6,10 +6,10 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 
 <h2 id="installation">Installation</h2>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">natchezExtrasVersion</span> <span class="k">=</span> <span class="s">"5.0.1"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">natchezExtrasVersion</span> <span class="k">=</span> <span class="s">"5.0.2"</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
-  <span class="s">"com.ovoenergy"</span> <span class="o">%%</span> <span class="s">"natchez-extras-http4s"</span> <span class="o">%</span> <span class="n">natchezExtrasVersion</span>
+  <span class="s">"com.ovoenergy"</span> <span class="o">%%</span> <span class="s">"natchez-extras-http4s-stable"</span> <span class="o">%</span> <span class="n">natchezExtrasVersion</span>
 <span class="o">)</span>
 </code></pre></div></div>
 
@@ -17,7 +17,7 @@ When it is merged this module will continue to exist but as a wrapper that adds 
 
 <p>These examples assume you’ve installed the following extra dependencies:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">http4sVersion</span> <span class="k">=</span> <span class="s">"1.0.0-M25"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">http4sVersion</span> <span class="k">=</span> <span class="s">"0.23.6"</span>
 
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
   <span class="s">"org.http4s"</span>    <span class="o">%%</span> <span class="s">"http4s-blaze-server"</span>   <span class="o">%</span> <span class="n">http4sVersion</span><span class="o">,</span>
@@ -41,7 +41,6 @@ and pass it into <code class="language-plaintext highlighter-rouge">TraceMiddlew
 <span class="k">import</span> <span class="nn">org.http4s.blaze.server.BlazeServerBuilder</span>
 <span class="k">import</span> <span class="nn">org.http4s.</span><span class="o">{</span><span class="nc">HttpApp</span><span class="o">,</span> <span class="nc">HttpRoutes</span><span class="o">}</span>
 
-<span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.global</span>
 <span class="k">import</span> <span class="nn">scala.concurrent.duration._</span>
 
 <span class="k">object</span> <span class="nc">NatchezHttp4s</span> <span class="k">extends</span> <span class="nc">IOApp</span> <span class="o">{</span>
@@ -70,7 +69,7 @@ and pass it into <code class="language-plaintext highlighter-rouge">TraceMiddlew
    */</span>
   <span class="k">val</span> <span class="nv">datadog</span><span class="k">:</span> <span class="kt">Resource</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">EntryPoint</span><span class="o">[</span><span class="kt">IO</span><span class="o">]]</span> <span class="k">=</span>
     <span class="k">for</span> <span class="o">{</span>
-      <span class="n">httpClient</span> <span class="k">&lt;-</span> <span class="nc">BlazeClientBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">global</span><span class="o">).</span><span class="py">withDefaultSslContext</span><span class="o">.</span><span class="py">resource</span>
+      <span class="n">httpClient</span> <span class="k">&lt;-</span> <span class="nc">BlazeClientBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="py">withDefaultSslContext</span><span class="o">.</span><span class="py">resource</span>
       <span class="n">entryPoint</span> <span class="k">&lt;-</span> <span class="nv">Datadog</span><span class="o">.</span><span class="py">entryPoint</span><span class="o">(</span><span class="n">httpClient</span><span class="o">,</span> <span class="s">"example-http-api"</span><span class="o">,</span> <span class="s">"default-resource"</span><span class="o">)</span>
     <span class="o">}</span> <span class="k">yield</span> <span class="n">entryPoint</span>
 
@@ -95,7 +94,7 @@ and pass it into <code class="language-plaintext highlighter-rouge">TraceMiddlew
       <span class="cm">/**
        * We can then serve the routes as normal
        */</span>
-      <span class="nc">BlazeServerBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">global</span><span class="o">)</span>
+      <span class="nc">BlazeServerBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
         <span class="o">.</span><span class="py">bindHttp</span><span class="o">(</span><span class="mi">8080</span><span class="o">,</span> <span class="s">"0.0.0.0"</span><span class="o">)</span>
         <span class="o">.</span><span class="py">withHttpApp</span><span class="o">(</span><span class="n">routes</span><span class="o">)</span>
         <span class="o">.</span><span class="py">withoutBanner</span>
@@ -130,8 +129,6 @@ of un-traced <code class="language-plaintext highlighter-rouge">HttpRoutes[F]</c
 <span class="k">import</span> <span class="nn">org.http4s.dsl.io._</span>
 <span class="k">import</span> <span class="nn">org.http4s.blaze.server.BlazeServerBuilder</span>
 
-<span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.global</span>
-
 <span class="k">object</span> <span class="nc">Main</span> <span class="k">extends</span> <span class="nc">IOApp</span> <span class="o">{</span>
   
   <span class="k">type</span> <span class="kt">TraceIO</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Kleisli</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">Span</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>, <span class="kt">A</span><span class="o">]</span>
@@ -139,7 +136,7 @@ of un-traced <code class="language-plaintext highlighter-rouge">HttpRoutes[F]</c
 
   <span class="k">val</span> <span class="nv">datadog</span><span class="k">:</span> <span class="kt">Resource</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">EntryPoint</span><span class="o">[</span><span class="kt">IO</span><span class="o">]]</span> <span class="k">=</span>
     <span class="k">for</span> <span class="o">{</span>
-      <span class="n">httpClient</span> <span class="k">&lt;-</span> <span class="nc">BlazeClientBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">global</span><span class="o">).</span><span class="py">withDefaultSslContext</span><span class="o">.</span><span class="py">resource</span>
+      <span class="n">httpClient</span> <span class="k">&lt;-</span> <span class="nc">BlazeClientBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="py">withDefaultSslContext</span><span class="o">.</span><span class="py">resource</span>
       <span class="n">entryPoint</span> <span class="k">&lt;-</span> <span class="nv">Datadog</span><span class="o">.</span><span class="py">entryPoint</span><span class="o">(</span><span class="n">httpClient</span><span class="o">,</span> <span class="s">"example-http-api"</span><span class="o">,</span> <span class="s">"default-resource"</span><span class="o">)</span>
     <span class="o">}</span> <span class="k">yield</span> <span class="n">entryPoint</span>
 
@@ -155,7 +152,7 @@ of un-traced <code class="language-plaintext highlighter-rouge">HttpRoutes[F]</c
       <span class="k">val</span> <span class="nv">combinedRoutes</span><span class="k">:</span> <span class="kt">HttpApp</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">=</span>
         <span class="nv">healthcheck</span><span class="o">.</span><span class="py">fallthroughTo</span><span class="o">(</span><span class="nc">TraceMiddleware</span><span class="o">(</span><span class="n">entryPoint</span><span class="o">,</span> <span class="n">conf</span><span class="o">)(</span><span class="nv">application</span><span class="o">.</span><span class="py">orNotFound</span><span class="o">))</span>
     
-      <span class="nc">BlazeServerBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">global</span><span class="o">)</span>
+      <span class="nc">BlazeServerBuilder</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
         <span class="o">.</span><span class="py">withHttpApp</span><span class="o">(</span><span class="n">combinedRoutes</span><span class="o">)</span>
         <span class="o">.</span><span class="py">bindHttp</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
         <span class="o">.</span><span class="py">serve</span>
