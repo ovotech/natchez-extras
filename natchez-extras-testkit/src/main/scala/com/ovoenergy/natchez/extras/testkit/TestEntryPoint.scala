@@ -40,7 +40,7 @@ object TestEntryPoint {
           Ref.of[F, List[(String, TraceValue)]](List.empty).map { ref =>
             new TestSpan[F] {
               def tags: F[List[(String, TraceValue)]] = ref.get
-              def span(name: String): Resource[F, Span[F]] = makeSpan(name, Some(name), kern)
+              def span(newName: String): Resource[F, Span[F]] = makeSpan(newName, Some(name), kern)
               def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields)
               def traceId: F[Option[String]] = F.pure(None)
               def spanId: F[Option[String]] = F.pure(None)

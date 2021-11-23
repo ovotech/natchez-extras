@@ -1,10 +1,14 @@
 package com.ovoenergy.natchez.extras.testkit
 
 import cats.effect.IO
+import cats.effect.kernel.Resource.ExitCase.Succeeded
 import cats.effect.unsafe.implicits._
+import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.CompletedSpan
 import natchez.{Kernel, TraceValue}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+
+import java.time.Instant.EPOCH
 
 class TestEntryPointTest extends AnyWordSpec with Matchers {
 
@@ -23,9 +27,23 @@ class TestEntryPointTest extends AnyWordSpec with Matchers {
           } >> ep.spans
         }
         .map { results =>
-          results.map(s => s.name -> s.tags) shouldBe List(
-            "sub-span" -> List("tag" -> ("sub-span": TraceValue)),
-            "root-span" -> List("tag" -> ("root-span": TraceValue))
+          results.map(_.copy(completed = EPOCH)) shouldBe List(
+            CompletedSpan(
+              tags = List("tag" -> ("sub-span": TraceValue)),
+              parent = Some("root-span"),
+              completed = EPOCH,
+              exitCase = Succeeded,
+              kernel = testKernel,
+              name = "sub-span"
+            ),
+            CompletedSpan(
+              tags = List("tag" -> ("root-span": TraceValue)),
+              parent = None,
+              completed = EPOCH,
+              exitCase = Succeeded,
+              kernel = testKernel,
+              name = "root-span"
+            )
           )
         }
         .unsafeRunSync()

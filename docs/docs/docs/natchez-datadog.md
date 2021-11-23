@@ -13,8 +13,8 @@ Once you've got the `EntryPoint` you can then use Natchez as described in [its R
 Depending on how you're using the Datadog agent you may need to set some configuration values
 to enable the APM. Details can be found [on the Datadog website](https://docs.datadoghq.com/tracing/send_traces/)
 
-`natchez-extras-datadog` currently expects the agent to be reachable over HTTP at `http://localhost:8126` - if you're running the 
-agent in a docker container this should typically be the case.
+By default `natchez-extras-datadog` currently expects the agent to be reachable over HTTP at `http://localhost:8126`. 
+You can choose a different URL by setting the `agentHost` parameter when constructing the `EntryPoint`.
 
 ## Installation
 
