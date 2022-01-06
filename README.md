@@ -57,7 +57,7 @@ define, for example, a `syntax` object without affecting anything else.
 
 This module allows you to send Metrics and Events to the Datadog agent over UDP with FS2.
 
-### [Datadog](https://ovotech.github.io/natchez-extras/docs/natchez-datadog-stable.html)
+### [Datadog](https://ovotech.github.io/natchez-extras/docs/natchez-datadog.html)
 ![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-datadog-stable/latest.svg)
 
 This module integrates Natchez with Datadog. It uses HTTP4s and does not depend on the Java Datadog library.
@@ -67,7 +67,7 @@ This module integrates Natchez with Datadog. It uses HTTP4s and does not depend 
 
 This module integrates Natchez with Doobie so you can trace which DB queries are being run and for how long.
 
-### [HTTP4S](https://ovotech.github.io/natchez-extras/docs/natchez-http4s-stable.html)
+### [HTTP4S](https://ovotech.github.io/natchez-extras/docs/natchez-http4s.html)
 ![latest version](https://index.scala-lang.org/ovotech/natchez-extras/natchez-extras-http4s-stable/latest.svg)
 
 This module integrates Natchez with the HTTP4S client and provides middleware to trace both inbound and outbound HTTP requests.
