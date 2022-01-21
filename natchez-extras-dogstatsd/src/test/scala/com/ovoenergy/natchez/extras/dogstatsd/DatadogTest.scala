@@ -63,7 +63,9 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
       check(
         Prop.forAll(Arbitrary.arbLong.arbitrary) { l =>
           makeString(serialiseCounter(Metric("foo", Map.empty), l)) == s"foo:$l|c" &&
-          makeString(serialiseHistogram(Metric("foo", Map.empty), l)) == s"foo:$l|h|@1.0"
+          makeString(serialiseHistogram(Metric("foo", Map.empty), l)) == s"foo:$l|h|@1.0" &&
+          makeString(serialiseGauge(Metric("foo", Map.empty), l)) == s"foo:$l|g" &&
+          makeString(serialiseDistribution(Metric("foo", Map.empty), l)) == s"foo:$l|d|@1.0"
         }
       )
     }
@@ -74,7 +76,9 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
           val tags = rawTags.filter { case (k, v) => s"$k$v".length <= 200 }.take(20)
           val exp = tags.map { case (k, v) => s"${filterName(k)}:${filterTagValue(v)}" }.mkString(",")
           Claim(makeString(serialiseHistogram(Metric("foo", tags), 1)) == s"foo:1|h|@1.0|#$exp") &&
-          Claim(makeString(serialiseCounter(Metric("foo", tags), 1)) == s"foo:1|c|#$exp")
+          Claim(makeString(serialiseCounter(Metric("foo", tags), 1)) == s"foo:1|c|#$exp") &&
+          Claim(makeString(serialiseGauge(Metric("foo", tags), 1)) == s"foo:1|g|#$exp") &&
+          Claim(makeString(serialiseDistribution(Metric("foo", tags), 1)) == s"foo:1|d|@1.0|#$exp")
         }
       )
     }
@@ -84,7 +88,9 @@ class DatadogTest extends AnyWordSpec with Matchers with Checkers {
         Prop.forAllNoShrink(string, stringTags) {
           case (name, tags) =>
             Claim(serialiseHistogram(Metric(name, tags), 1).length < 65535) &&
-            Claim(serialiseCounter(Metric(name, tags), 1).length < 65535)
+            Claim(serialiseCounter(Metric(name, tags), 1).length < 65535) &&
+            Claim(serialiseGauge(Metric(name, tags), 1).length < 65535) &&
+            Claim(serialiseDistribution(Metric(name, tags), 1).length < 65535)
         }
       )
     }
