@@ -11,6 +11,8 @@ import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 trait Metrics[F[_]] {
   def counter(metric: Metric)(value: Long): F[Unit]
   def histogram(metric: Metric)(value: Long): F[Unit]
+  def gauge(metric: Metric)(value: Long): F[Unit]
+  def distribution(metric: Metric)(value: Long): F[Unit]
 }
 
 object Metrics {
@@ -27,6 +29,10 @@ object Metrics {
         nt(metrics.counter(metric)(value))
       def histogram(metric: Metric)(value: Long): G[Unit] =
         nt(metrics.histogram(metric)(value))
+      def gauge(metric: Metric)(value: Long): G[Unit] =
+        nt(metrics.gauge(metric)(value))
+      def distribution(metric: Metric)(value: Long): G[Unit] =
+        nt(metrics.gauge(metric)(value))
     }
 
   /**
@@ -41,6 +47,14 @@ object Metrics {
         }
       def histogram(m: Metric)(value: Long): F[Unit] =
         (a.histogram(m)(value), b.histogram(m)(value)).mapN {
+          case ((), ()) => ()
+        }
+      override def gauge(m: Metric)(value: Long): F[Unit] =
+        (a.gauge(m)(value), b.gauge(m)(value)).mapN {
+          case ((), ()) => ()
+        }
+      override def distribution(m: Metric)(value: Long): F[Unit] =
+        (a.gauge(m)(value), b.gauge(m)(value)).mapN {
           case ((), ()) => ()
         }
     }
