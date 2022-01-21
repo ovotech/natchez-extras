@@ -89,7 +89,7 @@ jobs:
           command: |
             set -e
             tags=`git describe --tags`
-            sbt ';set version in ThisBuild := "'${tags}'"; test; publishSigned; sonatypeBundleRelease'
+            sbt ';set version in ThisBuild := "'${tags}'"; +test; +publishSigned; +sonatypeBundleRelease'
       - *cache_save
 
   test:
@@ -100,7 +100,7 @@ jobs:
       - *install_sbt
       - run:
           name: Test
-          command: sbt test
+          command: sbt +test
       - *cache_save
 
 workflows:

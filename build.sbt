@@ -1,6 +1,7 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
 val scalaVer: String = "2.13.7"
+val scala3Ver: String = "3.1.0"
 
 ThisBuild / scalaVersion := scalaVer
 
@@ -42,14 +43,20 @@ val common = Seq(
   Test / fork := true,
   git.useGitDescribe := true,
   libraryDependencies ++= Seq(
-    compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
     "org.typelevel" %% "cats-core" % "2.6.1",
     "org.typelevel" %% "cats-effect" % "3.2.9",
     "org.scalatest" %% "scalatest" % "3.2.10" % Test,
     "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
-    "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
-  )
+    "org.scalatestplus" %% "scalacheck-1-15" % "3.2.10.0" % Test
+  ) ++
+    (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, _)) =>
+        Seq(
+          compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+          compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
+        )
+      case _            => Nil
+    })
 )
 
 lazy val metricsCommon = project
@@ -166,6 +173,7 @@ lazy val natchezTestkit = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-testkit"))
   .settings(
+    crossScalaVersions := Seq(scalaVer, scala3Ver),
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion
     )
@@ -177,8 +185,9 @@ lazy val natchezFs2 = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
+    crossScalaVersions := Seq(scalaVer, scala3Ver),
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "2.3.2",
+      "org.typelevel" %% "kittens" % "3.0.0-M1",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
