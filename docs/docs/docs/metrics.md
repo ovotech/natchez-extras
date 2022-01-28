@@ -69,8 +69,8 @@ object MetricApp extends IOApp {
   val exampleGauge: Metric =
     Metric(name = "my_gauge", tags = Map.empty)
     
-  val exampleGauge: Metric =
-    Metric(name = "my_gauge", tags = Map.empty)
+  val exampleDistribution: Metric =
+    Metric(name = "my_distribution", tags = Map.empty)
     
   def run(args: List[String]): IO[ExitCode] =
     Dogstatsd[IO](metricConfig).use { metrics: Metrics[IO] with Events[IO] =>
@@ -79,7 +79,7 @@ object MetricApp extends IOApp {
         _ <- metrics.histogram(exampleHistogram)(1)
         _ <- metrics.event(exampleEvent)
         _ <- metrics.gauge(exampleGauge)(1)
-        _ <- metrics.distribution(exampleGauge)(1)
+        _ <- metrics.distribution(exampleDistribution)(1)
       } yield ExitCode.Success
     }
 }

@@ -2,6 +2,7 @@ package com.ovoenergy.natchez.extras.metrics
 
 import cats.syntax.apply._
 import cats.{~>, Monad}
+import cats.syntax.functor._
 import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 
 /**
@@ -42,20 +43,12 @@ object Metrics {
   def combine[F[_]: Monad](a: Metrics[F], b: Metrics[F]): Metrics[F] =
     new Metrics[F] {
       def counter(m: Metric)(value: Long): F[Unit] =
-        (a.counter(m)(value), b.counter(m)(value)).mapN {
-          case ((), ()) => ()
-        }
+        (a.counter(m)(value), b.counter(m)(value)).tupled.void
       def histogram(m: Metric)(value: Long): F[Unit] =
-        (a.histogram(m)(value), b.histogram(m)(value)).mapN {
-          case ((), ()) => ()
-        }
-      override def gauge(m: Metric)(value: Long): F[Unit] =
-        (a.gauge(m)(value), b.gauge(m)(value)).mapN {
-          case ((), ()) => ()
-        }
-      override def distribution(m: Metric)(value: Long): F[Unit] =
-        (a.gauge(m)(value), b.gauge(m)(value)).mapN {
-          case ((), ()) => ()
-        }
+        (a.histogram(m)(value), b.histogram(m)(value)).tupled.void
+      def gauge(m: Metric)(value: Long): F[Unit] =
+        (a.gauge(m)(value), b.gauge(m)(value)).tupled.void
+      def distribution(m: Metric)(value: Long): F[Unit] =
+        (a.gauge(m)(value), b.gauge(m)(value)).tupled.void
     }
 }
