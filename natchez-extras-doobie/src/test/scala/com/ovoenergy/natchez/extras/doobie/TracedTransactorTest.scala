@@ -1,20 +1,18 @@
 package com.ovoenergy.natchez.extras.doobie
 
-import cats.effect.unsafe.implicits._
-import cats.effect.{IO, Ref, Resource}
+import cats.effect.{IO, Ref, Resource, SyncIO}
 import cats.syntax.flatMap._
 import com.ovoenergy.natchez.extras.doobie.TracedTransactor.Traced
 import doobie.h2.H2Transactor.newH2Transactor
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import munit.CatsEffectSuite
 import natchez.{Kernel, Span, TraceValue}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 import java.net.URI
-import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.global
 
-class TracedTransactorTest extends AnyWordSpec with Matchers {
+class TracedTransactorTest extends CatsEffectSuite {
 
   case class SpanData(
     name: String,
@@ -40,27 +38,24 @@ class TracedTransactorTest extends AnyWordSpec with Matchers {
       a.run(spanMock).attempt.flatMap(_ => sps.get)
     }
 
-  val db: Resource[IO, Transactor[Traced[IO, *]]] =
-    newH2Transactor[IO]("jdbc:h2:mem:test", "foo", "bar", ExecutionContext.global)
-      .map(TracedTransactor("test", _))
+  val database: SyncIO[FunFixture[Transactor[Traced[IO, *]]]] = ResourceFixture(
+    newH2Transactor[IO]("jdbc:h2:mem:test", "foo", "bar", global).map(TracedTransactor("test", _))
+  )
 
-  "TracedTransactor" should {
+  database.test("Trace queries") { db =>
+    assertIO(
+      run(sql"SELECT 1 WHERE true = ${true: Boolean}".query[Int].unique.transact(db)).map(_.last),
+      SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map("span.type" -> "db"))
+    )
+  }
 
-    "Trace queries" in {
-      val query = sql"""
-                       |SELECT 1
-                       |WHERE true = ${true: Boolean}
-      """.stripMargin.query[Int].unique
-      val res = db.use(d => run(query.transact(d))).unsafeRunSync()
-      res.last shouldBe SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map("span.type" -> "db"))
-    }
-
-    "Trace updates" in {
-      case class Test(name: String, age: Int)
-      val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
-      val insert = sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
-      val res = db.use(d => run((create >> insert).transact(d))).unsafeRunSync()
-      res.last shouldBe SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
-    }
+  database.test("Trace updates") { db =>
+    case class Test(name: String, age: Int)
+    val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
+    val insert = sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
+    assertIO(
+      run((create >> insert).transact(db)).map(_.last),
+      SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
+    )
   }
 }

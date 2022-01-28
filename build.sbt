@@ -46,9 +46,10 @@ val common = Seq(
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
     "org.typelevel" %% "cats-core" % "2.6.1",
     "org.typelevel" %% "cats-effect" % "3.2.9",
-    "org.scalatest" %% "scalatest" % "3.2.10" % Test,
+    "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
-    "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test
+    "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
+    "org.typelevel" %% "scalacheck-effect-munit" % "1.0.3" % Test
   )
 )
 
@@ -209,7 +210,6 @@ lazy val datadogMetrics = project
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "claimant" % "0.2.0" % Test,
       "co.fs2" %% "fs2-core" % fs2Version,
       "co.fs2" %% "fs2-io" % fs2Version,
     )
