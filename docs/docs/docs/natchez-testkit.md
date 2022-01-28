@@ -20,8 +20,8 @@ libraryDependencies ++= Seq(
 
 ## Usage
 
-An example of how to use it can be found in the test for `natchez-extras-fs2`:
+An example of how to use it can be found in the test for `TestEntryPoint`:
 
-[https://github.com/ovotech/effect-utils/blob/master/natchez-fs2/src/test/scala/com/ovoenergy/effect/natchez/AllocatedSpanTest.scala](
-https://github.com/ovotech/effect-utils/blob/master/natchez-fs2/src/test/scala/com/ovoenergy/effect/natchez/AllocatedSpanTest.scala
+[https://github.com/ovotech/natchez-extras/blob/640bc00c3f652596e1e8ff8e88f17735d751cc8e/natchez-extras-testkit/src/test/scala/com/ovoenergy/natchez/extras/testkit/TestEntryPointTest.scala](
+https://github.com/ovotech/natchez-extras/blob/640bc00c3f652596e1e8ff8e88f17735d751cc8e/natchez-extras-testkit/src/test/scala/com/ovoenergy/natchez/extras/testkit/TestEntryPointTest.scala
 )
