@@ -70,7 +70,7 @@ function prepareIdxAndDocMap() {
     {
       "title": "Natchez Testkit",
       "url": "/natchez-extras/docs/natchez-testkit.html",
-      "content": "Natchez Testkit Natchez teskit is a small module that provides a TestEntryPoint backed by a Ref so you can write unit tests that check your application is sending the right information to Natchez. Installation val natchezExtrasVersion = \"6.0.0\" libraryDependencies ++= Seq( \"com.ovoenergy\" %% \"natchez-extras-testkit\" % natchezExtrasVersion % Test ) Usage An example of how to use it can be found in the test for natchez-extras-fs2: https://github.com/ovotech/effect-utils/blob/master/natchez-fs2/src/test/scala/com/ovoenergy/effect/natchez/AllocatedSpanTest.scala"
+      "content": "Natchez Testkit Natchez teskit is a small module that provides a TestEntryPoint backed by a Ref so you can write unit tests that check your application is sending the right information to Natchez. Installation val natchezExtrasVersion = \"6.0.0\" libraryDependencies ++= Seq( \"com.ovoenergy\" %% \"natchez-extras-testkit\" % natchezExtrasVersion % Test ) Usage An example of how to use it can be found in the test for TestEntryPoint: https://github.com/ovotech/natchez-extras/blob/640bc00c3f652596e1e8ff8e88f17735d751cc8e/natchez-extras-testkit/src/test/scala/com/ovoenergy/natchez/extras/testkit/TestEntryPointTest.scala"
     } ,      
   ];
 
