@@ -90,6 +90,12 @@ object Dogstatsd {
   private[extras] def serialiseHistogram(m: Metric, value: Long): UTF8Bytes =
     s"${filterName(m.name)}:$value|h|@1.0".utf8Bytes ++ serialiseTags(m.tags)
 
+  private[extras] def serialiseGauge(m: Metric, value: Long): UTF8Bytes =
+    s"${filterName(m.name)}:$value|g".utf8Bytes ++ serialiseTags(m.tags)
+
+  private[extras] def serialiseDistribution(m: Metric, value: Long): UTF8Bytes =
+    s"${filterName(m.name)}:$value|d|@1.0".utf8Bytes ++ serialiseTags(m.tags)
+
   private[extras] def serialiseEvent(e: Event): UTF8Bytes = {
     val body = filterEventText(e.body)
     val title = filterEventText(e.title)
@@ -103,7 +109,7 @@ object Dogstatsd {
 
   /**
    * Take care of the gymnastics required to send a string to the `to` destination through
-   * a socket in F before turning the resulting unit into a `G[Unit]` so our types line up
+   * a socket in F.
    */
   private def send[F[_]](s: DatagramSocket[F], to: SocketAddress[IpAddress], what: UTF8Bytes): F[Unit] =
     s.write(Datagram(to, array(what)))
@@ -120,6 +126,10 @@ object Dogstatsd {
           send[F](sock, config.agentHost, serialiseHistogram(applyConfig(m, config), value))
         def event(event: Event): F[Unit] =
           send[F](sock, config.agentHost, serialiseEvent(event.withTags(config.globalTags ++ event.tags)))
+        def gauge(m: Metric)(value: Long): F[Unit] =
+          send[F](sock, config.agentHost, serialiseGauge(applyConfig(m, config), value))
+        def distribution(m: Metric)(value: Long): F[Unit] =
+          send[F](sock, config.agentHost, serialiseDistribution(applyConfig(m, config), value))
       }
     }
   }
