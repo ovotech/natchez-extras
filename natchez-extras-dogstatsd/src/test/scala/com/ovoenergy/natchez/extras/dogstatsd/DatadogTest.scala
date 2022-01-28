@@ -41,7 +41,7 @@ class DatadogTest extends ScalaCheckSuite {
 
   test("Serialisation should allow through dots") {
     Prop.forAll(Gen.alphaNumStr, Gen.alphaNumStr) { (pref, suf) =>
-      filterName(s"$pref.$suf") == s"$pref.$suf".dropWhile(!_.isLetter)
+      assertEquals(filterName(s"$pref.$suf"), s"$pref.$suf".dropWhile(!_.isLetter))
     }
   }
 
@@ -51,10 +51,10 @@ class DatadogTest extends ScalaCheckSuite {
 
   test("Serialisation should generate correct counters and histograms with no tags") {
     Prop.forAll(Arbitrary.arbLong.arbitrary) { l =>
-      makeString(serialiseCounter(Metric("foo", Map.empty), l)) == s"foo:$l|c" &&
-      makeString(serialiseHistogram(Metric("foo", Map.empty), l)) == s"foo:$l|h|@1.0" &&
-      makeString(serialiseGauge(Metric("foo", Map.empty), l)) == s"foo:$l|g" &&
-      makeString(serialiseDistribution(Metric("foo", Map.empty), l)) == s"foo:$l|d|@1.0"
+      assertEquals(makeString(serialiseCounter(Metric("foo", Map.empty), l)), s"foo:$l|c")
+      assertEquals(makeString(serialiseHistogram(Metric("foo", Map.empty), l)), s"foo:$l|h|@1.0")
+      assertEquals(makeString(serialiseGauge(Metric("foo", Map.empty), l)), s"foo:$l|g")
+      assertEquals(makeString(serialiseDistribution(Metric("foo", Map.empty), l)), s"foo:$l|d|@1.0")
     }
   }
 
@@ -98,7 +98,7 @@ class DatadogTest extends ScalaCheckSuite {
   test("Config should separate the global prefix from the metric name with a dot") {
     Prop.forAll(string) { prefix =>
       val config = Config(localAddress, Some(prefix), Map("bar" -> "boz"))
-      applyConfig(Metric("foo", Map.empty), config).name == s"$prefix.foo"
+      assertEquals(applyConfig(Metric("foo", Map.empty), config).name, s"$prefix.foo")
     }
   }
 }
