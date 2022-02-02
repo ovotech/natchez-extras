@@ -1,29 +1,22 @@
 package com.ovoenergy.natchez.extras.http4s.server
 
 import cats.effect.IO
-import cats.effect.unsafe.implicits._
 import com.ovoenergy.natchez.extras.http4s.server.syntax._
+import munit.CatsEffectSuite
 import org.http4s.Status.{InsufficientStorage, Ok}
 import org.http4s.{HttpApp, HttpRoutes, Request, Response}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
-class SyntaxTest extends AnyWordSpec with Matchers {
+class SyntaxTest extends CatsEffectSuite {
 
-  "fallThroughTo" should {
+  test("Call the second Kleisli if the first returns None") {
+    val routes: HttpRoutes[IO] = HttpRoutes.empty
+    val app: HttpApp[IO] = HttpApp.pure(Response(status = Ok))
+    assertIO(routes.fallthroughTo(app).run(Request()).map(_.status), Ok)
+  }
 
-    "Call the second Kleisli if the first returns None" in {
-      val routes: HttpRoutes[IO] = HttpRoutes.empty
-      val app: HttpApp[IO] = HttpApp.pure(Response(status = Ok))
-      val result = routes.fallthroughTo(app).run(Request()).unsafeRunSync()
-      result.status shouldBe Ok
-    }
-
-    "Not call the second Kleisli if the first returns a result" in {
-      val routes: HttpRoutes[IO] = HttpRoutes.pure(Response(status = Ok))
-      val app: HttpApp[IO] = HttpApp.pure(Response(status = InsufficientStorage))
-      val result = routes.fallthroughTo(app).run(Request()).unsafeRunSync()
-      result.status shouldBe Ok
-    }
+  test("Not call the second Kleisli if the first returns a result") {
+    val routes: HttpRoutes[IO] = HttpRoutes.pure(Response(status = Ok))
+    val app: HttpApp[IO] = HttpApp.pure(Response(status = InsufficientStorage))
+    assertIO(routes.fallthroughTo(app).run(Request()).map(_.status), Ok)
   }
 }

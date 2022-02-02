@@ -1,77 +1,66 @@
 package com.ovoenergy.natchez.extras.datadog
 
 import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 import com.ovoenergy.natchez.extras.datadog.SpanIdentifiers._
 import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong
+import munit.CatsEffectSuite
 import natchez.Kernel
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{EitherValues, OptionValues}
-import org.scalatestplus.scalacheck.Checkers
 
-class SpanIdentifiersTest
-    extends AnyWordSpec
-    with Matchers
-    with Checkers
-    with OptionValues
-    with EitherValues {
+class SpanIdentifiersTest extends CatsEffectSuite {
 
-  "Span identifiers" should {
-
-    "Set IDs correctly when creating child IDs" in {
-
-      val (parent, child) = (
-        for {
-          parent <- SpanIdentifiers.create[IO]
-          child  <- SpanIdentifiers.child[IO](parent)
-        } yield parent -> child
-      ).unsafeRunSync()
-
-      parent.parentId shouldBe None
-      child.traceId shouldBe parent.traceId
-      child.parentId shouldBe Some(parent.spanId)
-      child.spanId should not be parent.spanId
-    }
-
-    "Convert to and from a kernel losslessly" in {
-      val (original, kernel) = (
-        for {
-          ids    <- create[IO]
-          kernel <- fromKernel[IO](SpanIdentifiers.toKernel(ids))
-        } yield ids -> kernel
-      ).unsafeRunSync()
-
-      kernel.traceId shouldBe original.traceId
-      kernel.traceToken shouldBe original.traceToken
-      kernel.parentId shouldBe Some(original.spanId)
+  test("Span identifiers should set IDs correctly when creating child IDs") {
+    for {
+      parent <- SpanIdentifiers.create[IO]
+      child  <- SpanIdentifiers.child[IO](parent)
+    } yield {
+      assertEquals(parent.parentId, None)
+      assertEquals(child.traceId, parent.traceId)
+      assertEquals(child.parentId, Some(parent.spanId))
+      assertNotEquals(child.spanId, parent.spanId)
     }
   }
 
-  "Succeed in converting from a kernel even if info is missing" in {
-    fromKernel[IO](Kernel(Map.empty)).attempt.unsafeRunSync() should matchPattern { case Right(_) => }
-    fromKernel[IO](Kernel(Map("X-Trace-Token" -> "foo"))).unsafeRunSync().traceToken shouldBe "foo"
+  test("Span identifiers should convert to and from a kernel losslessly") {
+    for {
+      original <- create[IO]
+      kernel   <- fromKernel[IO](SpanIdentifiers.toKernel(original))
+    } yield {
+      assertEquals(kernel.traceId, original.traceId)
+      assertEquals(kernel.traceToken, original.traceToken)
+      assertEquals(kernel.parentId, Some(original.spanId))
+    }
   }
 
-  "Ignore header case when extracting info" in {
-    fromKernel[IO](Kernel(Map("x-TRACe-tokeN" -> "foo"))).unsafeRunSync().traceToken shouldBe "foo"
+  test("fromKernel should succeed in converting from a kernel even if info is missing") {
+    assertIOBoolean(fromKernel[IO](Kernel(Map.empty)).attempt.map(_.isRight))
+    assertIO(fromKernel[IO](Kernel(Map("X-Trace-Token" -> "foo"))).map(_.traceToken), "foo")
   }
 
-  "Output hex-encoded B3 Trace IDs alongside decimal encoded Datadog IDs" in {
-    val result = SpanIdentifiers.create[IO].map(SpanIdentifiers.toKernel).unsafeRunSync()
-    val ddSpanId: String = result.toHeaders.get("X-Trace-Id").value
-    val b3SpanId: String = result.toHeaders.get("X-B3-Trace-Id").value
-    val ddULong = UnsignedLong.fromString(ddSpanId, 10)
-    val b3ULong = UnsignedLong.fromString(b3SpanId, 16)
-    ddULong shouldBe b3ULong
+  test("fromKernel should ignore header case when extracting info") {
+    assertIO(fromKernel[IO](Kernel(Map("x-TRACe-tokeN" -> "foo"))).map(_.traceToken), "foo")
   }
 
-  "Output hex-encoded B3 Span IDs alongside decimal encoded Datadog Parent IDs" in {
-    val result = SpanIdentifiers.create[IO].map(SpanIdentifiers.toKernel).unsafeRunSync()
-    val ddSpanId: String = result.toHeaders.get("X-Parent-Id").value
-    val b3SpanId: String = result.toHeaders.get("X-B3-Span-Id").value
-    val ddULong = UnsignedLong.fromString(ddSpanId, 10)
-    val b3ULong = UnsignedLong.fromString(b3SpanId, 16)
-    ddULong shouldBe b3ULong
+  test("toKernel should output hex-encoded B3 Trace IDs alongside decimal encoded Datadog IDs") {
+    for {
+      ids      <- SpanIdentifiers.create[IO].map(SpanIdentifiers.toKernel)
+      ddSpanId <- IO.fromOption(ids.toHeaders.get("X-Trace-Id"))(new Exception("Missing X-Trace-Id"))
+      b3SpanId <- IO.fromOption(ids.toHeaders.get("X-B3-Trace-Id"))(new Exception("Missing X-B3-Trace-Id"))
+    } yield {
+      val ddULong = UnsignedLong.fromString(ddSpanId, 10)
+      val b3ULong = UnsignedLong.fromString(b3SpanId, 16)
+      assertEquals(ddULong, b3ULong)
+    }
+  }
+
+  test("toKernel should output hex-encoded B3 Span IDs alongside decimal encoded Datadog Parent IDs") {
+    for {
+      ids      <- SpanIdentifiers.create[IO].map(SpanIdentifiers.toKernel)
+      ddSpanId <- IO.fromOption(ids.toHeaders.get("X-Parent-Id"))(new Exception("Missing X-Parent-Id"))
+      b3SpanId <- IO.fromOption(ids.toHeaders.get("X-B3-Span-Id"))(new Exception("Missing X-B3-Span-Id"))
+    } yield {
+      val ddULong = UnsignedLong.fromString(ddSpanId, 10)
+      val b3ULong = UnsignedLong.fromString(b3SpanId, 16)
+      assertEquals(ddULong, b3ULong)
+    }
   }
 }
