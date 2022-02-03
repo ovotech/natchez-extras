@@ -29,7 +29,7 @@ object Datadog {
     Resource.eval(Queue.circularBuffer[F, SubmittableSpan](capacity = 1000))
 
   private implicit def encoder[F[_], A: Encoder]: EntityEncoder[F, A] =
-    builder.withPrinter(Printer.noSpaces.copy(dropNullValues = true)).build.jsonEncoderOf[F, A]
+    builder.withPrinter(Printer.noSpaces.copy(dropNullValues = true)).build.jsonEncoderOf
 
   /**
    * Take items from the queue until it blocks
