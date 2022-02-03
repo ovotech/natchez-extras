@@ -1,6 +1,6 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-val scalaVer: String = "2.13.7"
+val scalaVer: String = "2.13.8"
 
 ThisBuild / scalaVersion := scalaVer
 
@@ -44,8 +44,8 @@ val common = Seq(
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    "org.typelevel" %% "cats-core" % "2.6.1",
-    "org.typelevel" %% "cats-effect" % "3.2.9",
+    "org.typelevel" %% "cats-core" % "2.7.0",
+    "org.typelevel" %% "cats-effect" % "3.3.5",
     "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
@@ -58,13 +58,13 @@ lazy val metricsCommon = project
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-val log4catsVersion = "2.1.1"
+val log4catsVersion = "2.2.0"
 val natchezVersion = "0.1.6"
-val http4sMilestoneVersion = "1.0.0-M29"
-val http4sStableVersion = "0.23.6"
+val http4sMilestoneVersion = "1.0.0-M30"
+val http4sStableVersion = "0.23.9"
 val circeVersion = "0.14.1"
-val slf4jVersion = "1.7.32"
-val fs2Version = "3.2.2"
+val slf4jVersion = "1.7.35"
+val fs2Version = "3.2.4"
 val doobieVersion = "1.0.0-RC2"
 
 lazy val natchezDatadog = projectMatrix
