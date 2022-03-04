@@ -3,7 +3,8 @@ package com.ovoenergy.natchez.extras.doobie
 import cats.data.Kleisli
 import cats.effect.Async
 import cats.implicits.catsSyntaxFlatMapOps
-import com.ovoenergy.natchez.extras.doobie.Config.ServiceAndResource
+import com.ovoenergy.natchez.extras.core.Config
+import com.ovoenergy.natchez.extras.core.Config.ServiceAndResource
 import doobie.WeakAsync
 import doobie.free.KleisliInterpreter
 import doobie.util.transactor.Transactor
@@ -12,6 +13,8 @@ import natchez.{Span, Trace}
 import java.sql.{Connection, PreparedStatement, ResultSet}
 
 object TracedTransactor {
+  private val DefaultResourceName = "db.execute"
+
   type Traced[F[_], A] = Kleisli[F, Span[F], A]
   def apply[F[_]: Async](
     service: String,
@@ -19,7 +22,7 @@ object TracedTransactor {
   ): Transactor[Traced[F, *]] = {
     val kleisliTransactor = transactor
       .mapK(Kleisli.liftK[F, Span[F]])(implicitly, Async.asyncForKleisli(implicitly))
-    trace(ServiceAndResource(s"$service-db", Config.DefaultResourceName), kleisliTransactor)
+    trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor)
   }
 
   private def formatQuery(q: String): String =

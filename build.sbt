@@ -75,9 +75,9 @@ lazy val natchezDatadog = projectMatrix
     settings = List(
       name := "natchez-extras-datadog",
       libraryDependencies ++= Seq(
-        "org.http4s"   %% "http4s-dsl"           % http4sMilestoneVersion,
-        "org.http4s"   %% "http4s-circe"         % http4sMilestoneVersion,
-        "org.http4s"   %% "http4s-client"        % http4sMilestoneVersion
+        "org.http4s" %% "http4s-dsl" % http4sMilestoneVersion,
+        "org.http4s" %% "http4s-circe" % http4sMilestoneVersion,
+        "org.http4s" %% "http4s-client" % http4sMilestoneVersion
       )
     )
   )
@@ -87,9 +87,9 @@ lazy val natchezDatadog = projectMatrix
     settings = List(
       name := "natchez-extras-datadog-stable",
       libraryDependencies ++= Seq(
-        "org.http4s"   %% "http4s-dsl"           % http4sStableVersion,
-        "org.http4s"   %% "http4s-circe"         % http4sStableVersion,
-        "org.http4s"   %% "http4s-client"        % http4sStableVersion
+        "org.http4s" %% "http4s-dsl" % http4sStableVersion,
+        "org.http4s" %% "http4s-circe" % http4sStableVersion,
+        "org.http4s" %% "http4s-client" % http4sStableVersion
       )
     )
   )
@@ -97,12 +97,12 @@ lazy val natchezDatadog = projectMatrix
   .settings(common)
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core"         % natchezVersion,
-      "io.circe"     %% "circe-core"           % circeVersion,
-      "io.circe"     %% "circe-generic"        % circeVersion,
-      "io.circe"     %% "circe-generic-extras" % circeVersion,
-      "io.circe"     %% "circe-parser"         % circeVersion,
-      "org.slf4j"    % "slf4j-api"             % slf4jVersion
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-generic-extras" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion
     )
   )
 
@@ -126,8 +126,8 @@ lazy val natchezHttp4s = projectMatrix
     settings = List(
       name := "natchez-extras-http4s",
       libraryDependencies ++= Seq(
-        "org.http4s"   %% "http4s-dsl"           % http4sMilestoneVersion,
-        "org.http4s"   %% "http4s-client"        % http4sMilestoneVersion
+        "org.http4s" %% "http4s-dsl" % http4sMilestoneVersion,
+        "org.http4s" %% "http4s-client" % http4sMilestoneVersion
       )
     )
   )
@@ -137,8 +137,8 @@ lazy val natchezHttp4s = projectMatrix
     settings = List(
       name := "natchez-extras-http4s-stable",
       libraryDependencies ++= Seq(
-        "org.http4s"   %% "http4s-dsl"           % http4sStableVersion,
-        "org.http4s"   %% "http4s-client"        % http4sStableVersion
+        "org.http4s" %% "http4s-dsl" % http4sStableVersion,
+        "org.http4s" %% "http4s-client" % http4sStableVersion
       )
     )
   )
@@ -147,7 +147,7 @@ lazy val natchezHttp4s = projectMatrix
   .settings(common)
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core"  % natchezVersion
+      "org.tpolecat" %% "natchez-core" % natchezVersion
     )
   )
 
@@ -192,8 +192,19 @@ lazy val natchezDoobie = project
   .settings(
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.tpolecat" %% "doobie-core"  % doobieVersion,
-      "org.tpolecat" %% "doobie-h2"    % doobieVersion % Test
+      "org.tpolecat" %% "doobie-core" % doobieVersion,
+      "org.tpolecat" %% "doobie-h2" % doobieVersion % Test
+    )
+  )
+  .dependsOn(core)
+
+lazy val core = project
+  .in(file("natchez-extras-core"))
+  .enablePlugins(GitVersioning)
+  .settings(
+    common ++ Seq(
+      name := "natchez-extras-core",
+      publish / skip := true
     )
   )
 
@@ -263,7 +274,8 @@ lazy val root = (project in file("."))
     common ++ Seq(
       name := "natchez-extras",
       publish / skip := true
-    ))
+    )
+  )
   .aggregate(
     metricsCommon,
     datadogMetrics,
