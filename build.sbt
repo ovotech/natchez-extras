@@ -225,6 +225,12 @@ lazy val datadogMetrics = project
     )
   )
 
+lazy val ce3Utils = project
+  .in(file("natchez-ce3"))
+  .enablePlugins(GitVersioning)
+  .settings(common :+ (name := "natchez-extras-ce3"))
+  .settings(libraryDependencies += "org.tpolecat" %% "natchez-core" % natchezVersion)
+
 val logbackVersion = "1.2.3"
 
 lazy val datadogStable = natchezDatadog.finder(Http4sVersion.Stable, VirtualAxis.jvm)(scalaVer)
@@ -244,7 +250,8 @@ lazy val docs = project
     natchezSlf4j,
     natchezFs2,
     natchezHttp4sStable,
-    natchezLog4Cats
+    natchezLog4Cats,
+    ce3Utils
   )
   .settings(
     micrositeName := "natchez-extras",
@@ -288,7 +295,8 @@ lazy val root = (project in file("."))
     natchezHttp4sMilestone,
     natchezHttp4sStable,
     natchezFs2,
-    natchezTestkit
+    natchezTestkit,
+    ce3Utils
   )
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
