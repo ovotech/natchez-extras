@@ -7,8 +7,6 @@ import cats.syntax.apply._
 import com.ovoenergy.natchez.extras.datadog.DatadogTags.{forThrowable, SpanType}
 import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong
 import io.circe.Encoder.encodeString
-import io.circe.generic.extras.Configuration
-import io.circe.generic.extras.semiauto._
 import io.circe.{Decoder, Encoder}
 import natchez.TraceValue
 import natchez.TraceValue.StringValue
@@ -35,9 +33,6 @@ case class SubmittableSpan(
 
 object SubmittableSpan {
 
-  implicit val config: Configuration =
-    Configuration.default.withSnakeCaseMemberNames
-
   implicit val encodeSpanType: Encoder[SpanType] =
     encodeString.contramap(_.toString.toLowerCase)
 
@@ -45,10 +40,51 @@ object SubmittableSpan {
     Decoder[Option[String]].map(_.flatMap(s => inferSpanType(Map("span.type" -> s))))
 
   implicit val encode: Encoder[SubmittableSpan] =
-    deriveConfiguredEncoder
+    Encoder.forProduct12(
+      "trace_id",
+      "span_id",
+      "name",
+      "service",
+      "resource",
+      "type",
+      "start",
+      "duration",
+      "parent_id",
+      "error",
+      "meta",
+      "metrics"
+    )(s =>
+      (
+        s.traceId,
+        s.spanId,
+        s.name,
+        s.service,
+        s.resource,
+        s.`type`,
+        s.start,
+        s.duration,
+        s.parentId,
+        s.error,
+        s.meta,
+        s.metrics
+      )
+    )
 
   implicit val decode: Decoder[SubmittableSpan] =
-    deriveConfiguredDecoder
+    Decoder.forProduct12(
+      "trace_id",
+      "span_id",
+      "name",
+      "service",
+      "resource",
+      "type",
+      "start",
+      "duration",
+      "parent_id",
+      "error",
+      "meta",
+      "metrics"
+    )(SubmittableSpan.apply)
 
   /**
    * It is very difficult to find any docs on this other than this fun Github issue by fommil
