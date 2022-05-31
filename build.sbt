@@ -261,6 +261,7 @@ lazy val docs = project
     natchezLog4Cats.jvm(scala213Version)
   )
   .settings(
+    scalaVersion := scala213Version,
     micrositeName := "natchez-extras",
     micrositeBaseUrl := "/natchez-extras",
     micrositeDocumentationUrl := "/natchez-extras/docs",
