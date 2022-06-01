@@ -10,7 +10,6 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.traverse._
 import com.ovoenergy.natchez.extras.datadog.DatadogSpan.SpanNames
-import io.circe.generic.extras.Configuration
 import natchez.TraceValue.{BooleanValue, NumberValue, StringValue}
 import natchez.{Kernel, Span, TraceValue}
 
@@ -78,9 +77,6 @@ object DatadogSpan {
         case service :: name :: other => SpanNames(name, service, other.mkString(":"))
       }
   }
-
-  implicit val config: Configuration =
-    Configuration.default.withSnakeCaseMemberNames
 
   /**
    * Given a span, complete it - this involves turning the span into a `CompletedSpan`
