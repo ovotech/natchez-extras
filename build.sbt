@@ -204,7 +204,6 @@ lazy val core = project
   .settings(
     common ++ Seq(
       name := "natchez-extras-core",
-      publish / skip := true
     )
   )
 
