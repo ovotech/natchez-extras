@@ -213,7 +213,6 @@ lazy val core = projectMatrix
   .settings(
     common ++ Seq(
       name := "natchez-extras-core",
-      publish / skip := true
     )
   )
 
