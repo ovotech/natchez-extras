@@ -276,6 +276,7 @@ lazy val root = (project in file("."))
     )
   )
   .aggregate(
+    core,
     metricsCommon,
     datadogMetrics,
     datadogMilestone,
