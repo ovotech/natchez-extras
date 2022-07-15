@@ -32,4 +32,4 @@ jobs:
     - name: Run tests
       run: sbt test
     - name: Compile microsite
-      run: sbt makeMicrosite
+      run: sbt docs/makeMicrosite
