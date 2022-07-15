@@ -2,7 +2,7 @@ name: Scala CI
 
 on:
   push:
-    branches: [ master github-actions ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -31,3 +31,5 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('build.sbt') }}
     - name: Run tests
       run: sbt test
+    - name: Compile microsite
+      run: sbt makeMicrosite
