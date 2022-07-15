@@ -289,6 +289,7 @@ lazy val root = (project in file("."))
       publish / skip := true
     )
   )
+  .aggregate(core.projectRefs: _*)
   .aggregate(metricsCommon.projectRefs: _*)
   .aggregate(datadogMetrics.projectRefs: _*)
   .aggregate(natchezDatadog.projectRefs: _*)
