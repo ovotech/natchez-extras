@@ -31,5 +31,9 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('build.sbt') }}
     - name: Run tests
       run: sbt test
+    - name: Update package descriptions
+      run: sudo apt update
+    - name: Install jekyll
+      run: sudo apt -y install jekyll
     - name: Compile microsite
       run: sbt docs/makeMicrosite
