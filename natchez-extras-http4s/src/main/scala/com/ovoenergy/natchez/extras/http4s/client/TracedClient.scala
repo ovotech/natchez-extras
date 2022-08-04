@@ -35,7 +35,7 @@ object TracedClient {
               withHeader = req.putHeaders(headers.map(keyValuesToRaw): _*).mapK(dropTracing(span))
               reqTags     <- trace(config.request.value.run(req.mapK(dropTracing(span))))
               _           <- trace(span.put(reqTags.toSeq: _*))
-              (resp, rel) <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace)).allocated
+              (resp, rel) <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace[F])).allocated
               respTags    <- trace(config.response.value.run(resp.mapK(dropTracing(span))))
               _           <- trace(span.put(respTags.toSeq: _*))
             } yield resp -> rel
