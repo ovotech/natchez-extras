@@ -62,7 +62,6 @@ val log4catsVersion = "2.2.0"
 val natchezVersion = "0.1.6"
 val http4sMilestoneVersion = "1.0.0-M35"
 val http4sStableVersion = "0.23.14"
-val blazeStableVersion = "0.23.12"
 val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.35"
 val fs2Version = "3.2.4"
@@ -90,7 +89,7 @@ lazy val natchezDatadog = projectMatrix
       libraryDependencies ++= Seq(
         "org.http4s" %% "http4s-dsl" % http4sStableVersion,
         "org.http4s" %% "http4s-circe" % http4sStableVersion,
-        "org.http4s" %% "http4s-client" % blazeStableVersion
+        "org.http4s" %% "http4s-client" % http4sStableVersion
       )
     )
   )
@@ -139,7 +138,7 @@ lazy val natchezHttp4s = projectMatrix
       name := "natchez-extras-http4s-stable",
       libraryDependencies ++= Seq(
         "org.http4s" %% "http4s-dsl" % http4sStableVersion,
-        "org.http4s" %% "http4s-client" % blazeStableVersion
+        "org.http4s" %% "http4s-client" % http4sStableVersion
       )
     )
   )
@@ -262,8 +261,8 @@ lazy val docs = project
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-blaze-client" % blazeStableVersion,
-      "org.http4s" %% "http4s-blaze-server" % blazeStableVersion,
+      "org.http4s" %% "http4s-blaze-client" % "0.23.12",
+      "org.http4s" %% "http4s-blaze-server" % "0.23.12",
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
       "org.typelevel" %% "log4cats-slf4j" % log4catsVersion
     )
