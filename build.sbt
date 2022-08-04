@@ -60,8 +60,8 @@ lazy val metricsCommon = project
 
 val log4catsVersion = "2.2.0"
 val natchezVersion = "0.1.6"
-val http4sMilestoneVersion = "1.0.0-M30"
-val http4sStableVersion = "0.23.9"
+val http4sMilestoneVersion = "1.0.0-M35"
+val http4sStableVersion = "0.23.14"
 val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.35"
 val fs2Version = "3.2.4"
