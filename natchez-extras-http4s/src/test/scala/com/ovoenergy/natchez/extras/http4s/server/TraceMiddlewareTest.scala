@@ -19,10 +19,10 @@ class TraceMiddlewareTest extends CatsEffectSuite {
     Configuration.default[IO]()
 
   def okService(body: String, headers: Headers = Headers.empty): HttpRoutes[TraceIO] =
-    Kleisli.pure(Response[TraceIO](Ok, headers = headers, body = Stream.emits(body.getBytes)))
+    Kleisli.pure(Response[TraceIO](Ok, headers = headers).withBodyStream(Stream.emits(body.getBytes)))
 
   def errorService(body: String): HttpRoutes[TraceIO] =
-    Kleisli.pure(Response(InternalServerError, body = Stream.emits(body.getBytes)))
+    Kleisli.pure(Response(InternalServerError).withBodyStream(Stream.emits(body.getBytes)))
 
   val noContentService: HttpRoutes[TraceIO] =
     Kleisli.pure(Response(InternalServerError))
