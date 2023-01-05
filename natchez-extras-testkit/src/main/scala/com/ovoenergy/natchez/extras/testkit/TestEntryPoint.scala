@@ -46,6 +46,15 @@ object TestEntryPoint {
               def spanId: F[Option[String]] = F.pure(None)
               def traceUri: F[Option[URI]] = F.pure(None)
               def kernel: F[Kernel] = F.pure(kern)
+
+              override def log(fields: (String, TraceValue)*): F[Unit] = F.unit
+
+              override def log(event: String): F[Unit] = F.unit
+
+              override def attachError(err: Throwable): F[Unit] = F.unit
+
+              override def span(name: String, kernel: Kernel): Resource[F, Span[F]] =
+                makeSpan(name, None, kern)
             }
           }
         ) { (span, ec) =>

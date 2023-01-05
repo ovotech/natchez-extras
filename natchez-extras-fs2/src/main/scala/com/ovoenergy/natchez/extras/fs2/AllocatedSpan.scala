@@ -57,6 +57,14 @@ object AllocatedSpan {
         spn.spanId
       def traceUri: F[Option[URI]] =
         spn.traceUri
+
+      override def log(fields: (String, TraceValue)*): F[Unit] = F.unit
+
+      override def log(event: String): F[Unit] = F.unit
+
+      override def attachError(err: Throwable): F[Unit] = F.unit
+
+      override def span(name: String, kernel: Kernel): Resource[F, Span[F]] = spn.span(name)
     }
 
   /**

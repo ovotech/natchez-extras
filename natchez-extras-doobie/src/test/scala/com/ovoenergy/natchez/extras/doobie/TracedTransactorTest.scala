@@ -34,6 +34,14 @@ class TracedTransactorTest extends CatsEffectSuite {
           IO.pure(None)
         def traceUri: IO[Option[URI]] =
           IO.pure(None)
+
+        override def log(fields: (String, TraceValue)*): IO[Unit] = IO.unit
+
+        override def log(event: String): IO[Unit] = IO.unit
+
+        override def attachError(err: Throwable): IO[Unit] = IO.unit
+
+        override def span(name: String, kernel: Kernel): Resource[IO, Span[IO]] = span(name)
       }
       a.run(spanMock).attempt.flatMap(_ => sps.get)
     }

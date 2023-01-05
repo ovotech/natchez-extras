@@ -12,6 +12,14 @@ protected[ce3] abstract class TestSpan(val name: String) extends Span[IO] {
   override def traceId: IO[Option[String]] = ???
   override def spanId: IO[Option[String]] = ???
   override def traceUri: IO[Option[URI]] = ???
+
+  override def log(fields: (String, TraceValue)*): IO[Unit] = ???
+
+  override def log(event: String): IO[Unit] = ???
+
+  override def attachError(err: Throwable): IO[Unit] = ???
+
+  override def span(name: String, kernel: Kernel): Resource[IO, Span[IO]] = ???
 }
 
 protected[ce3] object TestSpan {

@@ -9,7 +9,6 @@ import cats.syntax.functor._
 import natchez.TraceValue.StringValue
 import natchez.{Kernel, Span, TraceValue}
 import org.slf4j.{Logger, LoggerFactory, MDC}
-
 import java.net.URI
 import java.util.UUID.randomUUID
 
@@ -37,6 +36,25 @@ case class Slf4jSpan[F[_]: Sync](
 
   def traceUri: F[Option[URI]] =
     Sync[F].pure(None)
+
+  override def log(fields: (String, TraceValue)*): F[Unit] =
+    mdc.update(_ ++ fields)
+
+  override def log(event: String): F[Unit] = log("event" -> TraceValue.StringValue(event))
+
+  override def attachError(err: Throwable): F[Unit] = {
+    mdc.update(
+      _ ++ Map(
+        "exit.case" -> "error",
+        "exit.error.class" -> err.getClass.getName,
+        "exit.error.message" -> err.getMessage,
+        "exit.error.stackTrace" -> err.getStackTrace.map(_.toString).mkString("\\n ")
+      )
+    )
+  }
+
+  override def span(name: String, kernel: Kernel): Resource[F, Span[F]] =
+    Resource.eval(Slf4jSpan.fromKernel(name, kernel)).widen.flatten
 }
 
 object Slf4jSpan {

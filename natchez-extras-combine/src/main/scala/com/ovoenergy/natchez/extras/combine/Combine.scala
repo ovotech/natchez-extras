@@ -33,6 +33,24 @@ object Combine {
 
       def traceUri: F[Option[URI]] =
         OptionT(s1.traceUri).orElseF(s2.traceUri).value
+
+      override def log(event: String): F[Unit] = log(("event" -> TraceValue.StringValue(event)))
+
+      override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
+
+      override def attachError(err: Throwable): F[Unit] =
+        put(
+          Seq(
+            ("exit.case" -> TraceValue.StringValue("error")),
+            ("exit.error.class" -> TraceValue.StringValue(err.getClass.getName)),
+            ("exit.error.message" -> TraceValue.StringValue(err.getMessage)),
+            ("exit.error.stackTrace" -> TraceValue
+              .StringValue(err.getStackTrace.map(_.toString).mkString("\\n ")))
+          ): _*
+        )
+
+      override def span(name: String, kernel: Kernel): Resource[F, Span[F]] =
+        (s1.span(name, kernel), s2.span(name, kernel)).mapN[Span[F]](combineSpan[F])
     }
 
   def combine[F[_]: Sync](e1: EntryPoint[F], e2: EntryPoint[F]): EntryPoint[F] =

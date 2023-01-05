@@ -57,6 +57,23 @@ case class DatadogSpan[F[_]: Async](
 
   def traceUri: F[Option[URI]] =
     Monad[F].pure(None)
+
+  override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
+
+  override def log(event: String): F[Unit] = put(("event" -> TraceValue.StringValue(event)))
+
+  override def attachError(err: Throwable): F[Unit] =
+    put(
+      Seq(
+        "exit.case" -> TraceValue.StringValue("error"),
+        "exit.error.class" -> TraceValue.StringValue(err.getClass.getName),
+        "exit.error.message" -> TraceValue.StringValue(err.getMessage),
+        "exit.error.stackTrace" -> TraceValue.StringValue(err.getStackTrace.map(_.toString).mkString("\\n "))
+      ): _*
+    )
+
+  override def span(name: String, kernel: Kernel): Resource[F, Span[F]] =
+    DatadogSpan.fromKernel(queue, SpanNames.withFallback(name, names), kernel)
 }
 
 object DatadogSpan {
