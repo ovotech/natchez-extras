@@ -64,8 +64,8 @@ lazy val metricsCommon = projectMatrix
 
 val log4catsVersion = "2.2.0"
 val natchezVersion = "0.1.6"
-val http4sMilestoneVersion = "1.0.0-M30"
-val http4sStableVersion = "0.23.9"
+val http4sMilestoneVersion = "1.0.0-M37"
+val http4sStableVersion = "0.23.14"
 val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.35"
 val fs2Version = "3.2.4"
@@ -236,6 +236,13 @@ lazy val datadogMetrics = projectMatrix
     )
   )
 
+lazy val ce3Utils = projectMatrix
+  .in(file("natchez-ce3"))
+  .jvmPlatform(scalaVersions = scalaVersions)
+  .enablePlugins(GitVersioning)
+  .settings(common :+ (name := "natchez-extras-ce3"))
+  .settings(libraryDependencies += "org.tpolecat" %% "natchez-core" % natchezVersion)
+
 val logbackVersion = "1.2.3"
 
 lazy val datadogStable213 = natchezDatadog.finder(Http4sVersion.Stable, VirtualAxis.jvm)(scala213Version)
@@ -250,6 +257,7 @@ lazy val docs = project
   .in(file("docs"))
   .enablePlugins(MicrositesPlugin)
   .dependsOn(
+    ce3Utils.jvm(scala213Version),
     datadogMetrics.jvm(scala213Version),
     natchezDoobie.jvm(scala213Version),
     datadogStable213,
@@ -275,8 +283,8 @@ lazy val docs = project
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-blaze-client" % http4sStableVersion,
-      "org.http4s" %% "http4s-blaze-server" % http4sStableVersion,
+      "org.http4s" %% "http4s-blaze-client" % "0.23.12",
+      "org.http4s" %% "http4s-blaze-server" % "0.23.12",
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
       "org.typelevel" %% "log4cats-slf4j" % log4catsVersion
     )
@@ -290,6 +298,7 @@ lazy val root = (project in file("."))
     )
   )
   .aggregate(core.projectRefs: _*)
+  .aggregate(ce3Utils.projectRefs: _*)
   .aggregate(metricsCommon.projectRefs: _*)
   .aggregate(datadogMetrics.projectRefs: _*)
   .aggregate(natchezDatadog.projectRefs: _*)
