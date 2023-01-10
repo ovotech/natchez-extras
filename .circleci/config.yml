@@ -46,7 +46,7 @@ commands:
       - *cache_restore
       - *install_sbt
       - add_ssh_keys:
-          fingerprints: "dc:08:4f:54:9c:ba:9d:1f:7f:e1:ec:a1:42:a1:d5:55"
+          fingerprints: "d9:31:1f:63:6a:6f:05:7a:a6:85:0a:55:93:53:bc:30"
       - ruby/install:
           version: '2.7'
       - run:
