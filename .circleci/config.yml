@@ -51,7 +51,9 @@ commands:
           version: '2.7.7'
       - run:
           name: Install Jekyll
-          command: gem install jekyll
+          command: |
+            rvm use 2.7.7 
+            gem install jekyll
       - run:
           name: Configure Git
           command: |
