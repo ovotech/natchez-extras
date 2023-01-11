@@ -53,6 +53,11 @@ commands:
           name: Install Jekyll
           command: gem install jekyll
       - run:
+          name: Install compatible version of jekyll sass converter
+          command: |
+            gem uninstall jekyll-sass-converter
+            gem install jekyll-sass-converter --version "~> 2.0"
+      - run:
           name: Configure Git
           command: |
             git config --global user.email '<>'
