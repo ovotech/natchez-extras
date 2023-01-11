@@ -55,7 +55,7 @@ commands:
       - run:
           name: Install compatible version of jekyll sass converter
           command: |
-            gem uninstall jekyll-sass-converter
+            gem uninstall jekyll-sass-converter --force
             gem install jekyll-sass-converter --version "~> 2.0"
       - run:
           name: Configure Git
