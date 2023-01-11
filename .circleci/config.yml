@@ -48,7 +48,7 @@ commands:
       - add_ssh_keys:
           fingerprints: "d9:31:1f:63:6a:6f:05:7a:a6:85:0a:55:93:53:bc:30"
       - ruby/install:
-          version: '3.2.0'
+          version: '3.1.3'
       - run:
           name: Install Jekyll
           command: gem install jekyll
