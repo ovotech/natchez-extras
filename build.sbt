@@ -1,7 +1,7 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
 val scala213Version = "2.13.8"
-val scala3Version = "3.1.2"
+val scala3Version = "3.2.2"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
 
