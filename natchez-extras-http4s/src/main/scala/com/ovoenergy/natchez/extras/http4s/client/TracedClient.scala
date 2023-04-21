@@ -33,11 +33,12 @@ object TracedClient {
               span    <- Kleisli.ask[F, Span[F]]
               headers <- trace(span.kernel.map(_.toHeaders.toSeq))
               withHeader = req.putHeaders(headers.map(keyValuesToRaw): _*).mapK(dropTracing(span))
-              reqTags     <- trace(config.request.value.run(req.mapK(dropTracing(span))))
-              _           <- trace(span.put(reqTags.toSeq: _*))
-              (resp, rel) <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace[F])).allocated
-              respTags    <- trace(config.response.value.run(resp.mapK(dropTracing(span))))
-              _           <- trace(span.put(respTags.toSeq: _*))
+              reqTags  <- trace(config.request.value.run(req.mapK(dropTracing(span))))
+              _        <- trace(span.put(reqTags.toSeq: _*))
+              resTuple <- client.run(withHeader).mapK(trace[F]).map(_.mapK(trace[F])).allocated
+              (resp, rel) = resTuple
+              respTags <- trace(config.response.value.run(resp.mapK(dropTracing(span))))
+              _        <- trace(span.put(respTags.toSeq: _*))
             } yield resp -> rel
           }
         )
