@@ -11,6 +11,7 @@ import natchez.EntryPoint
 import org.http4s.Request
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.syntax.literals._
+import org.typelevel.ci.CIStringSyntax
 
 import scala.concurrent.duration._
 
@@ -42,7 +43,7 @@ class DatadogTest extends CatsEffectSuite {
         client <- TestClient[IO]
         ep = entryPoint(client.client, "a", "b", agentHost = uri"http://example.com")
         kernel <- ep.use(_.root("foo").use(s => s.put("traceToken" -> "foo") >> s.kernel))
-      } yield kernel.toHeaders.get("X-Trace-Token")
+      } yield kernel.toHeaders.get(ci"X-Trace-Token")
     )
   }
 

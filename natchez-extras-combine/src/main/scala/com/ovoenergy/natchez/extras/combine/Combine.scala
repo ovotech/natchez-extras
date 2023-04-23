@@ -19,9 +19,6 @@ object Combine {
       def kernel: F[Kernel] =
         (s1.kernel, s2.kernel).mapN { case (k1, k2) => Kernel(k1.toHeaders ++ k2.toHeaders) }
 
-      def span(name: String): Resource[F, Span[F]] =
-        (s1.span(name), s2.span(name)).mapN[Span[F]](combineSpan[F])
-
       def put(fields: (String, TraceValue)*): F[Unit] =
         (s1.put(fields: _*), s2.put(fields: _*)).tupled.as(())
 
@@ -33,17 +30,32 @@ object Combine {
 
       def traceUri: F[Option[URI]] =
         OptionT(s1.traceUri).orElseF(s2.traceUri).value
+
+      def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
+        (s1.attachError(err, fields: _*), s2.attachError(err, fields: _*)).tupled.as(())
+
+      def log(event: String): F[Unit] = (s1.log(event), s2.log(event)).tupled.as(())
+
+      def log(fields: (String, TraceValue)*): F[Unit] = (s1.log(fields: _*), s2.log(fields: _*)).tupled.as(())
+
+      def span(name: String, options: Span.Options): Resource[F, Span[F]] =
+        (s1.span(name, options), s2.span(name, options)).mapN[Span[F]](combineSpan[F])
     }
 
   def combine[F[_]: Sync](e1: EntryPoint[F], e2: EntryPoint[F]): EntryPoint[F] =
     new EntryPoint[F] {
-      def root(name: String): Resource[F, Span[F]] =
-        (e1.root(name), e2.root(name)).mapN(combineSpan[F])
+      override def root(name: String, options: Span.Options): Resource[F, Span[F]] =
+        (e1.root(name, options), e2.root(name, options)).mapN(combineSpan[F])
 
-      def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
-        (e1.continue(name, kernel), e2.continue(name, kernel)).mapN(combineSpan[F])
+      override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
+        (e1.continue(name, kernel, options), e2.continue(name, kernel, options)).mapN(combineSpan[F])
 
-      def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
-        (e1.continueOrElseRoot(name, kernel), e2.continueOrElseRoot(name, kernel)).mapN(combineSpan[F])
+      override def continueOrElseRoot(
+        name: String,
+        kernel: Kernel,
+        options: Span.Options
+      ): Resource[F, Span[F]] =
+        (e1.continueOrElseRoot(name, kernel, options), e2.continueOrElseRoot(name, kernel, options))
+          .mapN(combineSpan[F])
     }
 }

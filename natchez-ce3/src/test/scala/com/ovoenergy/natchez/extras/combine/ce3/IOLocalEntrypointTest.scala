@@ -12,7 +12,8 @@ class IOLocalEntrypointTest extends CatsEffectSuite {
     for {
       local <- IOLocal[Span[IO]](rootSpan)
       ep = new TestEntrypoint {
-        override def continue(name: String, kernel: Kernel): Resource[IO, Span[IO]] = Resource.pure(childSpan)
+        override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[IO, Span[IO]] =
+          Resource.pure(childSpan)
       }
       epUnderTest = new IOLocalEntrypoint(ep, local)
       spanR = epUnderTest.continue("", Kernel(Map.empty))
@@ -26,7 +27,8 @@ class IOLocalEntrypointTest extends CatsEffectSuite {
     for {
       local <- IOLocal[Span[IO]](rootSpan)
       ep = new TestEntrypoint {
-        override def root(name: String): Resource[IO, Span[IO]] = Resource.pure(childSpan)
+        override def root(name: String, options: Span.Options): Resource[IO, Span[IO]] =
+          Resource.pure(childSpan)
       }
       epUnderTest = new IOLocalEntrypoint(ep, local)
       spanR = epUnderTest.root("")
@@ -40,7 +42,11 @@ class IOLocalEntrypointTest extends CatsEffectSuite {
     for {
       local <- IOLocal[Span[IO]](rootSpan)
       ep = new TestEntrypoint {
-        override def continueOrElseRoot(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
+        override def continueOrElseRoot(
+          name: String,
+          kernel: Kernel,
+          options: Span.Options
+        ): Resource[IO, Span[IO]] =
           Resource.pure(childSpan)
       }
       epUnderTest = new IOLocalEntrypoint(ep, local)
@@ -59,10 +65,14 @@ class IOLocalEntrypointTest extends CatsEffectSuite {
   }
 
   private class TestEntrypoint extends EntryPoint[IO] {
-    override def root(name: String): Resource[IO, Span[IO]] = ???
+    override def root(name: String, options: Span.Options): Resource[IO, Span[IO]] = ???
 
-    override def continue(name: String, kernel: Kernel): Resource[IO, Span[IO]] = ???
+    override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[IO, Span[IO]] = ???
 
-    override def continueOrElseRoot(name: String, kernel: Kernel): Resource[IO, Span[IO]] = ???
+    override def continueOrElseRoot(
+      name: String,
+      kernel: Kernel,
+      options: Span.Options
+    ): Resource[IO, Span[IO]] = ???
   }
 }

@@ -5,6 +5,7 @@ import com.ovoenergy.natchez.extras.datadog.SpanIdentifiers._
 import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong
 import munit.CatsEffectSuite
 import natchez.Kernel
+import org.typelevel.ci._
 
 class SpanIdentifiersTest extends CatsEffectSuite {
 
@@ -33,18 +34,18 @@ class SpanIdentifiersTest extends CatsEffectSuite {
 
   test("fromKernel should succeed in converting from a kernel even if info is missing") {
     assertIOBoolean(fromKernel[IO](Kernel(Map.empty)).attempt.map(_.isRight))
-    assertIO(fromKernel[IO](Kernel(Map("X-Trace-Token" -> "foo"))).map(_.traceToken), "foo")
+    assertIO(fromKernel[IO](Kernel(Map(ci"X-Trace-Token" -> "foo"))).map(_.traceToken), "foo")
   }
 
   test("fromKernel should ignore header case when extracting info") {
-    assertIO(fromKernel[IO](Kernel(Map("x-TRACe-tokeN" -> "foo"))).map(_.traceToken), "foo")
+    assertIO(fromKernel[IO](Kernel(Map(ci"x-TRACe-tokeN" -> "foo"))).map(_.traceToken), "foo")
   }
 
   test("toKernel should output hex-encoded B3 Trace IDs alongside decimal encoded Datadog IDs") {
     for {
       ids      <- SpanIdentifiers.create[IO].map(SpanIdentifiers.toKernel)
-      ddSpanId <- IO.fromOption(ids.toHeaders.get("X-Trace-Id"))(new Exception("Missing X-Trace-Id"))
-      b3SpanId <- IO.fromOption(ids.toHeaders.get("X-B3-Trace-Id"))(new Exception("Missing X-B3-Trace-Id"))
+      ddSpanId <- IO.fromOption(ids.toHeaders.get(ci"X-Trace-Id"))(new Exception("Missing X-Trace-Id"))
+      b3SpanId <- IO.fromOption(ids.toHeaders.get(ci"X-B3-Trace-Id"))(new Exception("Missing X-B3-Trace-Id"))
     } yield {
       val ddULong = UnsignedLong.fromString(ddSpanId, 10)
       val b3ULong = UnsignedLong.fromString(b3SpanId, 16)
@@ -55,8 +56,8 @@ class SpanIdentifiersTest extends CatsEffectSuite {
   test("toKernel should output hex-encoded B3 Span IDs alongside decimal encoded Datadog Parent IDs") {
     for {
       ids      <- SpanIdentifiers.create[IO].map(SpanIdentifiers.toKernel)
-      ddSpanId <- IO.fromOption(ids.toHeaders.get("X-Parent-Id"))(new Exception("Missing X-Parent-Id"))
-      b3SpanId <- IO.fromOption(ids.toHeaders.get("X-B3-Span-Id"))(new Exception("Missing X-B3-Span-Id"))
+      ddSpanId <- IO.fromOption(ids.toHeaders.get(ci"X-Parent-Id"))(new Exception("Missing X-Parent-Id"))
+      b3SpanId <- IO.fromOption(ids.toHeaders.get(ci"X-B3-Span-Id"))(new Exception("Missing X-B3-Span-Id"))
     } yield {
       val ddULong = UnsignedLong.fromString(ddSpanId, 10)
       val b3ULong = UnsignedLong.fromString(b3SpanId, 16)

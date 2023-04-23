@@ -10,6 +10,7 @@ import fs2.{Pipe, Stream}
 import natchez.{Kernel, Span, TraceValue}
 
 import java.net.URI
+import natchez.Tags
 
 /**
  * A Natchez span that has been pre-allocated and will stay open
@@ -45,8 +46,8 @@ object AllocatedSpan {
         spn.kernel
       def put(fields: (String, TraceValue)*): F[Unit] =
         spn.put(fields: _*)
-      def span(name: String): Resource[F, Span[F]] =
-        spn.span(name)
+      def span(name: String, options: Span.Options): Resource[F, Span[F]] =
+        spn.span(name, options)
       def addSubmitTask(task: F[Unit]): AllocatedSpan[F] =
         createSpan(spn, F.uncancelable(_ => F.attempt(task) >> submit))
       def submit: F[Unit] =
@@ -57,6 +58,10 @@ object AllocatedSpan {
         spn.spanId
       def traceUri: F[Option[URI]] =
         spn.traceUri
+      def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
+        put(Tags.error(true) :: fields.toList: _*)
+      def log(event: String): F[Unit] = put("event" -> TraceValue.StringValue(event))
+      def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
     }
 
   /**

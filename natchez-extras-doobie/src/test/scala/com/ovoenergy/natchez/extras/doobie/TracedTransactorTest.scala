@@ -11,6 +11,7 @@ import natchez.{Kernel, Span, TraceValue}
 
 import java.net.URI
 import scala.concurrent.ExecutionContext.global
+import natchez.Tags
 
 class TracedTransactorTest extends CatsEffectSuite {
 
@@ -22,7 +23,7 @@ class TracedTransactorTest extends CatsEffectSuite {
   def run[A](a: Traced[IO, A]): IO[List[SpanData]] =
     Ref.of[IO, List[SpanData]](List(SpanData("root", Map.empty))).flatMap { sps =>
       lazy val spanMock: Span[IO] = new Span[IO] {
-        def span(name: String): Resource[IO, Span[IO]] =
+        def span(name: String, options: Span.Options): Resource[IO, Span[IO]] =
           Resource.eval(sps.update(_ :+ SpanData(name, Map.empty)).as(spanMock))
         def kernel: IO[Kernel] =
           IO.pure(Kernel(Map.empty))
@@ -34,6 +35,10 @@ class TracedTransactorTest extends CatsEffectSuite {
           IO.pure(None)
         def traceUri: IO[Option[URI]] =
           IO.pure(None)
+        def attachError(err: Throwable, fields: (String, TraceValue)*): IO[Unit] =
+          put(Tags.error(true) :: fields.toList: _*)
+        def log(event: String): IO[Unit] = put("event" -> TraceValue.StringValue(event))
+        def log(fields: (String, TraceValue)*): IO[Unit] = put(fields: _*)
       }
       a.run(spanMock).attempt.flatMap(_ => sps.get)
     }

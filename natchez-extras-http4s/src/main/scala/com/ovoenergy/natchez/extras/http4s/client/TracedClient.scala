@@ -31,7 +31,7 @@ object TracedClient {
           Trace[Traced[F, *]].span(s"$name:http.request:${removeNumericPathSegments(req.uri)}") {
             for {
               span    <- Kleisli.ask[F, Span[F]]
-              headers <- trace(span.kernel.map(_.toHeaders.toSeq))
+              headers <- trace(span.kernel.map(_.toHeaders.map { case (k, v) => k.toString -> v }.toSeq))
               withHeader = req.putHeaders(headers.map(keyValuesToRaw): _*).mapK(dropTracing(span))
               reqTags  <- trace(config.request.value.run(req.mapK(dropTracing(span))))
               _        <- trace(span.put(reqTags.toSeq: _*))

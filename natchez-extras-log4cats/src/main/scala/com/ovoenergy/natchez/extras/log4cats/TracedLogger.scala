@@ -11,7 +11,7 @@ import natchez.{Kernel, Span, Trace}
 object TracedLogger {
 
   private def lowercaseHeaders(kernel: Kernel): Map[String, String] =
-    kernel.toHeaders.map { case (k, v) => k.toLowerCase -> v }
+    kernel.toHeaders.map { case (k, v) => k.toString.toLowerCase -> v }
 
   /**
    * Kernel to MDC for Datadog
