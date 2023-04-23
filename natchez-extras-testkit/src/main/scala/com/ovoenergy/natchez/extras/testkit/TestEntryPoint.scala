@@ -9,6 +9,7 @@ import natchez.{EntryPoint, Kernel, Span, TraceValue}
 
 import java.net.URI
 import java.time.Instant
+import natchez.Tags
 
 /**
  * Test implementation of Natchez that is backed by a Ref
@@ -46,6 +47,11 @@ object TestEntryPoint {
               def spanId: F[Option[String]] = F.pure(None)
               def traceUri: F[Option[URI]] = F.pure(None)
               def kernel: F[Kernel] = F.pure(kern)
+              override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
+              override def log(event: String): F[Unit] = log("event" -> TraceValue.StringValue(event))
+              override def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
+                put(Tags.error(true) :: fields.toList: _*)
+              override def span(name: String, options: Span.Options): Resource[F, Span[F]] = span(name)
             }
           }
         ) { (span, ec) =>
@@ -59,9 +65,12 @@ object TestEntryPoint {
 
       new TestEntryPoint[F] {
         def spans: F[List[CompletedSpan]] = submitted.get
-        def root(name: String): Resource[F, Span[F]] = makeSpan(name, None, Kernel(Map.empty))
-        def continue(name: String, k: Kernel): Resource[F, Span[F]] = makeSpan(name, None, k)
-        def continueOrElseRoot(name: String, k: Kernel): Resource[F, Span[F]] = makeSpan(name, None, k)
+        override def root(name: String, options: Span.Options): Resource[F, Span[F]] =
+          makeSpan(name, None, Kernel(Map.empty))
+        override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
+          makeSpan(name, None, kernel)
+        override def continueOrElseRoot(name: String, kernel: Kernel, options: Span.Options)
+          : Resource[F, Span[F]] = makeSpan(name, None, kernel)
       }
     }
 }

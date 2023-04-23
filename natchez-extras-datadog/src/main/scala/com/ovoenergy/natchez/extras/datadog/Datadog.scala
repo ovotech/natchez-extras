@@ -127,16 +127,16 @@ object Datadog {
       _ <- submitter(client, agentHost, queue)
     } yield {
       new EntryPoint[F] {
-        def root(name: String): Resource[F, Span[F]] =
+        def root(name: String, options: Span.Options): Resource[F, Span[F]] =
           Resource
             .eval(SpanIdentifiers.create.flatMap(Ref.of[F, SpanIdentifiers]))
             .flatMap(DatadogSpan.create(queue, names(name)))
             .widen
 
-        def continue(name: String, kernel: Kernel): Resource[F, Span[F]] =
+        def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
           DatadogSpan.fromKernel(queue, names(name), kernel).widen
 
-        def continueOrElseRoot(name: String, kernel: Kernel): Resource[F, Span[F]] =
+        def continueOrElseRoot(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
           DatadogSpan.fromKernel(queue, names(name), kernel).widen
       }
     }

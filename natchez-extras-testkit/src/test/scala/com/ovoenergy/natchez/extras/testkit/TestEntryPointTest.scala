@@ -5,13 +5,14 @@ import cats.effect.kernel.Resource.ExitCase.Succeeded
 import com.ovoenergy.natchez.extras.testkit.TestEntryPoint.CompletedSpan
 import munit.CatsEffectSuite
 import natchez.{Kernel, TraceValue}
+import org.typelevel.ci.CIStringSyntax
 
 import java.time.Instant.EPOCH
 
 class TestEntryPointTest extends CatsEffectSuite {
 
   val testKernel: Kernel =
-    Kernel(Map("test" -> "header"))
+    Kernel(Map(ci"test" -> "header"))
 
   test("TestEntryPoint should capture tags sent along with each span") {
     assertIO(
