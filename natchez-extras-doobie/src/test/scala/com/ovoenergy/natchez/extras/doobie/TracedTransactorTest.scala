@@ -49,6 +49,15 @@ class TracedTransactorTest extends CatsEffectSuite {
     )
   }
 
+  database.test("Trace queries with commented name") { db =>
+    assertIO(
+      run(sql"""-- Name: selectOne
+              SELECT 1 WHERE true = ${true: Boolean}
+           """.query[Int].unique.transact(db)).map(_.last),
+      SpanData("test-db:db.execute:selectOne", Map("span.type" -> "db"))
+    )
+  }
+
   database.test("Trace updates") { db =>
     case class Test(name: String, age: Int)
     val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
@@ -56,6 +65,19 @@ class TracedTransactorTest extends CatsEffectSuite {
     assertIO(
       run((create >> insert).transact(db)).map(_.last),
       SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
+    )
+  }
+
+  database.test("Trace updates with commented name") { db =>
+    case class Test(name: String, age: Int)
+    val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
+    val insert =
+      sql"""-- Name: createNewA
+           INSERT INTO a VALUES (${2: Int}, ${"abc": String})
+           """.update.run
+    assertIO(
+      run((create >> insert).transact(db)).map(_.last),
+      SpanData("test-db:db.execute:createNewA", Map("span.type" -> "db"))
     )
   }
 }
