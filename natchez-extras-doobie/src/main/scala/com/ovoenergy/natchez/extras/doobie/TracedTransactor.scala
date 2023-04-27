@@ -25,7 +25,7 @@ object TracedTransactor {
     trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor)
   }
 
-  private val commentNamedQueryRegEx = """--\s*Name:\s*(.+)""".r
+  private val commentNamedQueryRegEx = """--\s*Name:\s*(\w+)""".r
 
   private def extractQueryNameOrSql(sql: String): String =
     commentNamedQueryRegEx.findFirstMatchIn(sql).flatMap(m => Option(m.group(1))).getOrElse(sql)
