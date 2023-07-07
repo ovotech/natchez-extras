@@ -8,6 +8,7 @@ import org.http4s._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import com.ovoenergy.natchez.extras.http4s.Configuration
+import org.http4s.Uri
 
 object TraceMiddleware {
 
@@ -29,7 +30,8 @@ object TraceMiddleware {
     entryPoint: EntryPoint[F],
     configuration: Configuration[F]
   )(
-    service: HttpApp[Kleisli[F, Span[F], *]]
+    service: HttpApp[Kleisli[F, Span[F], *]],
+    removeNumericPathSegments: Uri => String = removeNumericPathSegments
   )(implicit F: Sync[F]): HttpApp[F] =
     Kleisli { r =>
       val spanName = s"http.request:${removeNumericPathSegments(r.uri)}"
