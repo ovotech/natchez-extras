@@ -28,12 +28,12 @@ object TracedClient {
   def apply[F[_]: Sync](
     client: Client[F],
     config: Configuration[F],
-    removeNumericPathSegments: Uri => String = removeNumericPathSegments
+    redactSensitiveData: Uri => String = removeNumericPathSegments
   ): TracedClient[Traced[F, *]] =
     name =>
       Client[Traced[F, *]] { req =>
         Resource(
-          Trace[Traced[F, *]].span(s"$name:http.request:${removeNumericPathSegments(req.uri)}") {
+          Trace[Traced[F, *]].span(s"$name:http.request:${redactSensitiveData(req.uri)}") {
             for {
               span    <- Kleisli.ask[F, Span[F]]
               headers <- trace(span.kernel.map(_.toHeaders.toSeq))

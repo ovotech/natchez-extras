@@ -31,10 +31,10 @@ object TraceMiddleware {
     configuration: Configuration[F]
   )(
     service: HttpApp[Kleisli[F, Span[F], *]],
-    removeNumericPathSegments: Uri => String = removeNumericPathSegments
+    redactSensitiveData: Uri => String = removeNumericPathSegments
   )(implicit F: Sync[F]): HttpApp[F] =
     Kleisli { r =>
-      val spanName = s"http.request:${removeNumericPathSegments(r.uri)}"
+      val spanName = s"http.request:${redactSensitiveData(r.uri)}"
       val kernel = Kernel(r.headers.headers.map(h => h.name.toString -> h.value).toMap)
       val traceRequest = r.mapK(Kleisli.liftK[F, Span[F]])
 
