@@ -1,7 +1,7 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-val scala213Version = "2.13.8"
-val scala3Version = "3.2.2"
+val scala213Version = "2.13.11"
+val scala3Version = "3.3.0"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
 
@@ -69,7 +69,7 @@ val http4sStableVersion = "0.23.14"
 val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.35"
 val fs2Version = "3.2.4"
-val doobieVersion = "1.0.0-RC2"
+val doobieVersion = "1.0.0-RC4"
 
 lazy val natchezDatadog = projectMatrix
   .in(file("natchez-extras-datadog"))
