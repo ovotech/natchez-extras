@@ -47,12 +47,12 @@ val common = Seq(
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
   ).filterNot(_ => scalaVersion.value.startsWith("3.")),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % "2.7.0",
-    "org.typelevel" %% "cats-effect" % "3.3.5",
+    "org.typelevel" %% "cats-core" % "2.9.0",
+    "org.typelevel" %% "cats-effect" % "3.5.0",
     "org.scalameta" %% "munit" % "0.7.29" % Test,
     "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
-    "org.typelevel" %% "scalacheck-effect-munit" % "1.0.3" % Test
+    "org.typelevel" %% "scalacheck-effect-munit" % "1.0.4" % Test
   )
 )
 
@@ -62,13 +62,13 @@ lazy val metricsCommon = projectMatrix
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-val log4catsVersion = "2.2.0"
+val log4catsVersion = "2.6.0"
 val natchezVersion = "0.1.6"
-val http4sMilestoneVersion = "1.0.0-M38"
-val http4sStableVersion = "0.23.14"
+val http4sMilestoneVersion = "1.0.0-M40"
+val http4sStableVersion = "0.23.23"
 val circeVersion = "0.14.1"
 val slf4jVersion = "1.7.35"
-val fs2Version = "3.2.4"
+val fs2Version = "3.7.0"
 val doobieVersion = "1.0.0-RC4"
 
 lazy val natchezDatadog = projectMatrix
