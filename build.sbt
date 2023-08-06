@@ -1,6 +1,6 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-val scala213Version = "2.13.8"
+val scala213Version = "2.13.10"
 val scala3Version = "3.3.0"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
@@ -47,12 +47,12 @@ val common = Seq(
     compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
   ).filterNot(_ => scalaVersion.value.startsWith("3.")),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % "2.7.0",
-    "org.typelevel" %% "cats-effect" % "3.3.5",
+    "org.typelevel" %% "cats-core" % "2.9.0",
+    "org.typelevel" %% "cats-effect" % "3.5.1",
     "org.scalameta" %% "munit" % "0.7.29" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
-    "org.typelevel" %% "scalacheck-effect-munit" % "1.0.3" % Test
+    "org.typelevel" %% "scalacheck-effect-munit" % "1.0.4" % Test
   )
 )
 
@@ -62,14 +62,13 @@ lazy val metricsCommon = projectMatrix
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-
 val log4catsVersion = "2.6.0"
 val natchezVersion = "0.3.3"
-val http4sMilestoneVersion = "1.0.0-M38"
-val http4sStableVersion = "0.23.14"
-val circeVersion = "0.14.1"
-val slf4jVersion = "1.7.35"
-val fs2Version = "3.2.4"
+val http4sMilestoneVersion = "1.0.0-M40"
+val http4sStableVersion = "0.23.23"
+val circeVersion = "0.14.3"
+val slf4jVersion = "1.7.36"
+val fs2Version = "3.8.0"
 val doobieVersion = "1.0.0-RC2"
 
 lazy val natchezDatadog = projectMatrix
@@ -187,7 +186,7 @@ lazy val natchezFs2 = projectMatrix
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "3.0.0-M4",
+      "org.typelevel" %% "kittens" % "3.0.0",
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "co.fs2" %% "fs2-core" % fs2Version
     )
