@@ -143,4 +143,23 @@ class DatadogTest extends CatsEffectSuite {
       )
     }
   }
+
+  test("Sets the error flag when the span's meta contains an error") {
+    List("error.message", "error.msg").traverse { errorMessageKey =>
+      val spans =
+        for {
+          res <- run(
+            _.root("service:resource").use { root =>
+              root.put(errorMessageKey -> "Some error")
+            }
+          )
+          spans <- res.flatTraverse(_.as[List[List[SubmittableSpan]]]).map(_.flatten)
+        } yield spans
+
+      assertIO(
+        obtained = spans.map(_.head.error),
+        returns = Some(1)
+      )
+    }
+  }
 }
