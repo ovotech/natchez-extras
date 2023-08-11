@@ -25,6 +25,11 @@ object TracedTransactor {
     trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor)
   }
 
+  private val commentNamedQueryRegEx = """--\s*Name:\s*(\w+)""".r
+
+  private def extractQueryNameOrSql(sql: String): String =
+    commentNamedQueryRegEx.findFirstMatchIn(sql).flatMap(m => Option(m.group(1))).getOrElse(sql)
+
   private def formatQuery(q: String): String =
     q.replace("\n", " ").replaceAll("\\s+", " ").trim()
 
@@ -50,7 +55,7 @@ object TracedTransactor {
           def runTraced[A](f: TracedOp[A]): TracedOp[A] =
             Kleisli {
               case TracedStatement(p, sql) =>
-                Trace[F].span(config.fullyQualifiedSpanName(formatQuery(sql)))(
+                Trace[F].span(config.fullyQualifiedSpanName(formatQuery(extractQueryNameOrSql(sql))))(
                   Trace[F].put("span.type" -> "db") >> f(p)
                 )
               case a =>
