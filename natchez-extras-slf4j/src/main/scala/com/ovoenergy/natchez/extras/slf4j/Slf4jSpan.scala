@@ -61,7 +61,7 @@ object Slf4jSpan {
     Sync[F]
       .fromEither(
         k.toHeaders
-          .find(_._1.toString.toLowerCase == "x-trace-token")
+          .find(_._1 == ci"x-trace-token")
           .map(_._2)
           .toRight(new Exception("Missing X-Trace-Token header"))
       )

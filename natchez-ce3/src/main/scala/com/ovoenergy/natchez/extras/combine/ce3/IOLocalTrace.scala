@@ -20,7 +20,7 @@ class IOLocalTrace(private val local: IOLocal[Span[IO]]) extends Trace[IO] {
 
   override def span[A](name: String, options: Span.Options)(k: IO[A]): IO[A] =
     local.get.flatMap {
-      _.span(name).use { span =>
+      _.span(name, options).use { span =>
         scope(span)(k)
       }
     }

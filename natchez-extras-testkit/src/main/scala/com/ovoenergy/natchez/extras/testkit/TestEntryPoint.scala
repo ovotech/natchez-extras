@@ -40,18 +40,18 @@ object TestEntryPoint {
         Resource.makeCase(
           Ref.of[F, List[(String, TraceValue)]](List.empty).map { ref =>
             new TestSpan[F] {
-              def tags: F[List[(String, TraceValue)]] = ref.get
-              def span(newName: String): Resource[F, Span[F]] = makeSpan(newName, Some(name), kern)
-              def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields)
-              def traceId: F[Option[String]] = F.pure(None)
-              def spanId: F[Option[String]] = F.pure(None)
-              def traceUri: F[Option[URI]] = F.pure(None)
-              def kernel: F[Kernel] = F.pure(kern)
+              override def tags: F[List[(String, TraceValue)]] = ref.get
+              override def put(fields: (String, TraceValue)*): F[Unit] = ref.update(_ ++ fields)
+              override def traceId: F[Option[String]] = F.pure(None)
+              override def spanId: F[Option[String]] = F.pure(None)
+              override def traceUri: F[Option[URI]] = F.pure(None)
+              override def kernel: F[Kernel] = F.pure(kern)
               override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
               override def log(event: String): F[Unit] = log("event" -> TraceValue.StringValue(event))
               override def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
                 put(Tags.error(true) :: fields.toList: _*)
               override def span(name: String, options: Span.Options): Resource[F, Span[F]] = span(name)
+              private def span(newName: String): Resource[F, Span[F]] = makeSpan(newName, Some(name), kern)
             }
           }
         ) { (span, ec) =>
