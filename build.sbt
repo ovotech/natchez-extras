@@ -1,7 +1,7 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
 val scala213Version = "2.13.8"
-val scala3Version = "3.2.2"
+val scala3Version = "3.3.0"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
 
@@ -63,7 +63,7 @@ lazy val metricsCommon = projectMatrix
   .settings(common :+ (name := "natchez-extras-metrics"))
 
 val log4catsVersion = "2.2.0"
-val natchezVersion = "0.1.6"
+val natchezVersion = "0.3.3"
 val http4sMilestoneVersion = "1.0.0-M38"
 val http4sStableVersion = "0.23.14"
 val circeVersion = "0.14.1"

@@ -1,4 +1,5 @@
 .idea/
+.vscode/
 dist/*
 target/
 lib_managed/

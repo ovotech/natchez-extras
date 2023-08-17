@@ -9,9 +9,11 @@ import cats.syntax.functor._
 import natchez.TraceValue.StringValue
 import natchez.{Kernel, Span, TraceValue}
 import org.slf4j.{Logger, LoggerFactory, MDC}
+import org.typelevel.ci.CIStringSyntax
 
 import java.net.URI
 import java.util.UUID.randomUUID
+import natchez.Tags
 
 case class Slf4jSpan[F[_]: Sync](
   mdc: Ref[F, Map[String, TraceValue]],
@@ -24,9 +26,9 @@ case class Slf4jSpan[F[_]: Sync](
     mdc.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) })
 
   def kernel: F[Kernel] =
-    Monad[F].pure(Kernel(Map("X-Trace-Token" -> token)))
+    Monad[F].pure(Kernel(Map(ci"X-Trace-Token" -> token)))
 
-  def span(name: String): Resource[F, Span[F]] =
+  def span(name: String, options: Span.Options): Resource[F, Span[F]] =
     Resource.eval(mdc.get).flatMap(Slf4jSpan.create(name, Some(token), _)).widen
 
   def traceId: F[Option[String]] =
@@ -37,6 +39,13 @@ case class Slf4jSpan[F[_]: Sync](
 
   def traceUri: F[Option[URI]] =
     Sync[F].pure(None)
+
+  override def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
+    put(Tags.error(true) :: fields.toList: _*)
+
+  override def log(event: String): F[Unit] = put("event" -> TraceValue.StringValue(event))
+
+  override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
 }
 
 object Slf4jSpan {
@@ -52,7 +61,7 @@ object Slf4jSpan {
     Sync[F]
       .fromEither(
         k.toHeaders
-          .find(_._1.toLowerCase == "x-trace-token")
+          .find(_._1 == ci"x-trace-token")
           .map(_._2)
           .toRight(new Exception("Missing X-Trace-Token header"))
       )

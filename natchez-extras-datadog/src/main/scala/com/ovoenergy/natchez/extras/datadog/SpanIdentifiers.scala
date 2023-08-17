@@ -53,7 +53,7 @@ object SpanIdentifiers {
    * partial data (i.e. just a trace token) is still useful to us
    */
   def fromKernel[F[_]: Sync](rawKernel: Kernel): F[SpanIdentifiers] = {
-    val headers = Headers(rawKernel.toHeaders.toSeq)
+    val headers = Headers(rawKernel.toHeaders.map { case (k, v) => k.toString -> v }.toSeq)
     (
       traceId(headers),
       UnsignedLong.random[F],
@@ -70,6 +70,6 @@ object SpanIdentifiers {
         `X-B3-Trace-Id`(ids.traceId),
         `X-B3-Span-Id`(ids.spanId),
         "X-Trace-Token" -> ids.traceToken
-      ).headers.map(r => r.name.toString -> r.value).toMap
+      ).headers.map(r => r.name -> r.value).toMap
     )
 }

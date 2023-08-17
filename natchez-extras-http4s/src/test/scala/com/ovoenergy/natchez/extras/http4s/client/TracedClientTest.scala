@@ -20,7 +20,7 @@ class TracedClientTest extends CatsEffectSuite {
       client <- TestClient[IO]
       ep     <- TestEntryPoint[IO]
       http = TracedClient(client.client, config)
-      kernel = Kernel(Map("X-Trace-Token" -> "token"))
+      kernel = Kernel(Map(ci"X-Trace-Token" -> "token"))
       _    <- ep.continue("bar", kernel).use(http.named("foo").status(Request[TraceIO]()).run)
       reqs <- client.requests
     } yield assertEquals(

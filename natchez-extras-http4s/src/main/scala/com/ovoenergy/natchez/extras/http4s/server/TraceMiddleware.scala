@@ -35,7 +35,7 @@ object TraceMiddleware {
   )(implicit F: Sync[F]): HttpApp[F] =
     Kleisli { r =>
       val spanName = s"http.request:${redactSensitiveData(r.uri)}"
-      val kernel = Kernel(r.headers.headers.map(h => h.name.toString -> h.value).toMap)
+      val kernel = Kernel(r.headers.headers.map(h => h.name -> h.value).toMap)
       val traceRequest = r.mapK(Kleisli.liftK[F, Span[F]])
 
       entryPoint
