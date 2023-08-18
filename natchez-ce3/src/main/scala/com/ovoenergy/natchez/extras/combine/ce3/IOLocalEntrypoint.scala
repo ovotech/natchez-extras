@@ -9,13 +9,18 @@ class IOLocalEntrypoint(private val ep: EntryPoint[IO], private val local: IOLoc
   private def localise(span: Span[IO]): Resource[IO, Span[IO]] =
     Resource.make(local.getAndSet(span))(parentSpan => local.set(parentSpan))
 
-  override def root(name: String): Resource[IO, Span[IO]] = ep.root(name).flatTap(localise)
+  override def root(name: String, options: Span.Options): Resource[IO, Span[IO]] =
+    ep.root(name, options).flatTap(localise)
 
-  override def continue(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
-    ep.continue(name, kernel).flatTap(localise)
+  override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[IO, Span[IO]] =
+    ep.continue(name, kernel, options).flatTap(localise)
 
-  override def continueOrElseRoot(name: String, kernel: Kernel): Resource[IO, Span[IO]] =
-    ep.continueOrElseRoot(name, kernel).flatTap(localise)
+  override def continueOrElseRoot(
+    name: String,
+    kernel: Kernel,
+    options: Span.Options
+  ): Resource[IO, Span[IO]] =
+    ep.continueOrElseRoot(name, kernel, options).flatTap(localise)
 }
 
 object IOLocalEntrypoint {

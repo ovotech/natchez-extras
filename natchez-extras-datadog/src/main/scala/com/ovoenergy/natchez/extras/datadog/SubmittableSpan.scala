@@ -97,11 +97,11 @@ object SubmittableSpan {
   /**
    * Datadog docs: "Set this [error] value to 1 to indicate if an error occurred"
    */
-  private def isError(exitCase: ExitCase): Option[Int] =
+  private def isError(exitCase: ExitCase): Boolean =
     exitCase match {
-      case ExitCase.Succeeded  => None
-      case ExitCase.Errored(_) => Some(1)
-      case ExitCase.Canceled   => None
+      case ExitCase.Succeeded  => false
+      case ExitCase.Errored(_) => true
+      case ExitCase.Canceled   => false
     }
 
   /**
@@ -141,6 +141,9 @@ object SubmittableSpan {
       .toMap
       .updated("traceToken", traceToken)
 
+  private def hasErrorMessageInMeta(meta: Map[String, String]): Boolean =
+    meta.keys.exists(key => key == "error.message" || key == "error.msg")
+
   /**
    * Given an open DatadogSpan and an exit case to indicate whether the span succeeded
    * Create a submittable span we can pass through to the DataDog agent API
@@ -155,6 +158,7 @@ object SubmittableSpan {
       Clock[F].realTime
     ).mapN {
       case (meta, ids, end) =>
+        val transformedMeta = transformTags(meta, exitCase, ids.traceToken)
         SubmittableSpan(
           traceId = ids.traceId,
           spanId = ids.spanId,
@@ -164,10 +168,10 @@ object SubmittableSpan {
           start = span.start,
           duration = end.toNanos - span.start,
           parentId = ids.parentId,
-          error = isError(exitCase),
+          error = Option.when(isError(exitCase) || hasErrorMessageInMeta(transformedMeta))(1),
           `type` = inferSpanType(meta),
           metrics = ids.parentId.fold(spanMetrics)(_ => Map.empty),
-          meta = transformTags(meta, exitCase, ids.traceToken)
+          meta = transformedMeta
         )
     }
 }

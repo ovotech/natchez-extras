@@ -14,6 +14,7 @@ import natchez.TraceValue.{BooleanValue, NumberValue, StringValue}
 import natchez.{Kernel, Span, TraceValue}
 
 import java.net.URI
+import natchez.Tags
 
 /**
  * Models an in-progress span we'll eventually send to Datadog.
@@ -42,7 +43,7 @@ case class DatadogSpan[F[_]: Async](
     meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) }) >>
     updateTraceToken(fields.toMap)
 
-  def span(name: String): Resource[F, Span[F]] =
+  def span(name: String, options: Span.Options): Resource[F, Span[F]] =
     DatadogSpan.fromParent(name, parent = this).widen
 
   def kernel: F[Kernel] =
@@ -56,6 +57,13 @@ case class DatadogSpan[F[_]: Async](
 
   def traceUri: F[Option[URI]] =
     Monad[F].pure(None)
+
+  override def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
+    put(Tags.error(true) :: fields.toList: _*)
+
+  override def log(event: String): F[Unit] = put("event" -> TraceValue.StringValue(event))
+
+  override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
 }
 
 object DatadogSpan {

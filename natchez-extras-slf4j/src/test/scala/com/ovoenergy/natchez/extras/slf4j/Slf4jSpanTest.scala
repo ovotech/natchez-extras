@@ -3,6 +3,7 @@ package com.ovoenergy.natchez.extras.slf4j
 import cats.effect.{Concurrent, IO}
 import munit.CatsEffectSuite
 import natchez.Kernel
+import org.typelevel.ci.CIStringSyntax
 import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
 
 import scala.concurrent.duration.DurationInt
@@ -71,7 +72,7 @@ class Slf4jSpanTest extends CatsEffectSuite {
     assertIO(
       returns = "boz",
       obtained = Slf4jSpan
-        .fromKernel[IO]("foo", Kernel(Map("x-Trace-TOKEN" -> "boz")))
+        .fromKernel[IO]("foo", Kernel(Map(ci"x-Trace-TOKEN" -> "boz")))
         .flatMap(_.use(r => IO(r.token)))
     )
   }
