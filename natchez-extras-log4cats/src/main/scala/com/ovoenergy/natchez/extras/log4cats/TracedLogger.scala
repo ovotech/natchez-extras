@@ -5,7 +5,7 @@ import cats.data.Kleisli
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import org.typelevel.log4cats.StructuredLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 import natchez.{Kernel, Span, Trace}
 
 object TracedLogger {
@@ -30,20 +30,20 @@ object TracedLogger {
    * lift the logger into a Kleisli (so it then has a trace instance) and wrap it
    */
   def lift[F[_]: Sync](
-    logger: StructuredLogger[F],
+    logger: SelfAwareStructuredLogger[F],
     kernelMdc: Kernel => Map[String, String] = datadogMdc
-  ): StructuredLogger[Kleisli[F, Span[F], *]] =
+  ): SelfAwareStructuredLogger[Kleisli[F, Span[F], *]] =
     apply(logger.mapK[Kleisli[F, Span[F], *]](Kleisli.liftK), kernelMdc)
 
   /**
-   * Given a StructuredLogger wrap it into a new StructuredLogger
+   * Given a SelfAwareStructuredLogger wrap it into a new SelfAwareStructuredLogger
    * that extracts a trace_id and span_id from the Natchez Kernel and adds it to the MDC
    */
   def apply[F[_]: Trace: Monad](
-    logger: StructuredLogger[F],
+    logger: SelfAwareStructuredLogger[F],
     kernelMdc: Kernel => Map[String, String] = datadogMdc
-  ): StructuredLogger[F] =
-    new StructuredLogger[F] {
+  ): SelfAwareStructuredLogger[F] =
+    new SelfAwareStructuredLogger[F] {
       val mdc: F[Map[String, String]] =
         Trace[F].kernel.map(kernelMdc)
       def trace(ctx: Map[String, String])(msg: => String): F[Unit] =
@@ -86,5 +86,15 @@ object TracedLogger {
         mdc.flatMap(map => logger.debug(map)(message))
       def trace(message: => String): F[Unit] =
         mdc.flatMap(map => logger.trace(map)(message))
+      def isDebugEnabled: F[Boolean] =
+        logger.isDebugEnabled
+      def isErrorEnabled: F[Boolean] =
+        logger.isErrorEnabled
+      def isInfoEnabled: F[Boolean] =
+        logger.isInfoEnabled
+      def isTraceEnabled: F[Boolean] =
+        logger.isTraceEnabled
+      def isWarnEnabled: F[Boolean] =
+        logger.isWarnEnabled
     }
 }
