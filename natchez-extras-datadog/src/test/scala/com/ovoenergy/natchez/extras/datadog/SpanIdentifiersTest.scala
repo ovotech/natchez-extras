@@ -33,7 +33,7 @@ class SpanIdentifiersTest extends CatsEffectSuite {
   }
 
   test("fromKernel should succeed in converting from a kernel even if info is missing") {
-    assertIOBoolean(fromKernel[IO](Kernel(Map.empty)).attempt.map(_.isRight))
+    assertIOBoolean(fromKernel[IO](Kernel(Map.empty)).attempt.map(_.isRight)) *>
     assertIO(fromKernel[IO](Kernel(Map(ci"X-Trace-Token" -> "foo"))).map(_.traceToken), "foo")
   }
 

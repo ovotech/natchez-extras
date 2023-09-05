@@ -64,7 +64,6 @@ class TracedTransactorTest extends CatsEffectSuite {
   }
 
   database.test("Trace updates") { db =>
-    case class Test(name: String, age: Int)
     val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
     val insert = sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
     assertIO(
@@ -74,7 +73,6 @@ class TracedTransactorTest extends CatsEffectSuite {
   }
 
   database.test("Trace updates with commented name") { db =>
-    case class Test(name: String, age: Int)
     val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
     val insert =
       sql"""-- Name: createNewA
