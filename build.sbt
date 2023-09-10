@@ -1,6 +1,6 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-val scala213Version = "2.13.10"
+val scala213Version = "2.13.12"
 val scala3Version = "3.3.0"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
@@ -68,8 +68,9 @@ val http4sMilestoneVersion = "1.0.0-M40"
 val http4sStableVersion = "0.23.23"
 val circeVersion = "0.14.3"
 val slf4jVersion = "1.7.36"
-val fs2Version = "3.8.0"
-val doobieVersion = "1.0.0-RC2"
+val fs2Version = "3.9.1"
+val doobieVersion = "1.0.0-RC4"
+val doobieLegacyVersion = "1.0.0-RC2"
 
 lazy val natchezDatadog = projectMatrix
   .in(file("natchez-extras-datadog"))
@@ -206,6 +207,20 @@ lazy val natchezDoobie = projectMatrix
   )
   .dependsOn(core)
 
+lazy val natchezDoobieLegacy = projectMatrix
+  .in(file("natchez-extras-doobie-legacy"))
+  .jvmPlatform(scalaVersions = scalaVersions)
+  .enablePlugins(GitVersioning)
+  .settings(common :+ (name := "natchez-extras-doobie-legacy"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
+      "org.tpolecat" %% "doobie-core" % doobieLegacyVersion,
+      "org.tpolecat" %% "doobie-h2" % doobieVersion % Test
+    )
+  )
+  .dependsOn(core)
+
 lazy val core = projectMatrix
   .in(file("natchez-extras-core"))
   .jvmPlatform(scalaVersions = scalaVersions)
@@ -260,6 +275,7 @@ lazy val docs = project
     ce3Utils.jvm(scala213Version),
     datadogMetrics.jvm(scala213Version),
     natchezDoobie.jvm(scala213Version),
+    natchezDoobieLegacy.jvm(scala213Version),
     datadogStable213,
     natchezCombine.jvm(scala213Version),
     natchezSlf4j.jvm(scala213Version),
@@ -305,6 +321,7 @@ lazy val root = (project in file("."))
   .aggregate(natchezCombine.projectRefs: _*)
   .aggregate(natchezSlf4j.projectRefs: _*)
   .aggregate(natchezDoobie.projectRefs: _*)
+  .aggregate(natchezDoobieLegacy.projectRefs: _*)
   .aggregate(natchezLog4Cats.projectRefs: _*)
   .aggregate(natchezHttp4s.projectRefs: _*)
   .aggregate(natchezFs2.projectRefs: _*)
