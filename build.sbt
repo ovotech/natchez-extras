@@ -216,7 +216,7 @@ lazy val natchezDoobieLegacy = projectMatrix
     libraryDependencies ++= Seq(
       "org.tpolecat" %% "natchez-core" % natchezVersion,
       "org.tpolecat" %% "doobie-core" % doobieLegacyVersion,
-      "org.tpolecat" %% "doobie-h2" % doobieVersion % Test
+      "org.tpolecat" %% "doobie-h2" % doobieLegacyVersion % Test
     )
   )
   .dependsOn(core)
@@ -275,7 +275,6 @@ lazy val docs = project
     ce3Utils.jvm(scala213Version),
     datadogMetrics.jvm(scala213Version),
     natchezDoobie.jvm(scala213Version),
-    natchezDoobieLegacy.jvm(scala213Version),
     datadogStable213,
     natchezCombine.jvm(scala213Version),
     natchezSlf4j.jvm(scala213Version),

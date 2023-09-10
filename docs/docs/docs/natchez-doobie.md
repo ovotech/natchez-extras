@@ -63,7 +63,8 @@ object NatchezDoobie extends IOApp {
         driver = "org.postgresql.Driver",
         url = "jdbc:postgresql:example",
         user = "postgres",
-        pass = "password" // of course don't hard code these details in your applications!
+        password = "password", // of course don't hard code these details in your applications!
+        logHandler = None,
       )
     )
 
