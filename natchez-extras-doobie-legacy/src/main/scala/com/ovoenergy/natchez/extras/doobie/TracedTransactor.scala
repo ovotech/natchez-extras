@@ -5,7 +5,6 @@ import cats.effect.Async
 import cats.implicits.catsSyntaxFlatMapOps
 import com.ovoenergy.natchez.extras.core.Config
 import com.ovoenergy.natchez.extras.core.Config.ServiceAndResource
-import doobie.util.log.LogHandler
 import doobie.{KleisliInterpreter, WeakAsync}
 import doobie.util.transactor.Transactor
 import natchez.{Span, Trace}
@@ -18,25 +17,11 @@ object TracedTransactor {
   type Traced[F[_], A] = Kleisli[F, Span[F], A]
   def apply[F[_]: Async](
     service: String,
-    transactor: Transactor[F],
-    logHandler: LogHandler[Traced[F, *]]
-  ): Transactor[Traced[F, *]] = {
-    val kleisliTransactor = transactor
-      .mapK(Kleisli.liftK[F, Span[F]])(implicitly, Async.asyncForKleisli(implicitly))
-    trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor, logHandler)
-  }
-
-  def apply[F[_]: Async](
-    service: String,
     transactor: Transactor[F]
   ): Transactor[Traced[F, *]] = {
     val kleisliTransactor = transactor
       .mapK(Kleisli.liftK[F, Span[F]])(implicitly, Async.asyncForKleisli(implicitly))
-    trace(
-      ServiceAndResource(s"$service-db", DefaultResourceName),
-      kleisliTransactor,
-      LogHandler.noop[Traced[F, *]]
-    )
+    trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor)
   }
 
   private val commentNamedQueryRegEx = """--\s*Name:\s*(\w+)""".r
@@ -49,20 +34,17 @@ object TracedTransactor {
 
   def trace[F[_]: Trace: Async](
     config: Config,
-    transactor: Transactor[F],
-    logHandler: LogHandler[F]
+    transactor: Transactor[F]
   ): Transactor[F] =
     transactor
       .copy(
-        interpret0 = createInterpreter(config, Async[F], logHandler).ConnectionInterpreter
+        interpret0 = createInterpreter(config, Async[F]).ConnectionInterpreter
       )
 
-  private def createInterpreter[F[_]: Trace](
-    config: Config,
-    F: Async[F],
-    logHandler: LogHandler[F]
-  ): KleisliInterpreter[F] = {
-    new KleisliInterpreter[F](logHandler)(WeakAsync.doobieWeakAsyncForAsync(F)) {
+  private def createInterpreter[F[_]: Trace](config: Config, F: Async[F]): KleisliInterpreter[F] = {
+    new KleisliInterpreter[F] {
+      implicit val asyncM: WeakAsync[F] =
+        WeakAsync.doobieWeakAsyncForAsync(F)
 
       override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
         new PreparedStatementInterpreter {
@@ -99,8 +81,6 @@ object TracedTransactor {
         new ConnectionInterpreter {
           override def prepareStatement(a: String): Kleisli[F, Connection, PreparedStatement] =
             super.prepareStatement(a).map(TracedStatement(_, a): PreparedStatement)
-          override def getTypeMap: Nothing =
-            super.getTypeMap.asInstanceOf // See: https://github.com/tpolecat/doobie/blob/v1.0.0-RC4/modules/core/src/test/scala/doobie/util/StrategySuite.scala#L47
         }
     }
   }
