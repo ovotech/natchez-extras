@@ -49,7 +49,7 @@ class TracedTransactorTest extends CatsEffectSuite {
 
   database.test("Trace queries") { db =>
     assertIO(
-      run(sql"SELECT 1 WHERE true = ${true: Boolean}".query[Int].unique.transact(db)).map(_.last),
+      run(sql"SELECT 1 WHERE true = ${true: Boolean}".query[Int].unique.transact(db)).map(_.init.last),
       SpanData("test-db:db.execute:SELECT 1 WHERE true = ?", Map("span.type" -> "db"))
     )
   }
@@ -58,7 +58,7 @@ class TracedTransactorTest extends CatsEffectSuite {
     assertIO(
       run(sql"""-- Name: selectOne
               SELECT 1 WHERE true = ${true: Boolean}
-           """.query[Int].unique.transact(db)).map(_.last),
+           """.query[Int].unique.transact(db)).map(_.init.last),
       SpanData("test-db:db.execute:selectOne", Map("span.type" -> "db"))
     )
   }
@@ -67,7 +67,7 @@ class TracedTransactorTest extends CatsEffectSuite {
     val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
     val insert = sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
     assertIO(
-      run((create >> insert).transact(db)).map(_.last),
+      run((create >> insert).transact(db)).map(_.init.last),
       SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
     )
   }
@@ -79,8 +79,28 @@ class TracedTransactorTest extends CatsEffectSuite {
            INSERT INTO a VALUES (${2: Int}, ${"abc": String})
            """.update.run
     assertIO(
-      run((create >> insert).transact(db)).map(_.last),
+      run((create >> insert).transact(db)).map(_.init.last),
       SpanData("test-db:db.execute:createNewA", Map("span.type" -> "db"))
+    )
+  }
+
+  database.test("Trace connect") { db =>
+    val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
+    val insert =
+      sql"""INSERT INTO a VALUES (${2: Int}, ${"abc": String})""".update.run
+    assertIO(
+      run((create >> insert).transact(db)).map(_.drop(1).head),
+      SpanData("test-db:db.execute:connect", Map("span.type" -> "db"))
+    )
+  }
+
+  database.test("Trace commit") { db =>
+    val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
+    val insert =
+      sql"""INSERT INTO a VALUES (${2: Int}, ${"abc": String})""".update.run
+    assertIO(
+      run((create >> insert).transact(db)).map(_.last),
+      SpanData("test-db:db.execute:commit", Map("span.type" -> "db"))
     )
   }
 }
