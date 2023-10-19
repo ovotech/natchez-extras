@@ -14,7 +14,8 @@ import scala.annotation.nowarn
 @nowarn
 private[doobie] case class TracedStatement(
   p: PreparedStatement,
-  queryString: String
+  queryString: String,
+  c: Any*
 ) extends PreparedStatement {
   def executeQuery(): ResultSet = p.executeQuery()
 
