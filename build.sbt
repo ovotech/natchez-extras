@@ -63,13 +63,13 @@ lazy val metricsCommon = projectMatrix
   .settings(common :+ (name := "natchez-extras-metrics"))
 
 val log4catsVersion = "2.6.0"
-val natchezVersion = "0.3.3"
+val natchezVersion = "0.3.4"
 val http4sMilestoneVersion = "1.0.0-M40"
 val http4sStableVersion = "0.23.23"
 val circeVersion = "0.14.3"
 val slf4jVersion = "1.7.36"
 val fs2Version = "3.9.1"
-val doobieVersion = "1.0.0-RC4"
+val doobieVersion = "1.0.0-RC5"
 val doobieLegacyVersion = "1.0.0-RC2"
 
 lazy val natchezDatadog = projectMatrix
