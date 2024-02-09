@@ -1,7 +1,7 @@
 package com.ovoenergy.natchez.extras.doobie
 
 import cats.data.Kleisli
-import cats.effect.Async
+import cats.effect.{Async, Resource}
 import cats.implicits.catsSyntaxFlatMapOps
 import com.ovoenergy.natchez.extras.core.Config
 import com.ovoenergy.natchez.extras.core.Config.ServiceAndResource
@@ -54,7 +54,11 @@ object TracedTransactor {
   ): Transactor[F] =
     transactor
       .copy(
-        interpret0 = createInterpreter(config, Async[F], logHandler).ConnectionInterpreter
+        interpret0 = createInterpreter(config, Async[F], logHandler).ConnectionInterpreter,
+        connect0 = in =>
+          Trace[Resource[F, *]].span(config.fullyQualifiedSpanName("connect"))(
+            Trace[Resource[F, *]].put("span.type" -> "db") >> transactor.connect(in)
+          )
       )
 
   private def createInterpreter[F[_]: Trace](
@@ -115,6 +119,12 @@ object TracedTransactor {
 
           override def getTypeMap: Nothing =
             super.getTypeMap.asInstanceOf // See: https://github.com/tpolecat/doobie/blob/v1.0.0-RC4/modules/core/src/test/scala/doobie/util/StrategySuite.scala#L47
+          override def commit: Kleisli[F, Connection, Unit] =
+            Kleisli { c =>
+              Trace[F].span(config.fullyQualifiedSpanName("commit"))(
+                Trace[F].put("span.type" -> "db") >> super.commit(c)
+              )
+            }
         }
     }
   }
