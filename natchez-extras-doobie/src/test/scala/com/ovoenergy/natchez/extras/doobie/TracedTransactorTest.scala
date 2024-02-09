@@ -65,7 +65,18 @@ class TracedTransactorTest extends CatsEffectSuite {
 
   database.test("Trace updates") { db =>
     val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
-    val insert = sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
+    val insert =
+      sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.run
+    assertIO(
+      run((create >> insert).transact(db)).map(_.last),
+      SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
+    )
+  }
+
+  database.test("Trace updates withUniqueGeneratedKeys") { db =>
+    val create = sql"CREATE TABLE a (id INT, name VARCHAR)".update.run
+    val insert =
+      sql"INSERT INTO a VALUES (${2: Int}, ${"abc": String})".update.withUniqueGeneratedKeys[String]("name")
     assertIO(
       run((create >> insert).transact(db)).map(_.last),
       SpanData("test-db:db.execute:INSERT INTO a VALUES (?, ?)", Map("span.type" -> "db"))
