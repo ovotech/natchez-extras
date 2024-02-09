@@ -93,7 +93,6 @@ object TracedTransactor {
 
           override val executeQuery: TracedOp[ResultSet] =
             runTraced(super.executeQuery)
-
         }
 
       override lazy val ConnectionInterpreter: ConnectionInterpreter =
