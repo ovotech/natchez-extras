@@ -71,7 +71,7 @@ object TracedTransactor {
 
           def runTraced[A](f: TracedOp[A]): TracedOp[A] =
             Kleisli {
-              case TracedStatement(p, sql, _*) =>
+              case TracedStatement(p, sql) =>
                 Trace[F].span(config.fullyQualifiedSpanName(formatQuery(extractQueryNameOrSql(sql))))(
                   Trace[F].put("span.type" -> "db") >> f(p)
                 )
@@ -100,16 +100,19 @@ object TracedTransactor {
         new ConnectionInterpreter {
           override def prepareStatement(a: String): Kleisli[F, Connection, PreparedStatement] =
             super.prepareStatement(a).map(TracedStatement(_, a): PreparedStatement)
-          override def prepareStatement( a: String, b: Array[String]): Kleisli[F, Connection, PreparedStatement] =
-            super.prepareStatement(a, b).map(TracedStatement(_, a, b): PreparedStatement)
+          override def prepareStatement(
+            a: String,
+            b: Array[String]
+          ): Kleisli[F, Connection, PreparedStatement] =
+            super.prepareStatement(a, b).map(TracedStatement(_, a): PreparedStatement)
           override def prepareStatement(a: String, b: Array[Int]): Kleisli[F, Connection, PreparedStatement] =
-            super.prepareStatement(a, b).map(TracedStatement(_, a, b): PreparedStatement)
+            super.prepareStatement(a, b).map(TracedStatement(_, a): PreparedStatement)
           override def prepareStatement(a: String, b: Int) =
-            super.prepareStatement(a, b).map(TracedStatement(_, a, b): PreparedStatement)
+            super.prepareStatement(a, b).map(TracedStatement(_, a): PreparedStatement)
           override def prepareStatement(a: String, b: Int, c: Int) =
-            super.prepareStatement(a, b, c).map(TracedStatement(_, a, b, c): PreparedStatement)
+            super.prepareStatement(a, b, c).map(TracedStatement(_, a): PreparedStatement)
           override def prepareStatement(a: String, b: Int, c: Int, d: Int) =
-            super.prepareStatement(a, b, c, d).map(TracedStatement(_, a, b, c, d): PreparedStatement)
+            super.prepareStatement(a, b, c, d).map(TracedStatement(_, a): PreparedStatement)
 
           override def getTypeMap: Nothing =
             super.getTypeMap.asInstanceOf // See: https://github.com/tpolecat/doobie/blob/v1.0.0-RC4/modules/core/src/test/scala/doobie/util/StrategySuite.scala#L47
