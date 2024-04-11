@@ -7,7 +7,7 @@ import com.ovoenergy.natchez.extras.datadog.Datadog.entryPoint
 import com.ovoenergy.natchez.extras.datadog.DatadogTags.SpanType.{Cache, Db, Web}
 import com.ovoenergy.natchez.extras.datadog.DatadogTags.spanType
 import munit.CatsEffectSuite
-import natchez.EntryPoint
+import natchez.{EntryPoint, TraceValue}
 import org.http4s.Request
 import org.http4s.circe.CirceEntityDecoder._
 import org.http4s.syntax.literals._
@@ -21,8 +21,8 @@ import scala.concurrent.duration._
  */
 class DatadogTest extends CatsEffectSuite {
 
-  def run(f: EntryPoint[IO] => IO[Unit]): IO[List[Request[IO]]] =
-    TestClient[IO].flatMap(c => entryPoint(c.client, "test", "blah").use(f) >> c.requests)
+  def run(f: EntryPoint[IO] => IO[Unit], meta: Map[String, TraceValue] = Map.empty): IO[List[Request[IO]]] =
+    TestClient[IO].flatMap(c => entryPoint(c.client, "test", "blah", meta = meta).use(f) >> c.requests)
 
   test("Obtain the agent host from the parameter") {
     assertIO(
@@ -123,6 +123,21 @@ class DatadogTest extends CatsEffectSuite {
       assertEquals(spans.head.resource, "res")
       assertEquals(spans.head.service, "svc")
       assertEquals(spans.head.name, "name")
+    }
+  }
+
+  test("Allow you to provide default tags") {
+    for {
+      res <- run(
+        _.root("bar").use(_.span("subspan").use(_ => IO.unit)),
+        Map("defaultTag1" -> "some-value", "defaultTag2" -> "some-other-value")
+      )
+      spans <- res.flatTraverse(_.as[List[List[SubmittableSpan]]]).map(_.flatten)
+    } yield {
+      assertEquals(spans.head.meta.get("defaultTag1"), Some("some-value"))
+      assertEquals(spans.head.meta.get("defaultTag2"), Some("some-other-value"))
+      assertEquals(spans.tail.head.meta.get("defaultTag1"), Some("some-value"))
+      assertEquals(spans.tail.head.meta.get("defaultTag2"), Some("some-other-value"))
     }
   }
 
