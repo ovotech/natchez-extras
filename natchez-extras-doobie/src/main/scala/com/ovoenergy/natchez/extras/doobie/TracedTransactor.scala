@@ -103,6 +103,20 @@ object TracedTransactor {
         new ConnectionInterpreter {
           override def prepareStatement(a: String): Kleisli[F, Connection, PreparedStatement] =
             super.prepareStatement(a).map(TracedStatement(_, a): PreparedStatement)
+          override def prepareStatement(
+            a: String,
+            b: Array[String]
+          ): Kleisli[F, Connection, PreparedStatement] =
+            super.prepareStatement(a, b).map(TracedStatement(_, a): PreparedStatement)
+          override def prepareStatement(a: String, b: Array[Int]): Kleisli[F, Connection, PreparedStatement] =
+            super.prepareStatement(a, b).map(TracedStatement(_, a): PreparedStatement)
+          override def prepareStatement(a: String, b: Int) =
+            super.prepareStatement(a, b).map(TracedStatement(_, a): PreparedStatement)
+          override def prepareStatement(a: String, b: Int, c: Int) =
+            super.prepareStatement(a, b, c).map(TracedStatement(_, a): PreparedStatement)
+          override def prepareStatement(a: String, b: Int, c: Int, d: Int) =
+            super.prepareStatement(a, b, c, d).map(TracedStatement(_, a): PreparedStatement)
+
           override def getTypeMap: Nothing =
             super.getTypeMap.asInstanceOf // See: https://github.com/tpolecat/doobie/blob/v1.0.0-RC4/modules/core/src/test/scala/doobie/util/StrategySuite.scala#L47
           override def commit: Kleisli[F, Connection, Unit] =
