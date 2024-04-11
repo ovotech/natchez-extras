@@ -9,7 +9,7 @@ import cats.syntax.functor._
 import com.ovoenergy.natchez.extras.datadog.DatadogSpan.SpanNames
 import fs2.Stream
 import io.circe.{Encoder, Printer}
-import natchez.{EntryPoint, Kernel, Span}
+import natchez.{EntryPoint, Kernel, Span, TraceValue}
 import org.http4s.Method.PUT
 import org.http4s.Uri.Path.unsafeFromString
 import org.http4s.circe.CirceInstances.builder
@@ -119,7 +119,8 @@ object Datadog {
     client: Client[F],
     service: String,
     resource: String,
-    agentHost: Uri = uri"http://localhost:8126"
+    agentHost: Uri = uri"http://localhost:8126",
+    meta: Map[String, TraceValue] = Map.empty
   ): Resource[F, EntryPoint[F]] =
     for {
       queue <- spanQueue
@@ -130,7 +131,7 @@ object Datadog {
         def root(name: String, options: Span.Options): Resource[F, Span[F]] =
           Resource
             .eval(SpanIdentifiers.create.flatMap(Ref.of[F, SpanIdentifiers]))
-            .flatMap(DatadogSpan.create(queue, names(name)))
+            .flatMap(DatadogSpan.create(queue, names(name), meta))
             .widen
 
         def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
