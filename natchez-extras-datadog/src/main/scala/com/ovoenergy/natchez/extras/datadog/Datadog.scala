@@ -135,10 +135,10 @@ object Datadog {
             .widen
 
         def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
-          DatadogSpan.fromKernel(queue, names(name), kernel).widen
+          DatadogSpan.fromKernel(queue, names(name), kernel, meta).widen
 
         def continueOrElseRoot(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
-          DatadogSpan.fromKernel(queue, names(name), kernel).widen
+          DatadogSpan.fromKernel(queue, names(name), kernel, meta).widen
       }
     }
 }

@@ -14,6 +14,7 @@ import org.http4s.syntax.literals._
 import org.typelevel.ci.CIStringSyntax
 
 import scala.concurrent.duration._
+import natchez.Kernel
 
 /**
  * This tests both the datadog span code itself and the submission of metrics over HTTP
@@ -130,6 +131,36 @@ class DatadogTest extends CatsEffectSuite {
     for {
       res <- run(
         _.root("bar").use(_.span("subspan").use(_ => IO.unit)),
+        Map("defaultTag1" -> "some-value", "defaultTag2" -> "some-other-value")
+      )
+      spans <- res.flatTraverse(_.as[List[List[SubmittableSpan]]]).map(_.flatten)
+    } yield {
+      assertEquals(spans.head.meta.get("defaultTag1"), Some("some-value"))
+      assertEquals(spans.head.meta.get("defaultTag2"), Some("some-other-value"))
+      assertEquals(spans.tail.head.meta.get("defaultTag1"), Some("some-value"))
+      assertEquals(spans.tail.head.meta.get("defaultTag2"), Some("some-other-value"))
+    }
+  }
+
+  test("Allow you to provide default tags using continue") {
+    for {
+      res <- run(
+        _.continue("bar", Kernel(Map.empty)).use(_.span("subspan").use(_ => IO.unit)),
+        Map("defaultTag1" -> "some-value", "defaultTag2" -> "some-other-value")
+      )
+      spans <- res.flatTraverse(_.as[List[List[SubmittableSpan]]]).map(_.flatten)
+    } yield {
+      assertEquals(spans.head.meta.get("defaultTag1"), Some("some-value"))
+      assertEquals(spans.head.meta.get("defaultTag2"), Some("some-other-value"))
+      assertEquals(spans.tail.head.meta.get("defaultTag1"), Some("some-value"))
+      assertEquals(spans.tail.head.meta.get("defaultTag2"), Some("some-other-value"))
+    }
+  }
+
+  test("Allow you to provide default tags using continueOrElseRoot") {
+    for {
+      res <- run(
+        _.continueOrElseRoot("bar", Kernel(Map.empty)).use(_.span("subspan").use(_ => IO.unit)),
         Map("defaultTag1" -> "some-value", "defaultTag2" -> "some-other-value")
       )
       spans <- res.flatTraverse(_.as[List[List[SubmittableSpan]]]).map(_.flatten)

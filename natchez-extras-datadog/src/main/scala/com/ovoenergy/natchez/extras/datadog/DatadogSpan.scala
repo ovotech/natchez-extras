@@ -129,7 +129,8 @@ object DatadogSpan {
   def fromKernel[F[_]: Async](
     queue: Queue[F, SubmittableSpan],
     names: SpanNames,
-    kernel: Kernel
+    kernel: Kernel,
+    meta: Map[String, TraceValue] = Map.empty
   ): Resource[F, DatadogSpan[F]] =
     Resource
       .eval(
@@ -137,5 +138,5 @@ object DatadogSpan {
           .fromKernel(kernel)
           .flatMap(Ref.of[F, SpanIdentifiers])
       )
-      .flatMap(create(queue, names))
+      .flatMap(create(queue, names, meta))
 }
