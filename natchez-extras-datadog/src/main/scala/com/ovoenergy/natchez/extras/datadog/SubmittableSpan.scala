@@ -135,11 +135,11 @@ object SubmittableSpan {
     traceToken: String
   ): Map[String, String] =
     exitTags(exitCase) ++
-    tags.view
-      .mapValues(_.value.toString)
-      .filterKeys(_ != "span.type")
-      .toMap
-      .updated("traceToken", traceToken)
+      tags.view
+        .mapValues(_.value.toString)
+        .filterKeys(_ != "span.type")
+        .toMap
+        .updated("traceToken", traceToken)
 
   private def hasErrorMessageInMeta(meta: Map[String, String]): Boolean =
     meta.keys.exists(key => key == "error.message" || key == "error.msg")
@@ -156,22 +156,21 @@ object SubmittableSpan {
       span.meta.get,
       span.ids.get,
       Clock[F].realTime
-    ).mapN {
-      case (meta, ids, end) =>
-        val transformedMeta = transformTags(meta, exitCase, ids.traceToken)
-        SubmittableSpan(
-          traceId = ids.traceId,
-          spanId = ids.spanId,
-          name = span.names.name,
-          service = span.names.service,
-          resource = span.names.resource,
-          start = span.start,
-          duration = end.toNanos - span.start,
-          parentId = ids.parentId,
-          error = Option.when(isError(exitCase) || hasErrorMessageInMeta(transformedMeta))(1),
-          `type` = inferSpanType(meta),
-          metrics = ids.parentId.fold(spanMetrics)(_ => Map.empty),
-          meta = transformedMeta
-        )
+    ).mapN { case (meta, ids, end) =>
+      val transformedMeta = transformTags(meta, exitCase, ids.traceToken)
+      SubmittableSpan(
+        traceId = ids.traceId,
+        spanId = ids.spanId,
+        name = span.names.name,
+        service = span.names.service,
+        resource = span.names.resource,
+        start = span.start,
+        duration = end.toNanos - span.start,
+        parentId = ids.parentId,
+        error = Option.when(isError(exitCase) || hasErrorMessageInMeta(transformedMeta))(1),
+        `type` = inferSpanType(meta),
+        metrics = ids.parentId.fold(spanMetrics)(_ => Map.empty),
+        meta = transformedMeta
+      )
     }
 }

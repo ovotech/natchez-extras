@@ -41,7 +41,7 @@ case class DatadogSpan[F[_]: Async](
 
   def put(fields: (String, TraceValue)*): F[Unit] =
     meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) }) >>
-    updateTraceToken(fields.toMap)
+      updateTraceToken(fields.toMap)
 
   def span(name: String, options: Span.Options): Resource[F, Span[F]] =
     DatadogSpan.fromParent(name, parent = this).widen

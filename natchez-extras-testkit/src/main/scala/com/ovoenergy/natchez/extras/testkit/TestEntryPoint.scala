@@ -69,8 +69,11 @@ object TestEntryPoint {
           makeSpan(name, None, Kernel(Map.empty))
         override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
           makeSpan(name, None, kernel)
-        override def continueOrElseRoot(name: String, kernel: Kernel, options: Span.Options)
-          : Resource[F, Span[F]] = makeSpan(name, None, kernel)
+        override def continueOrElseRoot(
+          name: String,
+          kernel: Kernel,
+          options: Span.Options
+        ): Resource[F, Span[F]] = makeSpan(name, None, kernel)
       }
     }
 }
