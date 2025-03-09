@@ -6,8 +6,7 @@ import cats.syntax.functor._
 import com.ovoenergy.natchez.extras.metrics.Metrics.Metric
 
 /**
- * A type class representing the ability to push metrics
- * within some effect type F
+ * A type class representing the ability to push metrics within some effect type F
  */
 trait Metrics[F[_]] {
   def counter(metric: Metric)(value: Long): F[Unit]
@@ -37,8 +36,8 @@ object Metrics {
     }
 
   /**
-   * Combine instances to publish to two different metric providers sequentially,
-   * useful when migrating between metrics providers
+   * Combine instances to publish to two different metric providers sequentially, useful when migrating
+   * between metrics providers
    */
   def combine[F[_]: Monad](a: Metrics[F], b: Metrics[F]): Metrics[F] =
     new Metrics[F] {

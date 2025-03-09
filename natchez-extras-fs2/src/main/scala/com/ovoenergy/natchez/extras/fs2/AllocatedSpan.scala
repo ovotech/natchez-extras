@@ -13,20 +13,20 @@ import java.net.URI
 import natchez.Tags
 
 /**
- * A Natchez span that has been pre-allocated and will stay open
- * until either the stream that created it terminates or you call submit
+ * A Natchez span that has been pre-allocated and will stay open until either the stream that created it
+ * terminates or you call submit
  */
 trait AllocatedSpan[F[_]] extends Span[F] {
 
   /**
-   * Add a task to run on calling submit. The added task will run before the span is submitted.
-   * If it fails any errors will be discarded and the span will then be submitted
+   * Add a task to run on calling submit. The added task will run before the span is submitted. If it fails
+   * any errors will be discarded and the span will then be submitted
    */
   def addSubmitTask(task: F[Unit]): AllocatedSpan[F]
 
   /**
-   * Submit the span. The span should be considered invalid after this is called
-   * and no subspans should be created
+   * Submit the span. The span should be considered invalid after this is called and no subspans should be
+   * created
    */
   def submit: F[Unit]
 }
@@ -34,8 +34,7 @@ trait AllocatedSpan[F[_]] extends Span[F] {
 object AllocatedSpan {
 
   /**
-   * Given a span broken out of a natchez resource
-   * create an AllocatedSpan that allows us to submit it
+   * Given a span broken out of a natchez resource create an AllocatedSpan that allows us to submit it
    */
   private def createSpan[F[_]](
     spn: Span[F],
@@ -78,8 +77,8 @@ object AllocatedSpan {
   }
 
   /**
-   * Create an AllocatedSpan which breaks a span out of a Natchez resource
-   * and instead allows it to be submitted manually when committing Kafka messages
+   * Create an AllocatedSpan which breaks a span out of a Natchez resource and instead allows it to be
+   * submitted manually when committing Kafka messages
    */
   def create[F[_]: Concurrent, A](maxOpen: Int = 100)(
     rootSpan: A => Resource[F, Span[F]]

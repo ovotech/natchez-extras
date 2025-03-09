@@ -3,8 +3,7 @@ package com.ovoenergy.natchez.extras.datadog
 import natchez.TraceValue
 
 /**
- * Some helper functions to construct Datadog tags,
- * I took these from the DD-Trace-Java library
+ * Some helper functions to construct Datadog tags, I took these from the DD-Trace-Java library
  */
 object DatadogTags {
 
@@ -50,6 +49,6 @@ object DatadogTags {
   def forThrowable(e: Throwable): Map[String, TraceValue] =
     (
       Option(e.getMessage).map(errorMessage).toList ++
-      List(errorType(e.getClass.getSimpleName), errorStack(e.getStackTrace.mkString("\n")))
+        List(errorType(e.getClass.getSimpleName), errorStack(e.getStackTrace.mkString("\n")))
     ).toMap
 }

@@ -13,8 +13,8 @@ import org.http4s.Uri
 object TraceMiddleware {
 
   /**
-   * Given a URI produce its path but with any segments containing only two or more numbers
-   * replace with an underscore. This is to stop things like Account IDs showing up in URLs
+   * Given a URI produce its path but with any segments containing only two or more numbers replace with an
+   * underscore. This is to stop things like Account IDs showing up in URLs
    */
   def removeNumericPathSegments(uri: Uri): String =
     uri.path.renderString.replaceAll("(^|/)[^/]*[0-9]{2,}[^/]*", "$1_")
@@ -23,8 +23,8 @@ object TraceMiddleware {
     new (Kleisli[F, Span[F], *] ~> F) { def apply[A](a: Kleisli[F, Span[F], A]): F[A] = a.run(s) }
 
   /**
-   * Wrap the given traced HTTP4s routes and upon receiving requests
-   * create a new trace and pass the root span to the routes
+   * Wrap the given traced HTTP4s routes and upon receiving requests create a new trace and pass the root span
+   * to the routes
    */
   def apply[F[_]](
     entryPoint: EntryPoint[F],

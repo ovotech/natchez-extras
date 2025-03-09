@@ -17,8 +17,8 @@ import scala.concurrent.duration._
 import natchez.Kernel
 
 /**
- * This tests both the datadog span code itself and the submission of metrics over HTTP
- * Could be expanded but even just these tests exposed concurrency issues with my original code.
+ * This tests both the datadog span code itself and the submission of metrics over HTTP Could be expanded but
+ * even just these tests exposed concurrency issues with my original code.
  */
 class DatadogTest extends CatsEffectSuite {
 
@@ -53,8 +53,8 @@ class DatadogTest extends CatsEffectSuite {
     val test: EntryPoint[IO] => IO[Unit] =
       ep =>
         ep.root("first").use(_ => IO.unit) >>
-        IO.sleep(1.second) >>
-        ep.root("second").use(_ => IO.unit)
+          IO.sleep(1.second) >>
+          ep.root("second").use(_ => IO.unit)
 
     assertIO(
       returns = 2,

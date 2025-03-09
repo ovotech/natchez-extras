@@ -9,8 +9,8 @@ import natchez.{EntryPoint, Kernel, Span, TraceValue}
 import java.net.URI
 
 /**
- * Given to separate tracing integrations combine them by calling each one of them
- * for all natchez operations. When producing kernels we merge the kernels for maximum compatibility
+ * Given to separate tracing integrations combine them by calling each one of them for all natchez operations.
+ * When producing kernels we merge the kernels for maximum compatibility
  */
 object Combine {
 

@@ -6,8 +6,8 @@ import com.ovoenergy.natchez.extras.datadog.data.UnsignedLong
 import org.typelevel.ci._
 
 /**
- * Here we explicitly model each of the headers we use to propagate traces,
- * just to make it clearer exactly what we expect format-wise
+ * Here we explicitly model each of the headers we use to propagate traces, just to make it clearer exactly
+ * what we expect format-wise
  */
 object TraceHeaders {
 

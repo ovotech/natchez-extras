@@ -12,9 +12,8 @@ import natchez.TraceValue
 import natchez.TraceValue.StringValue
 
 /**
- * This is the type we need to send to the Datadog agent
- * to submit traces. Turning a span into one of these involves some trickery
- * with tags, hence this being its own file now
+ * This is the type we need to send to the Datadog agent to submit traces. Turning a span into one of these
+ * involves some trickery with tags, hence this being its own file now
  */
 case class SubmittableSpan(
   traceId: UnsignedLong,
@@ -88,8 +87,8 @@ object SubmittableSpan {
 
   /**
    * It is very difficult to find any docs on this other than this fun Github issue by fommil
-   * https://github.com/DataDog/datadog-agent/issues/3031 but setting this magic metric to 2
-   * means the Datadog Agent should always keep all our traces.
+   * https://github.com/DataDog/datadog-agent/issues/3031 but setting this magic metric to 2 means the Datadog
+   * Agent should always keep all our traces.
    */
   private val spanMetrics: Map[String, Double] =
     Map("_sampling_priority_v1" -> 2.0d)
@@ -105,8 +104,7 @@ object SubmittableSpan {
     }
 
   /**
-   * Create some Datadog tags from an exit case,
-   * i.e. if the span failed include exception details
+   * Create some Datadog tags from an exit case, i.e. if the span failed include exception details
    */
   private def exitTags(exitCase: ExitCase): Map[String, String] =
     exitCase match {
@@ -115,8 +113,8 @@ object SubmittableSpan {
     }
 
   /**
-   * Sadly the only API we have to set span type is through tags
-   * so we just have to guess if the user tried to set it
+   * Sadly the only API we have to set span type is through tags so we just have to guess if the user tried to
+   * set it
    */
   private def inferSpanType(tags: Map[String, TraceValue]): Option[SpanType] =
     tags.collectFirst {
@@ -126,8 +124,8 @@ object SubmittableSpan {
     }
 
   /**
-   * Turn the Natchez tags into DataDog metadata.
-   * We filter out the magic span.type tag and add a trace token + error info
+   * Turn the Natchez tags into DataDog metadata. We filter out the magic span.type tag and add a trace token
+   * + error info
    */
   private def transformTags(
     tags: Map[String, TraceValue],
@@ -135,18 +133,18 @@ object SubmittableSpan {
     traceToken: String
   ): Map[String, String] =
     exitTags(exitCase) ++
-    tags.view
-      .mapValues(_.value.toString)
-      .filterKeys(_ != "span.type")
-      .toMap
-      .updated("traceToken", traceToken)
+      tags.view
+        .mapValues(_.value.toString)
+        .filterKeys(_ != "span.type")
+        .toMap
+        .updated("traceToken", traceToken)
 
   private def hasErrorMessageInMeta(meta: Map[String, String]): Boolean =
     meta.keys.exists(key => key == "error.message" || key == "error.msg")
 
   /**
-   * Given an open DatadogSpan and an exit case to indicate whether the span succeeded
-   * Create a submittable span we can pass through to the DataDog agent API
+   * Given an open DatadogSpan and an exit case to indicate whether the span succeeded Create a submittable
+   * span we can pass through to the DataDog agent API
    */
   def fromSpan[F[_]: Applicative: Clock](
     span: DatadogSpan[F],
@@ -156,22 +154,21 @@ object SubmittableSpan {
       span.meta.get,
       span.ids.get,
       Clock[F].realTime
-    ).mapN {
-      case (meta, ids, end) =>
-        val transformedMeta = transformTags(meta, exitCase, ids.traceToken)
-        SubmittableSpan(
-          traceId = ids.traceId,
-          spanId = ids.spanId,
-          name = span.names.name,
-          service = span.names.service,
-          resource = span.names.resource,
-          start = span.start,
-          duration = end.toNanos - span.start,
-          parentId = ids.parentId,
-          error = Option.when(isError(exitCase) || hasErrorMessageInMeta(transformedMeta))(1),
-          `type` = inferSpanType(meta),
-          metrics = ids.parentId.fold(spanMetrics)(_ => Map.empty),
-          meta = transformedMeta
-        )
+    ).mapN { case (meta, ids, end) =>
+      val transformedMeta = transformTags(meta, exitCase, ids.traceToken)
+      SubmittableSpan(
+        traceId = ids.traceId,
+        spanId = ids.spanId,
+        name = span.names.name,
+        service = span.names.service,
+        resource = span.names.resource,
+        start = span.start,
+        duration = end.toNanos - span.start,
+        parentId = ids.parentId,
+        error = Option.when(isError(exitCase) || hasErrorMessageInMeta(transformedMeta))(1),
+        `type` = inferSpanType(meta),
+        metrics = ids.parentId.fold(spanMetrics)(_ => Map.empty),
+        meta = transformedMeta
+      )
     }
 }

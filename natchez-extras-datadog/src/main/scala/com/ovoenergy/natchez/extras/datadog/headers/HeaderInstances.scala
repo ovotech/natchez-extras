@@ -8,16 +8,15 @@ import org.http4s.{Header, ParseFailure}
 import org.typelevel.ci.CIString
 
 /**
- * Some additional instances for HTTP4s headers
- * to make it easier to decode the propagation headers we need
+ * Some additional instances for HTTP4s headers to make it easier to decode the propagation headers we need
  */
 object HeaderInstances {
 
   type SingleHeader[A] = Header[A, Single]
 
   /**
-   * Parse a header value from a string into an unsigned long,
-   * The radix allows both decimal and hex encoded longs to be parsed
+   * Parse a header value from a string into an unsigned long, The radix allows both decimal and hex encoded
+   * longs to be parsed
    */
   def unsignedLong(headerName: CIString, radix: Int): SingleHeader[UnsignedLong] =
     new SingleHeader[UnsignedLong] {
@@ -32,8 +31,8 @@ object HeaderInstances {
     }
 
   /**
-   * Allow the string representation of a header to be transformed
-   * prior to it being passed to / after being recieved from the underlying typed header
+   * Allow the string representation of a header to be transformed prior to it being passed to / after being
+   * recieved from the underlying typed header
    */
   implicit class HeaderOps[A](header: SingleHeader[A]) {
     def transform(f: String => String): SingleHeader[A] =
@@ -45,8 +44,7 @@ object HeaderInstances {
   }
 
   /**
-   * Make it easy to create a header of a specific newtype
-   * by mapping to and from the underlying header value
+   * Make it easy to create a header of a specific newtype by mapping to and from the underlying header value
    */
   implicit val invariant: Invariant[SingleHeader] =
     new Invariant[SingleHeader] {

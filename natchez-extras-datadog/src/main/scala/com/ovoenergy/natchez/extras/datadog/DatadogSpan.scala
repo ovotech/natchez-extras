@@ -17,9 +17,9 @@ import java.net.URI
 import natchez.Tags
 
 /**
- * Models an in-progress span we'll eventually send to Datadog.
- * We have a trace token as well as a trace ID because Datadog mandates that trace IDs are numeric
- * while we interact with systems that provide non numeric trace tokens
+ * Models an in-progress span we'll eventually send to Datadog. We have a trace token as well as a trace ID
+ * because Datadog mandates that trace IDs are numeric while we interact with systems that provide non numeric
+ * trace tokens
  */
 case class DatadogSpan[F[_]: Async](
   names: SpanNames,
@@ -41,7 +41,7 @@ case class DatadogSpan[F[_]: Async](
 
   def put(fields: (String, TraceValue)*): F[Unit] =
     meta.update(m => fields.foldLeft(m) { case (m, (k, v)) => m.updated(k, v) }) >>
-    updateTraceToken(fields.toMap)
+      updateTraceToken(fields.toMap)
 
   def span(name: String, options: Span.Options): Resource[F, Span[F]] =
     DatadogSpan.fromParent(name, parent = this).widen
@@ -69,9 +69,8 @@ case class DatadogSpan[F[_]: Async](
 object DatadogSpan {
 
   /**
-   * Natchez only allows you to set the span name
-   * but we need also a resource + service which can differ by span. As such
-   * we allow you to encode this data with an advanced colon based DSL
+   * Natchez only allows you to set the span name but we need also a resource + service which can differ by
+   * span. As such we allow you to encode this data with an advanced colon based DSL
    */
   case class SpanNames(name: String, service: String, resource: String)
 
@@ -87,9 +86,9 @@ object DatadogSpan {
   }
 
   /**
-   * Given a span, complete it - this involves turning the span into a `CompletedSpan`
-   * which 1:1 matches the Datadog JSON structure before submitting it to a queue of spans
-   * we'll eventually submit to the local agent in the background
+   * Given a span, complete it - this involves turning the span into a `CompletedSpan` which 1:1 matches the
+   * Datadog JSON structure before submitting it to a queue of spans we'll eventually submit to the local
+   * agent in the background
    */
   def complete[F[_]: Monad: Clock](
     datadogSpan: DatadogSpan[F],

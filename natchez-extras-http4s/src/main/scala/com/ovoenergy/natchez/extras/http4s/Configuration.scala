@@ -16,13 +16,11 @@ import org.http4s.{Headers, Message, Request, Response}
 import org.typelevel.ci.CIString
 
 /**
- * The tricky part about putting HTTP4s middleware into a library is that
- * each user is likely to want to extract different tags from their requests
- * according to whatever their organisation wide tagging policy is
+ * The tricky part about putting HTTP4s middleware into a library is that each user is likely to want to
+ * extract different tags from their requests according to whatever their organisation wide tagging policy is
  *
- * As such we define how to create tags from Requests / Responses with a `TagReader`
- * which has a semigroup instance, allowing you to cherry pick what you want to extract
- * and write your own extractors if required.
+ * As such we define how to create tags from Requests / Responses with a `TagReader` which has a semigroup
+ * instance, allowing you to cherry pick what you want to extract and write your own extractors if required.
  */
 case class Configuration[F[_]](
   request: RequestReader[F],
@@ -35,8 +33,8 @@ object Configuration {
   type Tags = Map[String, TraceValue]
 
   /**
-   * A tag reader is essentially a function from an HTTP message to F[Tags]
-   * We need the effect because some tags may involve streaming the entity body
+   * A tag reader is essentially a function from an HTTP message to F[Tags] We need the effect because some
+   * tags may involve streaming the entity body
    */
   case class TagReader[F[_], -A](value: Kleisli[F, A, Tags]) extends AnyVal
 
@@ -47,8 +45,7 @@ object Configuration {
     type ResponseReader[F[_]] = TagReader[F, Response[F]]
 
     /**
-     * Monoid instance for TagReader
-     * so it is easy to read many tags from a request
+     * Monoid instance for TagReader so it is easy to read many tags from a request
      */
     implicit def monoid[F[_]: Applicative, A]: Monoid[TagReader[F, A]] = {
       implicit def underlying[B: Monoid]: Monoid[F[B]] = Applicative.monoid[F, B]
@@ -76,8 +73,8 @@ object Configuration {
     cs => Headers.SensitiveHeaders.contains(cs) || cs.toString.toLowerCase.contains("key")
 
   /**
-   * Only run the given tag extractor if the response was not successful
-   * This is useful for adding extra tags in the case of errors
+   * Only run the given tag extractor if the response was not successful This is useful for adding extra tags
+   * in the case of errors
    */
   def ifFailure[F[_]: Applicative](tr: MessageReader[F]): ResponseReader[F] =
     TagReader {
@@ -88,8 +85,8 @@ object Configuration {
     }
 
   /**
-   * Extract headers from the HTTP message, redact sensitive ones
-   * and place them into the span with the given tag name separated by newlines
+   * Extract headers from the HTTP message, redact sensitive ones and place them into the span with the given
+   * tag name separated by newlines
    */
   def headers[F[_]: Applicative](name: String)(
     redact: CIString => Boolean
@@ -106,8 +103,8 @@ object Configuration {
     }
 
   /**
-   * Extract the entity from the HTTP message into a strict string
-   * and place that into the span. This may not be ideal if you're streaming things.
+   * Extract the entity from the HTTP message into a strict string and place that into the span. This may not
+   * be ideal if you're streaming things.
    */
   def entity[F[_]: Sync](name: String): MessageReader[F] =
     TagReader(
@@ -132,8 +129,8 @@ object Configuration {
     TagReader.request(r => Map(name -> r.method.name))
 
   /**
-   * create a TagReader that ignores the message and always adds the given value
-   * Useful for static tags like environment or team name
+   * create a TagReader that ignores the message and always adds the given value Useful for static tags like
+   * environment or team name
    */
   def const[F[_]: Applicative](name: String, value: TraceValue): MessageReader[F] =
     TagReader(Kleisli.pure(Map(name -> value)))
@@ -151,8 +148,8 @@ object Configuration {
     TagReader.response(r => Map(name -> r.status.code))
 
   /**
-   * Create a default configuration for tracing HTTP4s calls.
-   * This uses Datadog tag names but the idea is you can make your own configs with ease.
+   * Create a default configuration for tracing HTTP4s calls. This uses Datadog tag names but the idea is you
+   * can make your own configs with ease.
    */
   def default[F[_]: Sync](defaults: (String, TraceValue)*): Configuration[F] = {
     val static = defaults.toList.foldMap { case (k, v) => const[F](k, v) }

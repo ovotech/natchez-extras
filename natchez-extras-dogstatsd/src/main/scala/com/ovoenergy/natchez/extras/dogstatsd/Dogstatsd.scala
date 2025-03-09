@@ -42,27 +42,26 @@ object Dogstatsd {
   val maxTagLength = 200
 
   /**
-   * Apparently the maximum UDP packet size is 65535 bytes (at the absolute maximum)
-   * and we have many different strings in a packet so we only allow each one to be 2k chars
+   * Apparently the maximum UDP packet size is 65535 bytes (at the absolute maximum) and we have many
+   * different strings in a packet so we only allow each one to be 2k chars
    */
   val maxStringLength = 2000
 
   /**
-   * A basic sanity check for the maximum number of tags to send to Datadog
-   * 20 x 200 (max key + value size) = 4k chars so seems okay
+   * A basic sanity check for the maximum number of tags to send to Datadog 20 x 200 (max key + value size) =
+   * 4k chars so seems okay
    */
   val maximumTagCount = 20
 
   /**
-   * Datadog enforces all metrics must start with a letter
-   * and not contain any chars other than letters, numbers and underscores
+   * Datadog enforces all metrics must start with a letter and not contain any chars other than letters,
+   * numbers and underscores
    */
   private[extras] def filterName(s: String): String =
     s.dropWhile(!_.isLetter).replaceAll("[^A-Za-z0-9.]+", "_").take(maxMetricNameLength)
 
   /**
-   * More lenient filtering for tag values,
-   * we allow alpha numeric characters, slashes, hyphens and numbers
+   * More lenient filtering for tag values, we allow alpha numeric characters, slashes, hyphens and numbers
    */
   private[extras] def filterTagValue(s: String): String =
     s.replaceAll("[^A-Za-z0-9./\\-]+", "_")
@@ -108,8 +107,7 @@ object Dogstatsd {
     Metric((config.metricPrefix.toList :+ m.name).mkString("."), config.globalTags ++ m.tags)
 
   /**
-   * Take care of the gymnastics required to send a string to the `to` destination through
-   * a socket in F.
+   * Take care of the gymnastics required to send a string to the `to` destination through a socket in F.
    */
   private def send[F[_]](s: DatagramSocket[F], to: SocketAddress[IpAddress], what: UTF8Bytes): F[Unit] =
     s.write(Datagram(to, array(what)))

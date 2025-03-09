@@ -32,8 +32,7 @@ object Datadog {
     builder.withPrinter(Printer.noSpaces.copy(dropNullValues = true)).build.jsonEncoderOf
 
   /**
-   * Take items from the queue until it blocks
-   * TODO I feel this must exist in FS2 somewhere
+   * Take items from the queue until it blocks TODO I feel this must exist in FS2 somewhere
    */
   private def takeWhileAvailable[F[_]: Monad, A](queue: Queue[F, A], max: Int): F[Vector[A]] =
     Monad[F].tailRecM[Vector[A], Vector[A]](Vector.empty) { list =>
@@ -45,10 +44,9 @@ object Datadog {
     }
 
   /**
-   * Submit one list of traces to DataDog
-   * we group them up by trace ID but I don't think this is actually required,
-   * in that you can submit new spans for existing traces across multiple requests
-   * We do this in one `F[_]` operation so it won't be interrupted half way through on shutdown
+   * Submit one list of traces to DataDog we group them up by trace ID but I don't think this is actually
+   * required, in that you can submit new spans for existing traces across multiple requests We do this in one
+   * `F[_]` operation so it won't be interrupted half way through on shutdown
    */
   private def submitOnce[F[_]: Sync](
     queue: Queue[F, SubmittableSpan],
@@ -66,7 +64,7 @@ object Datadog {
               client.status(
                 Request[F](uri = agentHost.withPath(unsafeFromString("/v0.3/traces")), method = PUT)
                   .withHeaders("X-DataDog-Trace-Count" -> traces.length.toString)
-                withEntity (traces.groupBy(_.traceId).values.toList)
+                  withEntity (traces.groupBy(_.traceId).values.toList)
               )
             )
             .flatMap {
@@ -82,9 +80,9 @@ object Datadog {
   }
 
   /**
-   * Process to poll the queue and submit items to Datadog periodically,
-   * either every 5 items or every 10 seconds, doing this in here is perhaps a bit cheeky.
-   * we do one final submit after cancelling the process to drain the queue
+   * Process to poll the queue and submit items to Datadog periodically, either every 5 items or every 10
+   * seconds, doing this in here is perhaps a bit cheeky. we do one final submit after cancelling the process
+   * to drain the queue
    */
   private def submitter[F[_]: Async](
     http: Client[F],
@@ -111,9 +109,9 @@ object Datadog {
     }
 
   /**
-   * Produce an EntryPoint into a Datadog tracing context,
-   * kicks off the async publishing process. We don't quite adhere to the spirit of these functions
-   * in that `continue` always succeeds but does its best to recreate the trace from HTTP
+   * Produce an EntryPoint into a Datadog tracing context, kicks off the async publishing process. We don't
+   * quite adhere to the spirit of these functions in that `continue` always succeeds but does its best to
+   * recreate the trace from HTTP
    */
   def entryPoint[F[_]: Async](
     client: Client[F],

@@ -21,20 +21,19 @@ object TestClient {
     (
       Ref.of[F, List[Request[F]]](List.empty),
       Queue.unbounded[F, F[Response[F]]]
-    ).mapN {
-      case (reqs, resps) =>
-        new TestClient[F] {
-          def requests: F[List[Request[F]]] =
-            reqs.get
-          def respondWith(r: F[Response[F]]): F[Unit] =
-            resps.offer(r)
-          def client: Client[F] =
-            Client { r =>
-              Resource.eval(
-                reqs.update(_ :+ r) >>
+    ).mapN { case (reqs, resps) =>
+      new TestClient[F] {
+        def requests: F[List[Request[F]]] =
+          reqs.get
+        def respondWith(r: F[Response[F]]): F[Unit] =
+          resps.offer(r)
+        def client: Client[F] =
+          Client { r =>
+            Resource.eval(
+              reqs.update(_ :+ r) >>
                 resps.tryTake.flatMap(r => r.getOrElse(Monad[F].pure(Response[F]())))
-              )
-            }
-        }
+            )
+          }
+      }
     }
 }

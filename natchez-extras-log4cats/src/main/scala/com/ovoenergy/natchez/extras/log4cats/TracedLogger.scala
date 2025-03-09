@@ -14,20 +14,19 @@ object TracedLogger {
     kernel.toHeaders.map { case (k, v) => k.toString.toLowerCase -> v }
 
   /**
-   * Kernel to MDC for Datadog
-   * See docs at https://docs.datadoghq.com/logs/log_collection/java/?tab=log4j
+   * Kernel to MDC for Datadog See docs at https://docs.datadoghq.com/logs/log_collection/java/?tab=log4j
    */
   private def datadogMdc(kernel: Kernel): Map[String, String] = {
     val headers = lowercaseHeaders(kernel)
     (
       headers.get("x-parent-id").map("dd.span_id" -> _) ++
-      headers.get("x-trace-id").map("dd.trace_id" -> _)
+        headers.get("x-trace-id").map("dd.trace_id" -> _)
     ).toMap
   }
 
   /**
-   * Given a structured logger in some type F which does not have a trace instance
-   * lift the logger into a Kleisli (so it then has a trace instance) and wrap it
+   * Given a structured logger in some type F which does not have a trace instance lift the logger into a
+   * Kleisli (so it then has a trace instance) and wrap it
    */
   def lift[F[_]: Sync](
     logger: SelfAwareStructuredLogger[F],
@@ -36,8 +35,8 @@ object TracedLogger {
     apply(logger.mapK[Kleisli[F, Span[F], *]](Kleisli.liftK), kernelMdc)
 
   /**
-   * Given a SelfAwareStructuredLogger wrap it into a new SelfAwareStructuredLogger
-   * that extracts a trace_id and span_id from the Natchez Kernel and adds it to the MDC
+   * Given a SelfAwareStructuredLogger wrap it into a new SelfAwareStructuredLogger that extracts a trace_id
+   * and span_id from the Natchez Kernel and adds it to the MDC
    */
   def apply[F[_]: Trace: Monad](
     logger: SelfAwareStructuredLogger[F],

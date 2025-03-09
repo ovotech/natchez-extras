@@ -3,9 +3,8 @@ package com.ovoenergy.natchez.extras.dogstatsd
 import com.ovoenergy.natchez.extras.dogstatsd.Events.Event
 
 /**
- * Events are a Datadog extension to StatsD
- * You can also send them over HTTP but since metrics are UDP
- * we use the UDP approach here too
+ * Events are a Datadog extension to StatsD You can also send them over HTTP but since metrics are UDP we use
+ * the UDP approach here too
  */
 trait Events[F[_]] {
   def event(event: Event): F[Unit]

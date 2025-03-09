@@ -8,8 +8,8 @@ import java.lang.Long.{parseUnsignedLong, toUnsignedString}
 import scala.util.Random
 
 /**
- * Wrapper for unsigned longs to make dealing with them less error prone
- * I looked at Spire & Guava but both seem like large dependencies for this small class
+ * Wrapper for unsigned longs to make dealing with them less error prone I looked at Spire & Guava but both
+ * seem like large dependencies for this small class
  */
 case class UnsignedLong(value: Long) extends AnyVal {
   override def toString: String = toString(radix = 10)

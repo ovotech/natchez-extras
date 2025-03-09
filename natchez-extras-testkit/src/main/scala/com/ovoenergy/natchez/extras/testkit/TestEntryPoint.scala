@@ -12,8 +12,8 @@ import java.time.Instant
 import natchez.Tags
 
 /**
- * Test implementation of Natchez that is backed by a Ref
- * and additionally lets you see all the completed spans
+ * Test implementation of Natchez that is backed by a Ref and additionally lets you see all the completed
+ * spans
  */
 trait TestEntryPoint[F[_]] extends EntryPoint[F] {
   def spans: F[List[CompletedSpan]]
@@ -69,8 +69,11 @@ object TestEntryPoint {
           makeSpan(name, None, Kernel(Map.empty))
         override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
           makeSpan(name, None, kernel)
-        override def continueOrElseRoot(name: String, kernel: Kernel, options: Span.Options)
-          : Resource[F, Span[F]] = makeSpan(name, None, kernel)
+        override def continueOrElseRoot(
+          name: String,
+          kernel: Kernel,
+          options: Span.Options
+        ): Resource[F, Span[F]] = makeSpan(name, None, kernel)
       }
     }
 }

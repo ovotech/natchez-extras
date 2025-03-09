@@ -32,8 +32,8 @@ object SpanIdentifiers {
     ).mapN(SpanIdentifiers.apply)
 
   /**
-   * Create span identifiers that identify a new child span of the one identified by the provided ids
-   * This means the parent ID will be set but a new span ID will be created
+   * Create span identifiers that identify a new child span of the one identified by the provided ids. This
+   * means the parent ID will be set but a new span ID will be created
    */
   def child[F[_]: Sync](identifiers: SpanIdentifiers): F[SpanIdentifiers] =
     UnsignedLong.random.map(spanId => identifiers.copy(parentId = Some(identifiers.spanId), spanId = spanId))
@@ -48,9 +48,8 @@ object SpanIdentifiers {
     headers.get[`X-Parent-Id`].map(_.value).orElse(headers.get[`X-B3-Span-Id`].map(_.value))
 
   /**
-   * Build span identifiers from HTTP headers provided by a client,
-   * this will always succeed even if headers are missing because
-   * partial data (i.e. just a trace token) is still useful to us
+   * Build span identifiers from HTTP headers provided by a client, this will always succeed even if headers
+   * are missing because partial data (i.e. just a trace token) is still useful to us
    */
   def fromKernel[F[_]: Sync](rawKernel: Kernel): F[SpanIdentifiers] = {
     val headers = Headers(rawKernel.toHeaders.map { case (k, v) => k.toString -> v }.toSeq)

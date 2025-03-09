@@ -7,9 +7,9 @@ import java.util.Calendar
 import scala.annotation.nowarn
 
 /**
- * This is an absolutely abominable brute force solution to linking PreparedStatements
- * with a SQL string so we can include it in traces but hey I figure it is a one time cost
- * Pretend this doesn't exist and you never had to see it
+ * This is an absolutely abominable brute force solution to linking PreparedStatements with a SQL string so we
+ * can include it in traces but hey I figure it is a one time cost Pretend this doesn't exist and you never
+ * had to see it
  */
 @nowarn
 private[doobie] case class TracedStatement(
