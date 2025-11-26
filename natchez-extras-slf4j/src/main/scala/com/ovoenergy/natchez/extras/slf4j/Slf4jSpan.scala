@@ -41,11 +41,11 @@ case class Slf4jSpan[F[_]: Sync](
     Sync[F].pure(None)
 
   override def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
-    put(Tags.error(true) :: fields.toList: _*)
+    put((Tags.error(true) :: fields.toList) *)
 
   override def log(event: String): F[Unit] = put("event" -> TraceValue.StringValue(event))
 
-  override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
+  override def log(fields: (String, TraceValue)*): F[Unit] = put(fields *)
 }
 
 object Slf4jSpan {
