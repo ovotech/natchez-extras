@@ -20,7 +20,7 @@ object TracedTransactor {
     transactor: Transactor[F]
   ): Transactor[Traced[F, *]] = {
     val kleisliTransactor = transactor
-      .mapK(Kleisli.liftK[F, Span[F]])(implicitly, Async.asyncForKleisli(implicitly))
+      .mapK(Kleisli.liftK[F, Span[F]])(using implicitly, Async.asyncForKleisli(implicitly))
     trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor)
   }
 

@@ -13,7 +13,7 @@ class IOLocalTrace(private val local: IOLocal[Span[IO]]) extends Trace[IO] {
     local.get.flatMap(_.kernel)
 
   override def put(fields: (String, TraceValue)*): IO[Unit] =
-    local.get.flatMap(_.put(fields: _*))
+    local.get.flatMap(_.put(fields *))
 
   private def scope[G](t: Span[IO])(f: IO[G]): IO[G] =
     MonadCancel[IO, Throwable].bracket(local.getAndSet(t))(_ => f)(local.set)
@@ -32,9 +32,9 @@ class IOLocalTrace(private val local: IOLocal[Span[IO]]) extends Trace[IO] {
     local.get.flatMap(_.traceUri)
 
   override def attachError(err: Throwable, fields: (String, TraceValue)*): IO[Unit] =
-    local.get.flatMap(_.attachError(err, fields: _*))
+    local.get.flatMap(_.attachError(err, fields *))
   override def log(event: String): IO[Unit] = local.get.flatMap(_.log(event))
-  override def log(fields: (String, TraceValue)*): IO[Unit] = local.get.flatMap(_.log(fields: _*))
+  override def log(fields: (String, TraceValue)*): IO[Unit] = local.get.flatMap(_.log(fields *))
   override def spanR(name: String, options: Span.Options): Resource[IO, IO ~> IO] =
     for {
       parent <- Resource.eval(local.get)

@@ -60,21 +60,30 @@ ThisBuild / credentials ++= (
 
 val common = Seq(
   Test / fork := true,
-  git.useGitDescribe := true,
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 13)) => Seq(
+        compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+      )
+      case _             => Seq.empty
+    }
+  },
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 13)) => Seq("-Xsource:3")
+      case _             => Seq.empty
+    }
+  },
   publishMavenStyle := true,
   libraryDependencies ++= Seq(
-      compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-      compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full)
-    ).filterNot(_ => scalaVersion.value.startsWith("3.")),
-  libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % "2.10.0",
-      "org.typelevel" %% "cats-effect" % "3.5.1",
-      "org.scalameta" %% "munit" % "0.7.29" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
-      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
-      "org.typelevel" %% "scalacheck-effect-munit" % "1.0.4" % Test
-    ),
-  usePgpKeyHex("E71D99CFF3D96821F3FB612490019D40886E2FB3")
+    "org.typelevel" %% "cats-core" % "2.13.0",
+    "org.typelevel" %% "cats-effect" % "3.6.3",
+    "org.scalameta" %% "munit" % "1.2.1" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.19.0" % Test,
+    "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test,
+    "org.typelevel" %% "scalacheck-effect-munit" % "2.1.0-RC1" % Test
+  )
 )
 
 lazy val metricsCommon = projectMatrix
@@ -83,14 +92,15 @@ lazy val metricsCommon = projectMatrix
   .enablePlugins(GitVersioning)
   .settings(common :+ (name := "natchez-extras-metrics"))
 
-val log4catsVersion = "2.6.0"
-val natchezVersion = "0.3.4"
-val http4sMilestoneVersion = "1.0.0-M40"
-val http4sStableVersion = "0.23.23"
-val circeVersion = "0.14.3"
-val slf4jVersion = "1.7.36"
-val fs2Version = "3.9.1"
-val doobieVersion = "1.0.0-RC5"
+val log4catsVersion = "2.7.1"
+val kittensVersion = "3.5.0"
+val natchezVersion = "0.3.8"
+val http4sMilestoneVersion = "1.0.0-M46"
+val http4sStableVersion = "0.23.33"
+val circeVersion = "0.14.15"
+val slf4jVersion = "2.0.17"
+val fs2Version = "3.12.2"
+val doobieVersion = "1.0.0-RC11"
 val doobieLegacyVersion = "1.0.0-RC2"
 
 lazy val natchezDatadog = projectMatrix
@@ -138,10 +148,10 @@ lazy val natchezSlf4j = projectMatrix
   .settings(common :+ (name := "natchez-extras-slf4j"))
   .settings(
     libraryDependencies ++= Seq(
-        "org.tpolecat" %% "natchez-core" % natchezVersion,
-        "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
-      )
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "com.github.valfirst" % "slf4j-test" % "3.0.3" % Test
+    )
   )
 
 lazy val natchezHttp4s = projectMatrix
@@ -208,10 +218,10 @@ lazy val natchezFs2 = projectMatrix
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-        "org.typelevel" %% "kittens" % "3.0.0",
-        "org.tpolecat" %% "natchez-core" % natchezVersion,
-        "co.fs2" %% "fs2-core" % fs2Version
-      )
+      "org.typelevel" %% "kittens" % kittensVersion,
+      "org.tpolecat" %% "natchez-core" % natchezVersion,
+      "co.fs2" %% "fs2-core" % fs2Version
+    )
   )
 
 lazy val natchezDoobie = projectMatrix

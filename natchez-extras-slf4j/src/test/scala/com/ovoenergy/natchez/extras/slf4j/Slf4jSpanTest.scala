@@ -4,7 +4,7 @@ import cats.effect.{Concurrent, IO}
 import munit.CatsEffectSuite
 import natchez.Kernel
 import org.typelevel.ci.CIStringSyntax
-import uk.org.lidalia.slf4jtest.{LoggingEvent, TestLoggerFactory}
+import com.github.valfirst.slf4jtest.{LoggingEvent, TestLoggerFactory}
 
 import scala.concurrent.duration.DurationInt
 import scala.jdk.CollectionConverters._

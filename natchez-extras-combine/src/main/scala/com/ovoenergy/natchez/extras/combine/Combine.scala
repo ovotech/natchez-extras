@@ -20,7 +20,7 @@ object Combine {
         (s1.kernel, s2.kernel).mapN { case (k1, k2) => Kernel(k1.toHeaders ++ k2.toHeaders) }
 
       def put(fields: (String, TraceValue)*): F[Unit] =
-        (s1.put(fields: _*), s2.put(fields: _*)).tupled.as(())
+        (s1.put(fields *), s2.put(fields *)).tupled.as(())
 
       def traceId: F[Option[String]] =
         OptionT(s1.traceId).orElseF(s2.traceId).value
@@ -32,11 +32,11 @@ object Combine {
         OptionT(s1.traceUri).orElseF(s2.traceUri).value
 
       def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
-        (s1.attachError(err, fields: _*), s2.attachError(err, fields: _*)).tupled.as(())
+        (s1.attachError(err, fields *), s2.attachError(err, fields *)).tupled.as(())
 
       def log(event: String): F[Unit] = (s1.log(event), s2.log(event)).tupled.as(())
 
-      def log(fields: (String, TraceValue)*): F[Unit] = (s1.log(fields: _*), s2.log(fields: _*)).tupled.as(())
+      def log(fields: (String, TraceValue)*): F[Unit] = (s1.log(fields *), s2.log(fields *)).tupled.as(())
 
       def span(name: String, options: Span.Options): Resource[F, Span[F]] =
         (s1.span(name, options), s2.span(name, options)).mapN[Span[F]](combineSpan[F])

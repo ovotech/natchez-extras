@@ -45,7 +45,7 @@ object AllocatedSpan {
       def kernel: F[Kernel] =
         spn.kernel
       def put(fields: (String, TraceValue)*): F[Unit] =
-        spn.put(fields: _*)
+        spn.put(fields *)
       def span(name: String, options: Span.Options): Resource[F, Span[F]] =
         spn.span(name, options)
       def addSubmitTask(task: F[Unit]): AllocatedSpan[F] =
@@ -59,9 +59,9 @@ object AllocatedSpan {
       def traceUri: F[Option[URI]] =
         spn.traceUri
       def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
-        put(Tags.error(true) :: fields.toList: _*)
+        put((Tags.error(true) :: fields.toList) *)
       def log(event: String): F[Unit] = put("event" -> TraceValue.StringValue(event))
-      def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
+      def log(fields: (String, TraceValue)*): F[Unit] = put(fields *)
     }
 
   /**

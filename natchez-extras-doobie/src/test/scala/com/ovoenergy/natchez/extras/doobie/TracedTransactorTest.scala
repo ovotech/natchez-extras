@@ -36,14 +36,14 @@ class TracedTransactorTest extends CatsEffectSuite {
         def traceUri: IO[Option[URI]] =
           IO.pure(None)
         def attachError(err: Throwable, fields: (String, TraceValue)*): IO[Unit] =
-          put(Tags.error(true) :: fields.toList: _*)
+          put((Tags.error(true) :: fields.toList) *)
         def log(event: String): IO[Unit] = put("event" -> TraceValue.StringValue(event))
-        def log(fields: (String, TraceValue)*): IO[Unit] = put(fields: _*)
+        def log(fields: (String, TraceValue)*): IO[Unit] = put(fields *)
       }
       a.run(spanMock).attempt.flatMap(_ => sps.get)
     }
 
-  val database: SyncIO[FunFixture[Transactor[Traced[IO, *]]]] = ResourceFixture(
+  val database: SyncIO[FunFixture[Transactor[Traced[IO, *]]]] = ResourceFunFixture(
     newH2Transactor[IO]("jdbc:h2:mem:test", "foo", "bar", global).map(TracedTransactor("test", _))
   )
 

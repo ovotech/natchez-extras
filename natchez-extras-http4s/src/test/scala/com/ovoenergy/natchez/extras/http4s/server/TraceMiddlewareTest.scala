@@ -55,7 +55,7 @@ class TraceMiddlewareTest extends CatsEffectSuite {
     )
 
     val requestHeaders = Headers(
-      Authorization(BasicCredentials("secret")),
+      Authorization(BasicCredentials.fromString("secret").get),
       Cookie(RequestCookie("secret", "secret")),
       `Content-Type`(MediaType.`text/event-stream`)
     )
