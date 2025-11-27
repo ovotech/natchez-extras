@@ -1,128 +1,128 @@
-version: 2.1
+# version: 2.1
 
-orbs:
-  ruby: circleci/ruby@2.0.0
+# orbs:
+#   ruby: circleci/ruby@2.0.0
 
-docker_sbt: &docker_sbt
-  docker:
-    - image: cimg/openjdk:11.0
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        SBT_OPTS: -Xms256m -Xmx756G -XX:+CMSClassUnloadingEnabled -XX:+UseSerialGC -XX:MaxMetaspaceSize=2G
-        DISABLE_SCALAFMT: true
-  working_directory: ~/repo
-  environment:
-    JVM_OPTS: -Xmx3200m
+# docker_sbt: &docker_sbt
+#   docker:
+#     - image: cimg/openjdk:11.0
+#       environment:
+#         DEBIAN_FRONTEND: noninteractive
+#         SBT_OPTS: -Xms256m -Xmx756G -XX:+CMSClassUnloadingEnabled -XX:+UseSerialGC -XX:MaxMetaspaceSize=2G
+#         DISABLE_SCALAFMT: true
+#   working_directory: ~/repo
+#   environment:
+#     JVM_OPTS: -Xmx3200m
 
-install_sbt: &install_sbt
-  run:
-    name: Install SBT
-    command: |
-      wget https://github.com/sbt/sbt/releases/download/v1.5.2/sbt-1.5.2.zip && unzip sbt*
-      echo "export PATH=$PATH:$(pwd)/sbt/bin" >> $BASH_ENV
-      chmod +x ./sbt/bin/sbt
+# install_sbt: &install_sbt
+#   run:
+#     name: Install SBT
+#     command: |
+#       wget https://github.com/sbt/sbt/releases/download/v1.5.2/sbt-1.5.2.zip && unzip sbt*
+#       echo "export PATH=$PATH:$(pwd)/sbt/bin" >> $BASH_ENV
+#       chmod +x ./sbt/bin/sbt
 
-cache_save: &cache_save
-  save_cache:
-    paths:
-      - ~/.m2
-      - ~/.sbt
-      - ~/.ivy2/cache
-    key: v1-{{ checksum "build.sbt" }}
+# cache_save: &cache_save
+#   save_cache:
+#     paths:
+#       - ~/.m2
+#       - ~/.sbt
+#       - ~/.ivy2/cache
+#     key: v1-{{ checksum "build.sbt" }}
 
-cache_restore: &cache_restore
-  restore_cache:
-    keys:
-      - v1-{{ checksum "build.sbt" }}
-      - v1-
+# cache_restore: &cache_restore
+#   restore_cache:
+#     keys:
+#       - v1-{{ checksum "build.sbt" }}
+#       - v1-
 
-commands:
-  microsite:
-    description: "Execute sbt microsite commands"
-    parameters:
-      command: {type: string}
-    steps:
-      - checkout
-      - *cache_restore
-      - *install_sbt
-      - add_ssh_keys:
-          fingerprints: "3f:8a:d5:a9:8d:da:e8:a8:1d:ec:24:c0:bf:59:16:da"
-      - ruby/install:
-          version: '3.1.3'
-      - run:
-          name: Install Jekyll
-          command: gem install jekyll
-      - run:
-          name: Install compatible version of jekyll sass converter
-          command: |
-            gem uninstall jekyll-sass-converter --force
-            gem install jekyll-sass-converter --version "~> 2.0"
-      - run:
-          name: Configure Git
-          command: |
-            git config --global user.email '<>'
-            git config --global user.name "CircleCI"
-            git config --global push.default simple
-      - run:
-          name: Deploy microsite
-          command: sbt docs/<< parameters.command >>
+# commands:
+#   microsite:
+#     description: "Execute sbt microsite commands"
+#     parameters:
+#       command: {type: string}
+#     steps:
+#       - checkout
+#       - *cache_restore
+#       - *install_sbt
+#       - add_ssh_keys:
+#           fingerprints: "3f:8a:d5:a9:8d:da:e8:a8:1d:ec:24:c0:bf:59:16:da"
+#       - ruby/install:
+#           version: '3.1.3'
+#       - run:
+#           name: Install Jekyll
+#           command: gem install jekyll
+#       - run:
+#           name: Install compatible version of jekyll sass converter
+#           command: |
+#             gem uninstall jekyll-sass-converter --force
+#             gem install jekyll-sass-converter --version "~> 2.0"
+#       - run:
+#           name: Configure Git
+#           command: |
+#             git config --global user.email '<>'
+#             git config --global user.name "CircleCI"
+#             git config --global push.default simple
+#       - run:
+#           name: Deploy microsite
+#           command: sbt docs/<< parameters.command >>
 
-jobs:
-  microsite_compile:
-    <<: *docker_sbt
-    steps:
-      - microsite:
-          command: makeMicrosite
+# jobs:
+#   microsite_compile:
+#     <<: *docker_sbt
+#     steps:
+#       - microsite:
+#           command: makeMicrosite
 
-  microsite_publish:
-    <<: *docker_sbt
-    steps:
-      - microsite:
-          command: publishMicrosite
+#   microsite_publish:
+#     <<: *docker_sbt
+#     steps:
+#       - microsite:
+#           command: publishMicrosite
 
-  release:
-    <<: *docker_sbt
-    steps:
-      - checkout
-      - *cache_restore
-      - *install_sbt
-      - run:
-          name: import PGP key
-          command: echo -e "$PGP_KEY" | gpg --batch --import
-      - run:
-          name: Release
-          command: |
-            set -e
-            tags=`git describe --tags`
-            sbt ';set version in ThisBuild := "'${tags}'"; +test; +publishSigned; +sonatypeBundleRelease'
-      - *cache_save
+#   release:
+#     <<: *docker_sbt
+#     steps:
+#       - checkout
+#       - *cache_restore
+#       - *install_sbt
+#       - run:
+#           name: import PGP key
+#           command: echo -e "$PGP_KEY" | gpg --batch --import
+#       - run:
+#           name: Release
+#           command: |
+#             set -e
+#             tags=`git describe --tags`
+#             sbt ';set version in ThisBuild := "'${tags}'"; +test; +publishSigned; +sonatypeBundleRelease'
+#       - *cache_save
 
-  test:
-    <<: *docker_sbt
-    steps:
-      - checkout
-      - *cache_restore
-      - *install_sbt
-      - run:
-          name: Test
-          command: sbt +test
-      - *cache_save
+#   test:
+#     <<: *docker_sbt
+#     steps:
+#       - checkout
+#       - *cache_restore
+#       - *install_sbt
+#       - run:
+#           name: Test
+#           command: sbt +test
+#       - *cache_save
 
-workflows:
-  version: 2
-  master-build:
-    jobs:
-      - microsite_publish:
-          filters: {branches: {only: master}}
-      - release:
-          filters:
-            tags:
-              only: /^([0-9\\.]+(-(RC|M)[0-9]+)?)$/
-            branches:
-              ignore: /.*/
-  pr-build:
-    jobs:
-      - microsite_compile:
-          filters: {branches: {ignore: master}}
-      - test:
-          filters: {branches: {ignore: master}}
+# workflows:
+#   version: 2
+#   master-build:
+#     jobs:
+#       - microsite_publish:
+#           filters: {branches: {only: master}}
+#       - release:
+#           filters:
+#             tags:
+#               only: /^([0-9\\.]+(-(RC|M)[0-9]+)?)$/
+#             branches:
+#               ignore: /.*/
+#   pr-build:
+#     jobs:
+#       - microsite_compile:
+#           filters: {branches: {ignore: master}}
+#       - test:
+#           filters: {branches: {ignore: master}}
