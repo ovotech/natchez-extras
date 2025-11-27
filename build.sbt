@@ -1,7 +1,7 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-val scala213Version = "2.13.12"
-val scala3Version = "3.3.0"
+val scala213Version = "2.13.18"
+val scala3Version = "3.3.5"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
 
@@ -22,9 +22,13 @@ ThisBuild / homepage := Some(url("https://ovotech.github.io/natchez-extras/"))
 
 ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-ThisBuild / publishMavenStyle := true
-
-ThisBuild / publishTo := sonatypePublishToBundle.value
+ThisBuild / publishTo := {
+  sys.env.get("PUBLISH_TO_REGISTRY") match {
+    case Some("sonatype") =>  sonatypePublishToBundle.value
+    case Some("github") | None  => Some("GitHub Package Registry" at s"https://maven.pkg.github.com/ovotech/natchez-extras")
+    case Some(r) => throw new IllegalArgumentException(s"unknown registry: $r")
+  }
+}
 
 ThisBuild / scalafmtOnCompile := true
 
@@ -32,19 +36,25 @@ ThisBuild / developers ++= List(
   Developer("tomverran", "Tom Verran", "github@tomverran.co.uk", url("https://github.com/tomverran"))
 )
 
-ThisBuild / credentials += (
+ThisBuild / credentials ++= (
   for {
     user <- sys.env.get("SONATYPE_USERNAME")
     pass <- sys.env.get("SONATYPE_PASSWORD")
   } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
-).getOrElse(Credentials(Path.userHome / ".sbt" / ".sonatype_credentials"))
+).orElse {
+    val credentialsFile = Path.userHome / ".sbt" / ".sonatype_credentials"
+    if (new File(credentialsFile.toString()).exists()) Some(Credentials(credentialsFile))
+    else None
+}.toList
+    
 
 val common = Seq(
   Test / fork := true,
   git.useGitDescribe := true,
+  publishMavenStyle := true,
   libraryDependencies ++= Seq(
     compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
+    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
   ).filterNot(_ => scalaVersion.value.startsWith("3.")),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-core" % "2.10.0",
@@ -53,7 +63,8 @@ val common = Seq(
     "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
     "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
     "org.typelevel" %% "scalacheck-effect-munit" % "1.0.4" % Test
-  )
+  ),
+  usePgpKeyHex("E71D99CFF3D96821F3FB612490019D40886E2FB3")
 )
 
 lazy val metricsCommon = projectMatrix

@@ -13,3 +13,4 @@ project/project/project/
 .metals/
 metals.sbt
 .bsp/
+.envrc
