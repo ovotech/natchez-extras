@@ -1,0 +1,27 @@
+env:
+  CI: true
+  GITHUB_TOKEN: ${{secrets.gh-bot-repo-token}}
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+          cache: sbt
+
+      - name: Install sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Run tests
+        run: sbt test
+      - name: Publish packages
+        run: |
+          export GITHUB_TOKEN=${{secrets.gh-bot-normal-token}}
+          sbt publish
+
