@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  SBT_OPTS: -Xms256m -Xmx8G -XX:+CMSClassUnloadingEnabled -XX:+UseSerialGC -XX:MaxMetaspaceSize=2G
+  SBT_OPTS: -Xms256m -Xmx8G -XX:+UseSerialGC -XX:MaxMetaspaceSize=2G
   DISABLE_SCALAFMT: true
 
 jobs:
