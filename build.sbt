@@ -38,15 +38,25 @@ ThisBuild / developers ++= List(
 )
 
 ThisBuild / credentials ++= (
-  for {
-    user <- sys.env.get("SONATYPE_USERNAME")
-    pass <- sys.env.get("SONATYPE_PASSWORD")
-  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
-).orElse {
-  val credentialsFile = Path.userHome / ".sbt" / ".sonatype_credentials"
-  if (new File(credentialsFile.toString()).exists()) Some(Credentials(credentialsFile))
-  else None
-}.toList
+  List(
+    for {
+      token <- sys.env.get("GITHUB_TOKEN")
+    } yield Credentials(
+      "GitHub Package Registry",
+      "maven.pkg.github.com",
+      "ovotech",
+      token
+    ),
+    (for {
+      user <- sys.env.get("SONATYPE_USERNAME")
+      pass <- sys.env.get("SONATYPE_PASSWORD")
+    } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)).orElse {
+      val credentialsFile = Path.userHome / ".sbt" / ".sonatype_credentials"
+      if (new File(credentialsFile.toString()).exists()) Some(Credentials(credentialsFile))
+      else None
+    }
+  )
+).flatten
 
 val common = Seq(
   Test / fork := true,
