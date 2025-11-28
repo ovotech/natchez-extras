@@ -7,21 +7,22 @@ on:
     branches: [ master ]
 
 env:
-  SBT_OPTS: -Xms256m -Xmx756G -XX:+CMSClassUnloadingEnabled -XX:+UseSerialGC -XX:MaxMetaspaceSize=2G
+  SBT_OPTS: -Xms256m -Xmx8G -XX:MaxMetaspaceSize=2G
   DISABLE_SCALAFMT: true
 
 jobs:
   sbt-test:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+    - name: Set up JDK 17
+      uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
       with:
         distribution: zulu
-        java-version: 11
+        java-version: 17
+    - name: Install sbt
+      uses: sbt/setup-sbt@v1
     - uses: actions/cache@v3
       with:
         path: |
@@ -30,17 +31,20 @@ jobs:
           ~/.ivy2/cache
         key: ${{ runner.os }}-${{ hashFiles('build.sbt') }}
     - name: Run tests
-      run: sbt test
+      run: sbt +test
+
   compile-microsite:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
       with:
         distribution: zulu
-        java-version: 11
+        java-version: 17
+    - name: Install sbt
+      uses: sbt/setup-sbt@3e125ece5c3e5248e18da9ed8d2cce3d335ec8dd # v1.1.14
     - name: Update package descriptions
       run: sudo apt update
     - name: Install jekyll

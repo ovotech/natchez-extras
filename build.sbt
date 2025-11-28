@@ -1,7 +1,7 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
-val scala213Version = "2.13.12"
-val scala3Version = "3.3.0"
+val scala213Version = "2.13.18"
+val scala3Version = "3.3.5"
 
 val scalaVersions = Seq(scala213Version, scala3Version)
 
@@ -22,9 +22,14 @@ ThisBuild / homepage := Some(url("https://ovotech.github.io/natchez-extras/"))
 
 ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-ThisBuild / publishMavenStyle := true
-
-ThisBuild / publishTo := sonatypePublishToBundle.value
+ThisBuild / publishTo := {
+  sys.env.get("PUBLISH_TO_REGISTRY") match {
+    case Some("sonatype") => sonatypePublishToBundle.value
+    case Some("github") | None =>
+      Some("GitHub Package Registry" at s"https://maven.pkg.github.com/ovotech/natchez-extras")
+    case Some(r) => throw new IllegalArgumentException(s"unknown registry: $r")
+  }
+}
 
 ThisBuild / scalafmtOnCompile := true
 
@@ -32,28 +37,44 @@ ThisBuild / developers ++= List(
   Developer("tomverran", "Tom Verran", "github@tomverran.co.uk", url("https://github.com/tomverran"))
 )
 
-ThisBuild / credentials += (
-  for {
-    user <- sys.env.get("SONATYPE_USERNAME")
-    pass <- sys.env.get("SONATYPE_PASSWORD")
-  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)
-).getOrElse(Credentials(Path.userHome / ".sbt" / ".sonatype_credentials"))
+ThisBuild / credentials ++= (
+  List(
+    for {
+      token <- sys.env.get("GITHUB_TOKEN")
+    } yield Credentials(
+      "GitHub Package Registry",
+      "maven.pkg.github.com",
+      "ovotech",
+      token
+    ),
+    (for {
+      user <- sys.env.get("SONATYPE_USERNAME")
+      pass <- sys.env.get("SONATYPE_PASSWORD")
+    } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)).orElse {
+      val credentialsFile = Path.userHome / ".sbt" / ".sonatype_credentials"
+      if (new File(credentialsFile.toString()).exists()) Some(Credentials(credentialsFile))
+      else None
+    }
+  )
+).flatten
 
 val common = Seq(
   Test / fork := true,
   git.useGitDescribe := true,
+  publishMavenStyle := true,
   libraryDependencies ++= Seq(
-    compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-    compilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-  ).filterNot(_ => scalaVersion.value.startsWith("3.")),
+      compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+      compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full)
+    ).filterNot(_ => scalaVersion.value.startsWith("3.")),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % "2.10.0",
-    "org.typelevel" %% "cats-effect" % "3.5.1",
-    "org.scalameta" %% "munit" % "0.7.29" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
-    "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
-    "org.typelevel" %% "scalacheck-effect-munit" % "1.0.4" % Test
-  )
+      "org.typelevel" %% "cats-core" % "2.10.0",
+      "org.typelevel" %% "cats-effect" % "3.5.1",
+      "org.scalameta" %% "munit" % "0.7.29" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
+      "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % Test,
+      "org.typelevel" %% "scalacheck-effect-munit" % "1.0.4" % Test
+    ),
+  usePgpKeyHex("E71D99CFF3D96821F3FB612490019D40886E2FB3")
 )
 
 lazy val metricsCommon = projectMatrix
@@ -80,10 +101,10 @@ lazy val natchezDatadog = projectMatrix
     settings = List(
       name := "natchez-extras-datadog",
       libraryDependencies ++= Seq(
-        "org.http4s" %% "http4s-dsl" % http4sMilestoneVersion,
-        "org.http4s" %% "http4s-circe" % http4sMilestoneVersion,
-        "org.http4s" %% "http4s-client" % http4sMilestoneVersion
-      )
+          "org.http4s" %% "http4s-dsl" % http4sMilestoneVersion,
+          "org.http4s" %% "http4s-circe" % http4sMilestoneVersion,
+          "org.http4s" %% "http4s-client" % http4sMilestoneVersion
+        )
     )
   )
   .customRow(
@@ -92,22 +113,22 @@ lazy val natchezDatadog = projectMatrix
     settings = List(
       name := "natchez-extras-datadog-stable",
       libraryDependencies ++= Seq(
-        "org.http4s" %% "http4s-dsl" % http4sStableVersion,
-        "org.http4s" %% "http4s-circe" % http4sStableVersion,
-        "org.http4s" %% "http4s-client" % http4sStableVersion
-      )
+          "org.http4s" %% "http4s-dsl" % http4sStableVersion,
+          "org.http4s" %% "http4s-circe" % http4sStableVersion,
+          "org.http4s" %% "http4s-client" % http4sStableVersion
+        )
     )
   )
   .enablePlugins(GitVersioning)
   .settings(common)
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "io.circe" %% "circe-core" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion,
-      "io.circe" %% "circe-parser" % circeVersion,
-      "org.slf4j" % "slf4j-api" % slf4jVersion
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion,
+        "io.circe" %% "circe-core" % circeVersion,
+        "io.circe" %% "circe-generic" % circeVersion,
+        "io.circe" %% "circe-parser" % circeVersion,
+        "org.slf4j" % "slf4j-api" % slf4jVersion
+      )
   )
 
 lazy val natchezSlf4j = projectMatrix
@@ -117,10 +138,10 @@ lazy val natchezSlf4j = projectMatrix
   .settings(common :+ (name := "natchez-extras-slf4j"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion,
+        "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "uk.org.lidalia" % "slf4j-test" % "1.2.0" % Test
+      )
   )
 
 lazy val natchezHttp4s = projectMatrix
@@ -131,9 +152,9 @@ lazy val natchezHttp4s = projectMatrix
     settings = List(
       name := "natchez-extras-http4s",
       libraryDependencies ++= Seq(
-        "org.http4s" %% "http4s-dsl" % http4sMilestoneVersion,
-        "org.http4s" %% "http4s-client" % http4sMilestoneVersion
-      )
+          "org.http4s" %% "http4s-dsl" % http4sMilestoneVersion,
+          "org.http4s" %% "http4s-client" % http4sMilestoneVersion
+        )
     )
   )
   .customRow(
@@ -142,9 +163,9 @@ lazy val natchezHttp4s = projectMatrix
     settings = List(
       name := "natchez-extras-http4s-stable",
       libraryDependencies ++= Seq(
-        "org.http4s" %% "http4s-dsl" % http4sStableVersion,
-        "org.http4s" %% "http4s-client" % http4sStableVersion
-      )
+          "org.http4s" %% "http4s-dsl" % http4sStableVersion,
+          "org.http4s" %% "http4s-client" % http4sStableVersion
+        )
     )
   )
   .dependsOn(natchezTestkit)
@@ -152,8 +173,8 @@ lazy val natchezHttp4s = projectMatrix
   .settings(common)
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion
+      )
   )
 
 lazy val natchezLog4Cats = projectMatrix
@@ -163,9 +184,9 @@ lazy val natchezLog4Cats = projectMatrix
   .settings(common :+ (name := "natchez-extras-log4cats"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.typelevel" %% "log4cats-core" % log4catsVersion
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion,
+        "org.typelevel" %% "log4cats-core" % log4catsVersion
+      )
   )
 
 lazy val natchezTestkit = projectMatrix
@@ -175,8 +196,8 @@ lazy val natchezTestkit = projectMatrix
   .settings(common :+ (name := "natchez-extras-testkit"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion
+      )
   )
 
 lazy val natchezFs2 = projectMatrix
@@ -187,10 +208,10 @@ lazy val natchezFs2 = projectMatrix
   .settings(common :+ (name := "natchez-extras-fs2"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "kittens" % "3.0.0",
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "co.fs2" %% "fs2-core" % fs2Version
-    )
+        "org.typelevel" %% "kittens" % "3.0.0",
+        "org.tpolecat" %% "natchez-core" % natchezVersion,
+        "co.fs2" %% "fs2-core" % fs2Version
+      )
   )
 
 lazy val natchezDoobie = projectMatrix
@@ -200,10 +221,10 @@ lazy val natchezDoobie = projectMatrix
   .settings(common :+ (name := "natchez-extras-doobie"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.tpolecat" %% "doobie-core" % doobieVersion,
-      "org.tpolecat" %% "doobie-h2" % doobieVersion % Test
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion,
+        "org.tpolecat" %% "doobie-core" % doobieVersion,
+        "org.tpolecat" %% "doobie-h2" % doobieVersion % Test
+      )
   )
   .dependsOn(core)
 
@@ -214,10 +235,10 @@ lazy val natchezDoobieLegacy = projectMatrix
   .settings(common :+ (name := "natchez-extras-doobie-legacy"))
   .settings(
     libraryDependencies ++= Seq(
-      "org.tpolecat" %% "natchez-core" % natchezVersion,
-      "org.tpolecat" %% "doobie-core" % doobieLegacyVersion,
-      "org.tpolecat" %% "doobie-h2" % doobieLegacyVersion % Test
-    )
+        "org.tpolecat" %% "natchez-core" % natchezVersion,
+        "org.tpolecat" %% "doobie-core" % doobieLegacyVersion,
+        "org.tpolecat" %% "doobie-h2" % doobieLegacyVersion % Test
+      )
   )
   .dependsOn(core)
 
@@ -227,7 +248,7 @@ lazy val core = projectMatrix
   .enablePlugins(GitVersioning)
   .settings(
     common ++ Seq(
-      name := "natchez-extras-core",
+      name := "natchez-extras-core"
     )
   )
 
@@ -246,9 +267,9 @@ lazy val datadogMetrics = projectMatrix
   .dependsOn(metricsCommon)
   .settings(
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-core" % fs2Version,
-      "co.fs2" %% "fs2-io" % fs2Version,
-    )
+        "co.fs2" %% "fs2-core" % fs2Version,
+        "co.fs2" %% "fs2-io" % fs2Version
+      )
   )
 
 lazy val ce3Utils = projectMatrix
@@ -291,18 +312,18 @@ lazy val docs = project
     micrositeImgDirectory := (Compile / resourceDirectory).value / "microsite" / "img",
     micrositePalette := micrositePalette.value ++ Map("brand-primary" -> "#632CA6"),
     mdocVariables := Map(
-      "VERSION" -> version.value.takeWhile(_ != '-'),
-      "LOG4CATSVERSION" -> log4catsVersion,
-      "HTTP4SVERSION" -> http4sStableVersion
-    ),
+        "VERSION" -> version.value.takeWhile(_ != '-'),
+        "LOG4CATSVERSION" -> log4catsVersion,
+        "HTTP4SVERSION" -> http4sStableVersion
+      ),
     micrositePushSiteWith := GHPagesPlugin,
     micrositeGitterChannel := false,
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-blaze-client" % "0.23.12",
-      "org.http4s" %% "http4s-blaze-server" % "0.23.12",
-      "org.tpolecat" %% "doobie-postgres" % doobieVersion,
-      "org.typelevel" %% "log4cats-slf4j" % log4catsVersion
-    )
+        "org.http4s" %% "http4s-blaze-client" % "0.23.12",
+        "org.http4s" %% "http4s-blaze-server" % "0.23.12",
+        "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+        "org.typelevel" %% "log4cats-slf4j" % log4catsVersion
+      )
   )
 
 lazy val root = (project in file("."))

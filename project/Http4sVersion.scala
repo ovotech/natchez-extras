@@ -9,4 +9,3 @@ object Http4sVersion {
   object Milestone extends Http4sVersion(idSuffix = "", directorySuffix = "")
   object Stable extends Http4sVersion(idSuffix = "Stable", directorySuffix = "-stable")
 }
-
