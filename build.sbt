@@ -1,5 +1,6 @@
 import microsites.MicrositesPlugin.autoImport.micrositeDescription
 
+
 val scala213Version = "2.13.18"
 val scala3Version = "3.3.5"
 
@@ -60,6 +61,8 @@ ThisBuild / credentials ++= (
 
 val common = Seq(
   Test / fork := true,
+  // The key is ised by sbt-git, despite the misleading lint warning, hence the Invisible Keyrank
+  git.useGitDescribe.withRank(KeyRanks.Invisible) := true,
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Seq(
