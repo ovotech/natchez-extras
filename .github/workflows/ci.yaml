@@ -31,7 +31,7 @@ jobs:
           ~/.ivy2/cache
         key: ${{ runner.os }}-${{ hashFiles('build.sbt') }}
     - name: Run tests
-      run: sbt +test
+      run: sbt test
 
   compile-microsite:
     runs-on: ubuntu-latest
