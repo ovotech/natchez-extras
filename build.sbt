@@ -60,7 +60,8 @@ ThisBuild / credentials ++= (
 
 val common = Seq(
   Test / fork := true,
-  git.useGitDescribe := true,
+  // The key is ised by sbt-git, despite the misleading lint warning, hence the Invisible Keyrank
+  git.useGitDescribe.withRank(KeyRanks.Invisible) := true,
   publishMavenStyle := true,
   libraryDependencies ++= Seq(
       compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
