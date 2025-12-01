@@ -50,6 +50,6 @@ object DatadogTags {
   def forThrowable(e: Throwable): Map[String, TraceValue] =
     (
       Option(e.getMessage).map(errorMessage).toList ++
-      List(errorType(e.getClass.getSimpleName), errorStack(e.getStackTrace.mkString("\n")))
+        List(errorType(e.getClass.getSimpleName), errorStack(e.getStackTrace.mkString("\n")))
     ).toMap
 }

@@ -46,10 +46,10 @@ object TestEntryPoint {
               override def spanId: F[Option[String]] = F.pure(None)
               override def traceUri: F[Option[URI]] = F.pure(None)
               override def kernel: F[Kernel] = F.pure(kern)
-              override def log(fields: (String, TraceValue)*): F[Unit] = put(fields: _*)
+              override def log(fields: (String, TraceValue)*): F[Unit] = put(fields *)
               override def log(event: String): F[Unit] = log("event" -> TraceValue.StringValue(event))
               override def attachError(err: Throwable, fields: (String, TraceValue)*): F[Unit] =
-                put(Tags.error(true) :: fields.toList: _*)
+                put((Tags.error(true) :: fields.toList) *)
               override def span(name: String, options: Span.Options): Resource[F, Span[F]] = span(name)
               private def span(newName: String): Resource[F, Span[F]] = makeSpan(newName, Some(name), kern)
             }
@@ -69,8 +69,11 @@ object TestEntryPoint {
           makeSpan(name, None, Kernel(Map.empty))
         override def continue(name: String, kernel: Kernel, options: Span.Options): Resource[F, Span[F]] =
           makeSpan(name, None, kernel)
-        override def continueOrElseRoot(name: String, kernel: Kernel, options: Span.Options)
-          : Resource[F, Span[F]] = makeSpan(name, None, kernel)
+        override def continueOrElseRoot(
+          name: String,
+          kernel: Kernel,
+          options: Span.Options
+        ): Resource[F, Span[F]] = makeSpan(name, None, kernel)
       }
     }
 }

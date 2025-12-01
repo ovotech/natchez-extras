@@ -53,8 +53,8 @@ class DatadogTest extends CatsEffectSuite {
     val test: EntryPoint[IO] => IO[Unit] =
       ep =>
         ep.root("first").use(_ => IO.unit) >>
-        IO.sleep(1.second) >>
-        ep.root("second").use(_ => IO.unit)
+          IO.sleep(1.second) >>
+          ep.root("second").use(_ => IO.unit)
 
     assertIO(
       returns = 2,

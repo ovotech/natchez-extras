@@ -20,7 +20,7 @@ object TracedTransactor {
     transactor: Transactor[F]
   ): Transactor[Traced[F, *]] = {
     val kleisliTransactor = transactor
-      .mapK(Kleisli.liftK[F, Span[F]])(implicitly, Async.asyncForKleisli(implicitly))
+      .mapK(Kleisli.liftK[F, Span[F]])(using implicitly, Async.asyncForKleisli(implicitly))
     trace(ServiceAndResource(s"$service-db", DefaultResourceName), kleisliTransactor)
   }
 
@@ -49,7 +49,7 @@ object TracedTransactor {
       override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
         new PreparedStatementInterpreter {
 
-          type TracedOp[A] = Kleisli[F, PreparedStatement, A] //PreparedStatement => F[A]
+          type TracedOp[A] = Kleisli[F, PreparedStatement, A] // PreparedStatement => F[A]
 
           def runTraced[A](f: TracedOp[A]): TracedOp[A] =
             Kleisli {

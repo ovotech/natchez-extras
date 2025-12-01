@@ -117,7 +117,7 @@ object Dogstatsd {
   /**
    * Create an instance of Metrics that uses a UDP socket to communicate with Datadog.
    */
-  def apply[F[_]: Network](config: Config): Resource[F, Metrics[F] with Events[F]] = {
+  def apply[F[_]: Network](config: Config): Resource[F, Metrics[F] & Events[F]] = {
     Network[F].openDatagramSocket().map { sock =>
       new Metrics[F] with Events[F] {
         def counter(m: Metric)(value: Long): F[Unit] =

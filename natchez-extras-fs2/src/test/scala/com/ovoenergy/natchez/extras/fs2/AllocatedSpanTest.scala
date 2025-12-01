@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 class AllocatedSpanTest extends CatsEffectSuite {
 
   val testEp: SyncIO[FunFixture[TestEntryPoint[IO]]] =
-    ResourceFixture(Resource.eval(TestEntryPoint.apply[IO]))
+    ResourceFunFixture(Resource.eval(TestEntryPoint.apply[IO]))
 
   testEp.test("should submit the span even if a pre-submit task fails") { ep =>
     val stream: IO[Unit] =

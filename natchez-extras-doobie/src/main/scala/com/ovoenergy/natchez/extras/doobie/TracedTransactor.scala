@@ -67,7 +67,7 @@ object TracedTransactor {
       override lazy val PreparedStatementInterpreter: PreparedStatementInterpreter =
         new PreparedStatementInterpreter {
 
-          type TracedOp[A] = Kleisli[F, PreparedStatement, A] //PreparedStatement => F[A]
+          type TracedOp[A] = Kleisli[F, PreparedStatement, A] // PreparedStatement => F[A]
 
           def runTraced[A](f: TracedOp[A]): TracedOp[A] =
             Kleisli {

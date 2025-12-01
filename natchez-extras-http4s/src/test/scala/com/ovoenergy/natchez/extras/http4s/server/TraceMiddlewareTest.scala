@@ -55,7 +55,7 @@ class TraceMiddlewareTest extends CatsEffectSuite {
     )
 
     val requestHeaders = Headers(
-      Authorization(BasicCredentials("secret")),
+      Authorization(BasicCredentials.fromString("secret").get),
       Cookie(RequestCookie("secret", "secret")),
       `Content-Type`(MediaType.`text/event-stream`)
     )
@@ -68,14 +68,14 @@ class TraceMiddlewareTest extends CatsEffectSuite {
         "http.response.headers" -> "",
         "http.status_code" -> 200,
         "http.request.headers" ->
-        """|Authorization: <REDACTED>
-           |Cookie: <REDACTED>
-           |Content-Type: text/event-stream
-           |""".stripMargin,
+          """|Authorization: <REDACTED>
+             |Cookie: <REDACTED>
+             |Content-Type: text/event-stream
+             |""".stripMargin,
         "http.response.headers" ->
-        """|Set-Cookie: <REDACTED>
-           |X-Polite: come back soon!
-           |""".stripMargin
+          """|Set-Cookie: <REDACTED>
+             |X-Polite: come back soon!
+             |""".stripMargin
       ),
       obtained = for {
         entryPoint <- TestEntryPoint[IO]

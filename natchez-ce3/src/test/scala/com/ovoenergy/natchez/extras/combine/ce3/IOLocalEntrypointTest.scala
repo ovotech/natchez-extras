@@ -59,7 +59,7 @@ class IOLocalEntrypointTest extends CatsEffectSuite {
     local.get.assertEquals(rootSpan) >>
     spanR.use(span =>
       IO(span).assertEquals(childSpan) >>
-      local.get.assertEquals(childSpan)
+        local.get.assertEquals(childSpan)
     ) >>
     local.get.assertEquals(rootSpan)
   }

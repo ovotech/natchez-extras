@@ -66,7 +66,7 @@ object Datadog {
               client.status(
                 Request[F](uri = agentHost.withPath(unsafeFromString("/v0.3/traces")), method = PUT)
                   .withHeaders("X-DataDog-Trace-Count" -> traces.length.toString)
-                withEntity (traces.groupBy(_.traceId).values.toList)
+                  withEntity (traces.groupBy(_.traceId).values.toList)
               )
             )
             .flatMap {

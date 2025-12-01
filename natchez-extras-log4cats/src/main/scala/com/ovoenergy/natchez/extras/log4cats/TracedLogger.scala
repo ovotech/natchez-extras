@@ -21,7 +21,7 @@ object TracedLogger {
     val headers = lowercaseHeaders(kernel)
     (
       headers.get("x-parent-id").map("dd.span_id" -> _) ++
-      headers.get("x-trace-id").map("dd.trace_id" -> _)
+        headers.get("x-trace-id").map("dd.trace_id" -> _)
     ).toMap
   }
 
