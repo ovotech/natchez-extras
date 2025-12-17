@@ -22,6 +22,9 @@ ThisBuild / homepage := Some(url("https://ovotech.github.io/natchez-extras/"))
 
 ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
+ThisBuild / sonatypeCredentialHost := Sonatype.sonatypeCentralHost
+ThisBuild / sonatypeRepository := Sonatype.sonatypeCentralHost
+
 ThisBuild / publishTo := {
   sys.env.get("PUBLISH_TO_REGISTRY") match {
     case Some("sonatype") => sonatypePublishToBundle.value
@@ -50,7 +53,7 @@ ThisBuild / credentials ++= (
     (for {
       user <- sys.env.get("SONATYPE_USERNAME")
       pass <- sys.env.get("SONATYPE_PASSWORD")
-    } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", user, pass)).orElse {
+    } yield Credentials("Sonatype Nexus Repository Manager", Sonatype.sonatypeCentralHost, user, pass)).orElse {
       val credentialsFile = Path.userHome / ".sbt" / ".sonatype_credentials"
       if (new File(credentialsFile.toString()).exists()) Some(Credentials(credentialsFile))
       else None

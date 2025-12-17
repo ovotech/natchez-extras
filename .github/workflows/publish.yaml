@@ -8,6 +8,7 @@ env:
   CI: true
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   PGP_PASSPHRASE: ${{secrets.PGP_PASSPHRASE}}
+  PUBLISH_TO_REGISTRY: sonatype
 
 jobs:
   publish:
@@ -34,7 +35,16 @@ jobs:
       - name: Import PGP key
         run: echo -e "${{secrets.GPG_KEY}}" | gpg --batch --import
 
-      - name: Publish packages
+      - name: Publish to GitHub Pakcages
+        if: env.PUBLISH_TO_REGISTRY != 'sonatype'
         run: |
           sbt publishSigned
+
+      - name: Publish to sonatype
+        if: env.PUBLISH_TO_REGISTRY == 'sonatype'
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          sbt ';publishSigned; sonatypeBundleRelease'
 
