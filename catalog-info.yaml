@@ -1,12 +1,12 @@
+# catalogue-ignore ovo:name-system-prefix, ovo:type-known
 apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: natchez-extras
   annotations:
-    backstage.io/source-location: url:https://github.com/ovotech/natchez-extras/tree/main
+    github.com/project-slug: ovotech/natchez-extras
 spec:
   owner: msp-customer-onboarding-platform
-  domain: infrastructure-and-enablement
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -14,13 +14,11 @@ metadata:
   name: natchez-extras
   description: Integrations between Natchez, Doobie, HTTP4s, Log4cats and Datadog. Formerly called effect-utils.
   annotations:
-    backstage.io/source-location: url:https://github.com/ovotech/natchez-extras/tree/main
+    github.com/project-slug: ovotech/natchez-extras
   tags:
-    - internal
     - scala
 spec:
   type: service
   lifecycle: production
   owner: msp-customer-onboarding-platform
   system: natchez-extras
-  domain: infrastructure-and-enablement
