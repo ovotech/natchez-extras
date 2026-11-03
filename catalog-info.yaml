@@ -1,0 +1,14 @@
+# catalogue-ignore ovo:name-system-prefix, ovo:type-known
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: natchez-extras
+  description: Unofficial modules for natchez
+  annotations:
+    github.com/project-slug: ovotech/natchez-extras
+spec:
+  type: library
+  lifecycle: production
+  owner: msp-customer-onboarding-platform
+  system: customer-onboarding-platform
+
